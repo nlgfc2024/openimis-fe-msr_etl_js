@@ -1,5 +1,5 @@
 {
-  "name": "@openimis/msr-etl",
+  "name": "@openimis/fe-msr_etl",
   "version": "1.0.0",
   "license": "AGPL-3.0-only",
   "description": "openIMIS Frontend MSR ETL module",
