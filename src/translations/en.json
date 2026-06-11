@@ -1,3 +1,10 @@
 {
-    
+  "confirmPullingData.title": "Confirm Pulling Data",
+  "household.filter.classification": "Household Classification",
+  "location": "Location",
+  "household.filter.minAge": "Minimum Age",
+  "household.filter.maxAge": "Maximum Age",
+  "household.filter.gender": "Gender",
+  "confirmPullingData.cancel": "Cancel",
+  "confirmPullingData.confirm": "Confirm"
 }

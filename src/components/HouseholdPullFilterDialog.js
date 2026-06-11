@@ -77,13 +77,13 @@ function HouseholdPullFilterDialog({
 
   return (
     <Dialog open={!!open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{title || formatMessage(intl, 'individual', 'ImportPageAPI.confirmPullingData.title')}</DialogTitle>
+      <DialogTitle>{title || formatMessage(intl, 'msrEtl', 'confirmPullingData.title')}</DialogTitle>
       <DialogContent>
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel id="household-classification-label">
-                {formatMessage(intl, 'individual', 'household.filter.classification')}
+                {formatMessage(intl, 'msrEtl', 'household.filter.classification')}
               </InputLabel>
               <Select
                 labelId="household-classification-label"
@@ -108,13 +108,13 @@ function HouseholdPullFilterDialog({
               value={location}
               onChange={setLocation}
               withLabel
-              label={formatMessage(intl, 'individual', 'location')}
+              label={formatMessage(intl, 'msrEtl', 'location')}
             />
           </Grid>
 
           <Grid item xs={12} md={3}>
             <TextField
-              label={formatMessage(intl, 'individual', 'household.filter.minAge')}
+              label={formatMessage(intl, 'msrEtl', 'household.filter.minAge')}
               type="number"
               value={minAge}
               onChange={(e) => setMinAge(e.target.value)}
@@ -125,7 +125,7 @@ function HouseholdPullFilterDialog({
 
           <Grid item xs={12} md={3}>
             <TextField
-              label={formatMessage(intl, 'individual', 'household.filter.maxAge')}
+              label={formatMessage(intl, 'msrEtl', 'household.filter.maxAge')}
               type="number"
               value={maxAge}
               onChange={(e) => setMaxAge(e.target.value)}
@@ -137,7 +137,7 @@ function HouseholdPullFilterDialog({
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel id="household-gender-label">
-                {formatMessage(intl, 'individual', 'household.filter.gender')}
+                {formatMessage(intl, 'msrEtl', 'household.filter.gender')}
               </InputLabel>
               <Select
                 labelId="household-gender-label"
@@ -160,10 +160,10 @@ function HouseholdPullFilterDialog({
 
       <DialogActions>
         <Button onClick={onClose}>
-          {cancelLabel || formatMessage(intl, 'individual', 'ImportPageAPI.confirmPullingData.cancel')}
+          {cancelLabel || formatMessage(intl, 'msrEtl', 'confirmPullingData.cancel')}
         </Button>
         <Button color="primary" variant="contained" onClick={handleConfirm}>
-          {confirmLabel || formatMessage(intl, 'individual', 'ImportPageAPI.confirmPullingData.confirm')}
+          {confirmLabel || formatMessage(intl, 'msrEtl', 'confirmPullingData.confirm')}
         </Button>
       </DialogActions>
     </Dialog>
