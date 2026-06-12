@@ -88,15 +88,13 @@ function HouseholdFiltersPanel({
 
   const handleInputChange = () => {};
 
-  const currentData = edited || DEFAULT_FILTERS;
-
   return (
       <Grid container className={ classes.item}>
         {/* Wealth Classification */}
         <Grid item xs={4} md={6} className={classes.item}>
           <Autocomplete
             module="msrEtl"
-            label="household.filter.classification"
+            label={formatMessage(intl, 'msrEtl', 'household.filter.classification')}
             multiple
             options={classificationOptions}
             value={currentData.classifications || []}
@@ -124,7 +122,7 @@ function HouseholdFiltersPanel({
         <Grid item xs={4} md={3} className={classes.item}>
           <NumberInput
             module="msrEtl"
-            label="household.filter.minAge"
+            label={formatMessage(intl, 'msrEtl', 'household.filter.minAge')}
             min={0}
             value={currentData.minAge}
             onChange={onMinAgeChange}
@@ -136,7 +134,7 @@ function HouseholdFiltersPanel({
         <Grid item xs={12} md={3} className={classes.item}>
           <NumberInput
             module="msrEtl"
-            label="household.filter.maxAge"
+            label={formatMessage(intl, 'msrEtl', 'household.filter.maxAge')}
             min={0}
             value={currentData.maxAge}
             onChange={onMaxAgeChange}
@@ -148,7 +146,7 @@ function HouseholdFiltersPanel({
         <Grid item xs={12} md={6} className={classes.item}>
           <Autocomplete
             module="msrEtl"
-            label="household.filter.gender"
+            label={formatMessage(intl, 'msrEtl', 'household.filter.gender')}
             options={genderOptions}
             value={currentData.gender}
             onChange={onGenderChange}
