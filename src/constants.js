@@ -58,5 +58,16 @@ export const HOUSEHOLD_SERVICES = [
   EXAMPLE_INDIVIDUAL_ETL_SERVICE,
 ];
 
+// Services that use location filters
+export const LOCATION_SERVICES = [
+  UBR_LOCATION_SERVICE,
+];
+
+// Services that should be visible in the filters table even when the backend
+// service discovery returns only a subset.
+export const FRONTEND_ETL_SERVICES = [
+  UBR_LOCATION_SERVICE,
+];
+
 // LocalStorage key prefix for saved ETL filters
 export const ETL_FILTERS_LS_KEY = (serviceName) => `msr-etl-filters-${serviceName}`;

@@ -24,7 +24,7 @@ import {
 } from '@openimis/fe-core';
 import { injectIntl } from 'react-intl';
 import { fetchEtlServices } from '../actions';
-import { MSR_ETL_MODULE_NAME, RIGHT_MSR_ETL_SEARCH } from '../constants';
+import { FRONTEND_ETL_SERVICES, MSR_ETL_MODULE_NAME, RIGHT_MSR_ETL_SEARCH } from '../constants';
 
 const styles = (theme) => ({
   page: theme.page,
@@ -39,6 +39,13 @@ function MsrEtlConfigsPage({ history, classes, rights, fetchingEtlServices, etlS
   const dispatch = useDispatch();
   const modulesManager = useModulesManager();
   const { formatMessage } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
+  const visibleEtlServices = [
+    ...(etlServices || []),
+    ...FRONTEND_ETL_SERVICES.map((nameOfService) => ({ nameOfService })),
+  ].filter((service, index, services) => (
+    service?.nameOfService
+    && services.findIndex((item) => item?.nameOfService === service.nameOfService) === index
+  ));
 
   useEffect(() => {
     dispatch(fetchEtlServices());
@@ -67,7 +74,7 @@ function MsrEtlConfigsPage({ history, classes, rights, fetchingEtlServices, etlS
           </TableHead>
           <TableBody>
             <ProgressOrError progress={fetchingEtlServices} error={errorEtlServices} />
-            {!fetchingEtlServices && etlServices.map((service) => (
+            {!fetchingEtlServices && visibleEtlServices.map((service) => (
               <TableRow key={service.nameOfService}>
                 <TableCell>{service.nameOfService}</TableCell>
                 <TableCell>

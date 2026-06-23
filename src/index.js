@@ -10,6 +10,7 @@ import messages_en from './translations/en.json';
 import reducer from './reducer';
 import MsrEtlConfigsPage from './pages/MsrEtlConfigsPage';
 import MsrEtlFiltersPage from './pages/MsrEtlFiltersPage';
+import LocationFilter from './components/LocationFilter';
 import {
   MSR_ETL_MODULE_NAME,
   RIGHT_MSR_ETL_SEARCH,
@@ -37,6 +38,7 @@ const DEFAULT_CONFIG = {
   refs: [
     { key: 'msrEtl.route.configs', ref: ROUTE_MSR_ETL_CONFIGS },
     { key: 'msrEtl.route.filters', ref: ROUTE_MSR_ETL_FILTERS },
+    { key: 'msrEtl.LocationFilter', ref: LocationFilter },
   ],
 };
 

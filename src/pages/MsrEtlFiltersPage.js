@@ -15,8 +15,9 @@ import {
   clearConfirm,
 } from '@openimis/fe-core';
 import { injectIntl } from 'react-intl';
-import { MSR_ETL_MODULE_NAME, HOUSEHOLD_SERVICES } from '../constants';
+import { MSR_ETL_MODULE_NAME, HOUSEHOLD_SERVICES, LOCATION_SERVICES } from '../constants';
 import HouseholdFiltersPanel from '../components/HouseholdFiltersPanel';
+import UbrLocationFiltersPanel from '../components/UbrLocationFiltersPanel';
 import { makeStyles } from '@material-ui/styles';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -47,19 +48,9 @@ function MsrEtlFiltersPage({ match, intl, rights }) {
 
   useEffect(() => {
     const saved = loadSavedFilters(serviceName);
-    if (saved) {
-      setEdited(saved);
-    }
+    setEdited(saved || {});
     setReset((prev) => prev + 1);
   }, [serviceName]);
-
-  // Load filters from localStorage on mount
-  useEffect(() => {
-    const saved = loadSavedFilters(serviceName);
-    if (saved) {
-      setEdited(saved);
-    }
-  }, []);
 
   const pageTitle = formatMessageWithValues(
     intl,
@@ -86,6 +77,9 @@ function MsrEtlFiltersPage({ match, intl, rights }) {
     if (HOUSEHOLD_SERVICES.includes(serviceName)) {
       return HouseholdFiltersPanel;
     }
+    if (LOCATION_SERVICES.includes(serviceName)) {
+      return UbrLocationFiltersPanel;
+    }
     return null;
   };
 
@@ -103,6 +97,11 @@ function MsrEtlFiltersPage({ match, intl, rights }) {
     );
   }
 
+  const HeadPanel = (props) => {
+    const FilterPanel = filterPanel;
+    return <FilterPanel {...props} serviceName={serviceName} />;
+  };
+
   return (
     <div className={classes.page}>
       <Form
@@ -115,7 +114,7 @@ function MsrEtlFiltersPage({ match, intl, rights }) {
         reset={reset}
         mandatoryFieldsEmpty={null}
         canSave={() => true}
-        HeadPanel={filterPanel}
+        HeadPanel={HeadPanel}
         actions={actions}
         rights={rights}
       />

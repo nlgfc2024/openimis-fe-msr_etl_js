@@ -111,7 +111,7 @@ function HouseholdFiltersPanel({
         {/* Location */}
         <Grid item xs={4} md={6} className={classes.item}>
           <PublishedComponent
-            pubRef="location.LocationCascader"
+            pubRef="msrEtl.LocationFilter"
             value={currentData.location}
             onChange={onLocationChange}
             withLabel
