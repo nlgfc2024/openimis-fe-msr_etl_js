@@ -85,7 +85,7 @@ function HouseholdFiltersPanel({
             label={formatMessage(intl, 'msrEtl', 'household.filter.classification')}
             multiple
             options={classificationOptions}
-            value={currentData.classifications || []}
+            value={edited.classifications || []}
             onChange={onClassificationChange}
             onInputChange={handleInputChange}
             getOptionLabel={(option) => option.label}
@@ -98,7 +98,7 @@ function HouseholdFiltersPanel({
         <Grid item xs={4} md={6} className={classes.item}>
           <PublishedComponent
             pubRef="location.LocationCascader"
-            value={currentData.location}
+            value={edited.location}
             onChange={onLocationChange}
             withLabel
             label={formatMessage(intl, 'msrEtl', 'location')}
@@ -112,7 +112,7 @@ function HouseholdFiltersPanel({
             module="msrEtl"
             label={formatMessage(intl, 'msrEtl', 'household.filter.minAge')}
             min={0}
-            value={currentData.minAge}
+            value={edited.minAge}
             onChange={onMinAgeChange}
             readOnly={readOnly}
           />
@@ -124,7 +124,7 @@ function HouseholdFiltersPanel({
             module="msrEtl"
             label={formatMessage(intl, 'msrEtl', 'household.filter.maxAge')}
             min={0}
-            value={currentData.maxAge}
+            value={edited.maxAge}
             onChange={onMaxAgeChange}
             readOnly={readOnly}
           />
@@ -136,7 +136,7 @@ function HouseholdFiltersPanel({
             module="msrEtl"
             label={formatMessage(intl, 'msrEtl', 'household.filter.gender')}
             options={genderOptions}
-            value={currentData.gender}
+            value={edited.gender}
             onChange={onGenderChange}
             onInputChange={handleInputChange}
             getOptionLabel={(option) => option.label}
