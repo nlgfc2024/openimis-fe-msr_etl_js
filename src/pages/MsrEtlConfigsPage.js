@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { connect, useDispatch, useSelector } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import {
   Table,
@@ -19,7 +19,6 @@ import {
   useTranslations,
   ProgressOrError,
   historyPush,
-  withHistory,
   withModulesManager,
 } from '@openimis/fe-core';
 import { injectIntl } from 'react-intl';

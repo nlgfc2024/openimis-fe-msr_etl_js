@@ -7,7 +7,6 @@ import {
   formatPageQueryWithCount,
   formatMutation,
   formatGQLString,
-  graphqlWithVariables,
   decodeId,
 } from '@openimis/fe-core';
 import { ACTION_TYPE } from './reducer';
