@@ -22,7 +22,7 @@ import {
   withModulesManager,
 } from '@openimis/fe-core';
 import { injectIntl } from 'react-intl';
-import { fetchEtlServices } from '../actions';
+import { fetchMsrEtlServices } from '../actions';
 import { MSR_ETL_MODULE_NAME, RIGHT_MSR_ETL_SEARCH } from '../constants';
 
 const styles = (theme) => ({
@@ -34,13 +34,13 @@ const styles = (theme) => ({
   },
 });
 
-function MsrEtlConfigsPage({ history, classes, rights, fetchingEtlServices, etlServices, errorEtlServices }) {
+function MsrEtlConfigsPage({ history, classes, rights, fetchingMsrEtlServices, etlServices, errorEtlServices }) {
   const dispatch = useDispatch();
   const modulesManager = useModulesManager();
   const { formatMessage } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
 
   useEffect(() => {
-    dispatch(fetchEtlServices());
+    dispatch(fetchMsrEtlServices());
   }, []);
 
   if (!rights.includes(RIGHT_MSR_ETL_SEARCH)) {
@@ -65,8 +65,8 @@ function MsrEtlConfigsPage({ history, classes, rights, fetchingEtlServices, etlS
             </TableRow>
           </TableHead>
           <TableBody>
-            <ProgressOrError progress={fetchingEtlServices} error={errorEtlServices} />
-            {!fetchingEtlServices && etlServices.map((service) => (
+            <ProgressOrError progress={fetchingMsrEtlServices} error={errorEtlServices} />
+            {!fetchingMsrEtlServices && etlServices.map((service) => (
               <TableRow key={service.nameOfService}>
                 <TableCell>{service.nameOfService}</TableCell>
                 <TableCell>
@@ -93,7 +93,7 @@ function MsrEtlConfigsPage({ history, classes, rights, fetchingEtlServices, etlS
 
 const mapStateToProps = (state) => ({
   rights: !!state.core && !!state.core.user && !!state.core.user.i_user ? state.core.user.i_user.rights : [],
-  fetchingEtlServices: state.msrEtl.fetchingEtlServices,
+  fetchingMsrEtlServices: state.msrEtl.fetchingMsrEtlServices,
   etlServices: state.msrEtl.etlServices,
   errorEtlServices: state.msrEtl.errorEtlServices,
 });

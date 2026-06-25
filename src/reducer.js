@@ -42,7 +42,7 @@ const INITIAL_STATE = {
   mutation: {},
 
   // ETL services list
-  fetchingEtlServices: false,
+  fetchingMsrEtlServices: false,
   fetchedEtlServices: false,
   etlServices: [],
   errorEtlServices: null,
@@ -78,7 +78,7 @@ function reducer(state = INITIAL_STATE, action) {
     case REQUEST(ACTION_TYPE.FETCH_ETL_SERVICES):
       return {
         ...state,
-        fetchingEtlServices: true,
+        fetchingMsrEtlServices: true,
         fetchedEtlServices: false,
         etlServices: [],
         errorEtlServices: null,
@@ -87,7 +87,7 @@ function reducer(state = INITIAL_STATE, action) {
     case SUCCESS(ACTION_TYPE.FETCH_ETL_SERVICES):
       return {
         ...state,
-        fetchingEtlServices: false,
+        fetchingMsrEtlServices: false,
         fetchedEtlServices: true,
         etlServices: action.payload.data?.etlServicesByServiceName?.etlServices ?? [],
         errorEtlServices: formatGraphQLError(action.payload),
@@ -96,14 +96,14 @@ function reducer(state = INITIAL_STATE, action) {
     case ERROR(ACTION_TYPE.FETCH_ETL_SERVICES):
       return {
         ...state,
-        fetchingEtlServices: false,
+        fetchingMsrEtlServices: false,
         errorEtlServices: formatServerError(action.payload),
       };
 
     case CLEAR(ACTION_TYPE.FETCH_ETL_SERVICES):
       return {
         ...state,
-        fetchingEtlServices: false,
+        fetchingMsrEtlServices: false,
         fetchedEtlServices: false,
         etlServices: [],
         errorEtlServices: null,

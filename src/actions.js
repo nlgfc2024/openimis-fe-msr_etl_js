@@ -54,9 +54,9 @@ const MSR_ETL_PULL_HISTORY_FULL_PROJECTION = () => [
 // Queries
 // ---------------------
 
-export function fetchEtlServices() {
+export function fetchMsrEtlServices() {
   const payload = formatQuery(
-    'etlServicesByServiceName',
+    'msrEtlServicesByServiceName',
     [],
     ETL_SERVICES_PROJECTION(),
   );
