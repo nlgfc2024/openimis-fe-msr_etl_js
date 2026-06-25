@@ -30,7 +30,7 @@ export function fetchMsrEtlServices() {
   return graphql(payload, ACTION_TYPE.FETCH_ETL_SERVICES);
 }
 
-export function fetchMsrUbrIndividuals({ district, ta, village } = {}) {
+export function fetchMsrUbrIndividuals(filters = {}) {
   const projection = [
     'count',
     'district',
@@ -39,9 +39,14 @@ export function fetchMsrUbrIndividuals({ district, ta, village } = {}) {
     'individuals',
   ];
   const params = {};
-  if (district) params.district = district;
-  if (ta) params.ta = ta;
-  if (village) params.village = village;
+  if (data.location?.district) params.district = data.location.district;
+  if (data.location?.ta) params.ta = data.location.ta;
+  if (data.location?.village) params.village = data.location.village;
+  if (data.classification) params.classification = data.classification;
+  if (data.percentile) params.percentile = data.percentile;
+  if (data.minAge) params.minAge = data.minAge;
+  if (data.maxAge) params.maxAge = data.maxAge;
+  if (data.gender) params.gender = data.gender;
   const payload = formatQuery('msrUbrIndividuals', params, projection);
   return graphql(payload, ACTION_TYPE.FETCH_UBR_INDIVIDUALS);
 }
