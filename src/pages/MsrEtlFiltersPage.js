@@ -1,28 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { withTheme, withStyles } from '@material-ui/core/styles';
+import { Box, Button, Typography } from '@material-ui/core';
 import {
-  Paper,
-} from '@material-ui/core';
-import {
-  Helmet,
   useHistory,
   useModulesManager,
   useTranslations,
   formatMessageWithValues,
   Form,
-  journalize,
-  coreConfirm,
-  clearConfirm,
+  ProgressOrError,
 } from '@openimis/fe-core';
 import { injectIntl } from 'react-intl';
-import { MSR_ETL_MODULE_NAME, HOUSEHOLD_SERVICES } from '../constants';
-import HouseholdFiltersPanel from '../components/HouseholdFiltersPanel';
 import { makeStyles } from '@material-ui/styles';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
+import { MSR_ETL_MODULE_NAME, HOUSEHOLD_SERVICES } from '../constants';
+import HouseholdFiltersPanel from '../components/HouseholdFiltersPanel';
+import { fetchMsrUbrIndividuals, clearMsrUbrIndividuals } from '../actions';
+
 const useStyles = makeStyles((theme) => ({
   page: theme.page,
+  actions: {
+    display: 'flex',
+    gap: theme.spacing(2),
+    marginTop: theme.spacing(2),
+  },
+  resultBox: {
+    marginTop: theme.spacing(2),
+    padding: theme.spacing(2),
+  },
 }));
 
 function loadSavedFilters(serviceName) {
@@ -34,7 +40,16 @@ function loadSavedFilters(serviceName) {
   }
 }
 
-function MsrEtlFiltersPage({ match, intl, rights }) {
+function MsrEtlFiltersPage({
+  match,
+  intl,
+  rights,
+  fetchingMsrUbrIndividuals,
+  errorMsrUbrIndividuals,
+  msrUbrIndividualsResult,
+  fetchMsrUbrIndividuals,
+  clearMsrUbrIndividuals,
+}) {
   const modulesManager = useModulesManager();
   const classes = useStyles();
   const history = useHistory();
@@ -47,19 +62,10 @@ function MsrEtlFiltersPage({ match, intl, rights }) {
 
   useEffect(() => {
     const saved = loadSavedFilters(serviceName);
-    if (saved) {
-      setEdited(saved);
-    }
+    if (saved) setEdited(saved);
     setReset((prev) => prev + 1);
+    clearMsrUbrIndividuals();
   }, [serviceName]);
-
-  // Load filters from localStorage on mount
-  useEffect(() => {
-    const saved = loadSavedFilters(serviceName);
-    if (saved) {
-      setEdited(saved);
-    }
-  }, []);
 
   const pageTitle = formatMessageWithValues(
     intl,
@@ -69,24 +75,21 @@ function MsrEtlFiltersPage({ match, intl, rights }) {
   );
 
   const back = () => history.goBack();
-  const actions = [];
-
-  const onEditedChanged = (data) => {
-    setEdited(data);
-  };
 
   const save = (data) => {
-    // Save to localStorage
     if (data) {
       localStorage.setItem(`msrEtl_filters_${serviceName}`, JSON.stringify(data));
     }
   };
 
   const renderFilterPanel = () => {
-    if (HOUSEHOLD_SERVICES.includes(serviceName)) {
-      return HouseholdFiltersPanel;
-    }
+    if (HOUSEHOLD_SERVICES.includes(serviceName)) return HouseholdFiltersPanel;
     return null;
+  };
+
+  const onPullData = () => {
+    save(edited);
+    fetchMsrUbrIndividuals({...edited});
   };
 
   const filterPanel = renderFilterPanel();
@@ -94,14 +97,12 @@ function MsrEtlFiltersPage({ match, intl, rights }) {
   if (!filterPanel) {
     return (
       <div className={classes.page}>
-        <Form
-          module={MSR_ETL_MODULE_NAME}
-          back={back}
-          title={pageTitle}
-        />
+        <Form module={MSR_ETL_MODULE_NAME} back={back} title={pageTitle} />
       </div>
     );
   }
+
+  const individuals = msrUbrIndividualsResult?.individuals || [];
 
   return (
     <div className={classes.page}>
@@ -111,27 +112,53 @@ function MsrEtlFiltersPage({ match, intl, rights }) {
         save={save}
         title={pageTitle}
         edited={edited}
-        onEditedChanged={onEditedChanged}
+        onEditedChanged={setEdited}
         reset={reset}
         mandatoryFieldsEmpty={null}
         canSave={() => true}
         HeadPanel={filterPanel}
-        actions={actions}
+        actions={[]}
         rights={rights}
       />
+      <Box className={classes.actions}>
+        <Button variant="contained" color="primary" onClick={onPullData}>
+          {formatMessage('filters.pullData')}
+        </Button>
+        <Button variant="outlined" onClick={back}>
+          {formatMessage('dialog.cancel')}
+        </Button>
+      </Box>
+
+      <ProgressOrError progress={fetchingMsrUbrIndividuals} error={errorMsrUbrIndividuals} />
+
+      {!fetchingMsrUbrIndividuals && msrUbrIndividualsResult && (
+        <Box className={classes.resultBox}>
+          <Typography variant="subtitle1">
+            {formatMessage('filters.results.count')}: {msrUbrIndividualsResult?.count || 0}
+          </Typography>
+          <Typography variant="body2">
+            {formatMessage('filters.districtCode')}: {msrUbrIndividualsResult?.district || '-'} | {formatMessage('filters.taCode')}: {msrUbrIndividualsResult?.ta || '-'} | {formatMessage('filters.villageCode')}: {msrUbrIndividualsResult?.village || '-'}
+          </Typography>
+          <Typography variant="subtitle2">
+            {formatMessage('filters.results.preview')}
+          </Typography>
+          <pre>{JSON.stringify(individuals.slice(0, 10), null, 2)}</pre>
+        </Box>
+      )}
     </div>
   );
 }
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
-  coreConfirm,
-  clearConfirm,
-  journalize,
+  fetchMsrUbrIndividuals,
+  clearMsrUbrIndividuals,
 }, dispatch);
 
-const mapStateToProps = (state, props) => ({
+const mapStateToProps = (state) => ({
   rights: state.core?.user?.i_user?.rights ?? [],
-  confirmed: state.core.confirmed,
+  fetchingMsrUbrIndividuals: state.msrEtl.fetchingMsrUbrIndividuals,
+  errorMsrUbrIndividuals: state.msrEtl.errorMsrUbrIndividuals,
+  msrUbrIndividualsResult: state.msrEtl.msrUbrIndividualsResult,
 });
 
 export default injectIntl(connect(mapStateToProps, mapDispatchToProps)(MsrEtlFiltersPage));
