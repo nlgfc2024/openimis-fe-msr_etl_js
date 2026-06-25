@@ -17,20 +17,8 @@ const DEFAULT_GENDERS = [
   { value: 'other', label: 'Other' },
 ];
 
-const DEFAULT_FILTERS = {
-  classifications: [],
-  location: null,
-  minAge: null,
-  maxAge: null,
-  gender: '',
-};
-
 const styles = (theme) => ({
-  tableTitle: theme.table.title,
-  item: theme.paper.item,
-  fullHeight: {
-    height: '100%',
-  },
+  item: theme.paper.item
 });
 
 function loadSavedFilters(serviceName) {
