@@ -73,6 +73,7 @@ function HouseholdFiltersPanel({
   const onMinAgeChange = (value) => onChange('minAge')(value);
   const onMaxAgeChange = (value) => onChange('maxAge')(value);
   const onGenderChange = (value) => onChange('gender')(value?.value ?? '');
+  const onPercentileChange = (value) => onChange('percentile')(value ?? 0);
 
   const handleInputChange = () => {};
 
@@ -81,7 +82,7 @@ function HouseholdFiltersPanel({
         {/* Wealth Classification */}
         <Grid item xs={4} md={6} className={classes.item}>
           <Autocomplete
-            module="msrEtl"
+          module="msrEtl"
             label={formatMessage(intl, 'msrEtl', 'household.filter.classification')}
             multiple
             options={classificationOptions}
@@ -90,9 +91,21 @@ function HouseholdFiltersPanel({
             onInputChange={handleInputChange}
             getOptionLabel={(option) => option.label}
             getOptionSelected={(option, v) => option.value === v?.value}
-            readOnly={readOnly}
-          />
-        </Grid>
+          readOnly={readOnly}
+        />
+      </Grid>
+
+      {/* Wealth percentile */}
+      <Grid item xs={4} md={6} className={classes.item}>
+        <NumberInput
+          module="msrEtl"
+          label={formatMessage(intl, 'msrEtl', 'household.filter.percentile')}
+          min={0}
+          value={edited.percentile}
+          onChange={onPercentileChange}
+          readOnly={readOnly}
+        />
+      </Grid>
 
         {/* Location */}
         <Grid item xs={4} md={6} className={classes.item}>
@@ -109,19 +122,19 @@ function HouseholdFiltersPanel({
         {/* Min Age */}
         <Grid item xs={4} md={3} className={classes.item}>
           <NumberInput
-            module="msrEtl"
+          module="msrEtl"
             label={formatMessage(intl, 'msrEtl', 'household.filter.minAge')}
             min={0}
             value={edited.minAge}
             onChange={onMinAgeChange}
-            readOnly={readOnly}
-          />
-        </Grid>
+          readOnly={readOnly}
+        />
+      </Grid>
 
         {/* Max Age */}
         <Grid item xs={12} md={3} className={classes.item}>
           <NumberInput
-            module="msrEtl"
+          module="msrEtl"
             label={formatMessage(intl, 'msrEtl', 'household.filter.maxAge')}
             min={0}
             value={edited.maxAge}
@@ -141,10 +154,10 @@ function HouseholdFiltersPanel({
             onInputChange={handleInputChange}
             getOptionLabel={(option) => option.label}
             getOptionSelected={(option, v) => option.value === v?.value}
-            readOnly={readOnly}
-          />
-        </Grid>
+          readOnly={readOnly}
+        />
       </Grid>
+    </Grid>
   );
 }
 
