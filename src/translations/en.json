@@ -1,18 +1,6 @@
 {
-  "menu.msrEtl": "MSR ETL",
-  "menu.configs": "ETL Configurations",
   "menu.importDataFilters": "Import Data - Filters",
 
-  "emptyLabel": " ",
-  "yes": "Yes",
-  "no": "No",
-  "back": "Back",
-
-  "editButtonTooltip": "Edit",
-  "deleteButtonTooltip": "Delete",
-
-  "dialog.create": "Create",
-  "dialog.update": "Save",
   "dialog.cancel": "Cancel",
 
   "etlServices.pageTitle": "Import Data - Filters",
@@ -22,75 +10,10 @@
   "etlServices.editFilters.tooltip": "Configure import filters for this ETL service",
 
   "filters.pageTitle": "Filters — {service}",
-  "filters.configurationComingSoon": "Filter configuration for this service will be available here.",
-  "filters.noFiltersAvailable": "No filters available for this service.",
-  "filters.save": "Save Filters",
-  "filters.saved": "Filters saved successfully!",
-
-  "household.filter.classification": "Wealth Classification",
-  "household.filter.minAge": "Minimum Age",
-  "household.filter.maxAge": "Maximum Age",
-  "household.filter.gender": "Gender",
-  "filter.all": "All",
-  "location": "Location",
-
-  "configs.pageTitle": "MSR ETL Configurations",
-  "configs.tableTitle": "Configurations",
-
-  "config.create.title": "New MSR ETL Configuration",
-  "config.create.tooltip": "Create a new MSR ETL configuration",
-  "config.create.button": "New Configuration",
-  "config.create.mutationLabel": "Create MSR ETL Config: {name}",
-
-  "config.edit.title": "Edit Configuration: {name}",
-  "config.update.mutationLabel": "Update MSR ETL Config: {name}",
-
-  "config.delete.confirm.title": "Delete \"{name}\"?",
-  "config.delete.confirm.message": "This will deactivate the MSR ETL configuration. Existing pull history will be retained.",
-  "config.delete.mutationLabel": "Delete MSR ETL Config: {name}",
-
-  "config.save.tooltip.enabled": "Save configuration",
-  "config.save.tooltip.disabled": "Please fill all required fields (name, server URL, auth type, and at least one data type)",
-
-  "config.name": "Configuration Name",
-  "config.serverUrl": "MSR Server URL",
-  "config.authType": "Authentication Type",
-  "config.username": "Username",
-  "config.password": "Password",
-  "config.token": "API Token",
-  "config.dataTypes": "Data Types to Pull",
-  "config.isActive": "Active",
-  "config.dateUpdated": "Last Updated",
-
-  "config.triggerPull.tooltip": "Trigger data pull from MSR server",
-  "config.triggerPull.button": "Trigger Pull",
-
-  "authType.BASIC": "Basic (Username / Password)",
-  "authType.TOKEN": "Token",
-
-  "dataType.LOCATIONS": "Locations",
-  "dataType.HOUSEHOLDS": "Households",
-
-  "triggerPull.dialog.title": "Trigger Pull — {name}",
-  "triggerPull.dialog.message": "Select the data type you want to pull from the MSR server. Choose \"All\" to pull all configured data types.",
-  "triggerPull.dataType.label": "Data Type",
-  "triggerPull.dataType.all": "All Configured Types",
-  "triggerPull.dialog.confirm": "Start Pull",
-  "triggerPull.mutationLabel": "Trigger MSR ETL Pull: {name}",
-
-  "pullHistory.tableTitle": "Pull History",
-  "pullHistory.dataType": "Data Type",
-  "pullHistory.status": "Status",
-  "pullHistory.triggeredBy": "Triggered By",
-  "pullHistory.dateTriggered": "Date Triggered",
-  "pullHistory.dateCompleted": "Date Completed",
-  "pullHistory.recordsFetched": "Records Fetched",
-  "pullHistory.recordsProcessed": "Records Processed",
-  "pullHistory.errorMessage": "Error",
-
-  "pullStatus.IDLE": "Idle",
-  "pullStatus.PENDING": "Pending",
-  "pullStatus.IN_PROGRESS": "In Progress",
-  "pullStatus.SUCCESS": "Success",
-  "pullStatus.FAILED": "Failed"
+  "filters.pullData": "Pull Data",
+  "filters.districtCode": "District Code",
+  "filters.taCode": "TA Code",
+  "filters.villageCode": "Village Code",
+  "filters.results.count": "Fetched Records",
+  "filters.results.preview": "Individuals Preview (first 10)"
 }
