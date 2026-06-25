@@ -14,7 +14,7 @@ import { makeStyles } from '@material-ui/styles';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import { MSR_ETL_MODULE_NAME, HOUSEHOLD_SERVICES } from '../constants';
+import { MSR_ETL_MODULE_NAME, MSR_ETL_SERVICES } from '../constants';
 import HouseholdFiltersPanel from '../components/HouseholdFiltersPanel';
 import { fetchMsrUbrIndividuals, clearMsrUbrIndividuals } from '../actions';
 
@@ -83,13 +83,13 @@ function MsrEtlFiltersPage({
   };
 
   const renderFilterPanel = () => {
-    if (HOUSEHOLD_SERVICES.includes(serviceName)) return HouseholdFiltersPanel;
+    if (MSR_ETL_SERVICES.UBR_INDIVIDUAL_SERVICE === serviceName) return HouseholdFiltersPanel;
     return null;
   };
 
   const onPullData = () => {
     save(edited);
-    fetchMsrUbrIndividuals({...edited});
+    if (MSR_ETL_SERVICES.UBR_INDIVIDUAL_SERVICE === serviceName) return fetchMsrUbrIndividuals({...edited});
   };
 
   const filterPanel = renderFilterPanel();
@@ -131,6 +131,7 @@ function MsrEtlFiltersPage({
 
       <ProgressOrError progress={fetchingMsrUbrIndividuals} error={errorMsrUbrIndividuals} />
 
+      // TODO: implement a dynamic result preview based on the serviceName and the returned data structure
       {!fetchingMsrUbrIndividuals && msrUbrIndividualsResult && (
         <Box className={classes.resultBox}>
           <Typography variant="subtitle1">
