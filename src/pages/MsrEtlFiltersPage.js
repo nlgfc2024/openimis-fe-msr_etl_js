@@ -131,7 +131,7 @@ function MsrEtlFiltersPage({
 
       <ProgressOrError progress={fetchingMsrUbrIndividuals} error={errorMsrUbrIndividuals} />
 
-      // TODO: implement a dynamic result preview based on the serviceName and the returned data structure
+      {/*TODO: implement a dynamic result preview based on the serviceName and the returned data structure */}
       {!fetchingMsrUbrIndividuals && msrUbrIndividualsResult && (
         <Box className={classes.resultBox}>
           <Typography variant="subtitle1">
