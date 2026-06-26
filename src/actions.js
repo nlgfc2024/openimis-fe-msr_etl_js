@@ -39,14 +39,14 @@ export function fetchMsrUbrIndividuals(filters = {}) {
     'individuals',
   ];
   const params = {};
-  if (data.location?.district) params.district = data.location.district;
-  if (data.location?.ta) params.ta = data.location.ta;
-  if (data.location?.village) params.village = data.location.village;
-  if (data.classification) params.classification = data.classification;
-  if (data.percentile) params.percentile = data.percentile;
-  if (data.minAge) params.minAge = data.minAge;
-  if (data.maxAge) params.maxAge = data.maxAge;
-  if (data.gender) params.gender = data.gender;
+  if (filters.location?.district) params.district = filters.location.district;
+  if (filters.location?.ta) params.ta = filters.location.ta;
+  if (filters.location?.village) params.village = filters.location.village;
+  if (filters.classification) params.classification = filters.classification;
+  if (filters.percentile) params.percentile = filters.percentile;
+  if (filters.minAge) params.minAge = filters.minAge;
+  if (filters.maxAge) params.maxAge = filters.maxAge;
+  if (filters.gender) params.gender = filters.gender;
   const payload = formatQuery('msrUbrIndividuals', params, projection);
   return graphql(payload, ACTION_TYPE.FETCH_UBR_INDIVIDUALS);
 }
