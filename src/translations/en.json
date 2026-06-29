@@ -11,9 +11,13 @@
 
   "filters.pageTitle": "Filters — {service}",
   "filters.pullData": "Pull Data",
-  "filters.districtCode": "District Code",
-  "filters.taCode": "TA Code",
-  "filters.villageCode": "Village Code",
   "filters.results.count": "Fetched Records",
-  "filters.results.preview": "Individuals Preview (first 10)"
+  "filters.results.preview": "Individuals Preview (first 10)",
+
+  "household.filter.classification": "Wealth Classification",
+  "household.filter.percentile": "Wealth Percentile",
+  "household.filter.minAge": "Min Age",
+  "household.filter.maxAge": "Max Age",
+  "household.filter.gender": "Gender",
+  "location": "Location"
 }
