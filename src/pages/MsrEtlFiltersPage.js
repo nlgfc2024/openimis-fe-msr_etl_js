@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { withTheme, withStyles } from '@material-ui/core/styles';
-import { Box, Button, Typography } from '@material-ui/core';
+import { Box, Button } from '@material-ui/core';
 import {
   useHistory,
   useModulesManager,
@@ -25,10 +25,7 @@ const useStyles = makeStyles((theme) => ({
     gap: theme.spacing(2),
     marginTop: theme.spacing(2),
   },
-  resultBox: {
-    marginTop: theme.spacing(2),
-    padding: theme.spacing(2),
-  },
+
 }));
 
 function loadSavedFilters(serviceName) {
@@ -46,7 +43,6 @@ function MsrEtlFiltersPage({
   rights,
   fetchingMsrUbrIndividuals,
   errorMsrUbrIndividuals,
-  msrUbrIndividualsResult,
   fetchMsrUbrIndividuals,
   clearMsrUbrIndividuals,
 }) {
@@ -102,8 +98,6 @@ function MsrEtlFiltersPage({
     );
   }
 
-  const individuals = msrUbrIndividualsResult?.individuals || [];
-
   return (
     <div className={classes.page}>
       <Form
@@ -130,22 +124,6 @@ function MsrEtlFiltersPage({
       </Box>
 
       <ProgressOrError progress={fetchingMsrUbrIndividuals} error={errorMsrUbrIndividuals} />
-
-      {/*TODO: implement a dynamic result preview based on the serviceName and the returned data structure */}
-      {!fetchingMsrUbrIndividuals && msrUbrIndividualsResult && (
-        <Box className={classes.resultBox}>
-          <Typography variant="subtitle1">
-            {formatMessage('filters.results.count')}: {msrUbrIndividualsResult?.count || 0}
-          </Typography>
-          <Typography variant="body2">
-            {formatMessage('filters.districtCode')}: {msrUbrIndividualsResult?.district || '-'} | {formatMessage('filters.taCode')}: {msrUbrIndividualsResult?.ta || '-'} | {formatMessage('filters.villageCode')}: {msrUbrIndividualsResult?.village || '-'}
-          </Typography>
-          <Typography variant="subtitle2">
-            {formatMessage('filters.results.preview')}
-          </Typography>
-          <pre>{JSON.stringify(individuals.slice(0, 10), null, 2)}</pre>
-        </Box>
-      )}
     </div>
   );
 }
@@ -159,7 +137,6 @@ const mapStateToProps = (state) => ({
   rights: state.core?.user?.i_user?.rights ?? [],
   fetchingMsrUbrIndividuals: state.msrEtl.fetchingMsrUbrIndividuals,
   errorMsrUbrIndividuals: state.msrEtl.errorMsrUbrIndividuals,
-  msrUbrIndividualsResult: state.msrEtl.msrUbrIndividualsResult,
 });
 
 export default injectIntl(connect(mapStateToProps, mapDispatchToProps)(MsrEtlFiltersPage));

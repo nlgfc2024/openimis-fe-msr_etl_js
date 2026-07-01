@@ -26,8 +26,6 @@ const INITIAL_STATE = {
 
   // UBR individuals fetch result
   fetchingMsrUbrIndividuals: false,
-  fetchedMsrUbrIndividuals: false,
-  msrUbrIndividualsResult: null,
   errorMsrUbrIndividuals: null,
 };
 
@@ -77,8 +75,6 @@ function reducer(state = INITIAL_STATE, action) {
       return {
         ...state,
         fetchingMsrUbrIndividuals: true,
-        fetchedMsrUbrIndividuals: false,
-        msrUbrIndividualsResult: null,
         errorMsrUbrIndividuals: null,
       };
 
@@ -86,8 +82,6 @@ function reducer(state = INITIAL_STATE, action) {
       return {
         ...state,
         fetchingMsrUbrIndividuals: false,
-        fetchedMsrUbrIndividuals: true,
-        msrUbrIndividualsResult: action.payload.data?.msrUbrIndividuals ?? null,
         errorMsrUbrIndividuals: formatGraphQLError(action.payload),
       };
 
@@ -102,8 +96,6 @@ function reducer(state = INITIAL_STATE, action) {
       return {
         ...state,
         fetchingMsrUbrIndividuals: false,
-        fetchedMsrUbrIndividuals: false,
-        msrUbrIndividualsResult: null,
         errorMsrUbrIndividuals: null,
       };
 

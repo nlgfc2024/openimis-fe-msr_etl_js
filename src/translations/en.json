@@ -11,8 +11,6 @@
 
   "filters.pageTitle": "Filters — {service}",
   "filters.pullData": "Pull Data",
-  "filters.results.count": "Fetched Records",
-  "filters.results.preview": "Individuals Preview (first 10)",
 
   "household.filter.classification": "Wealth Classification",
   "household.filter.percentile": "Wealth Percentile",
