@@ -7,9 +7,10 @@ export const RIGHT_MSR_ETL_EXPORT = 953002;
 // Household filter options
 export const DEFAULT_CLASSIFICATIONS = [
   { value: 'poorest', label: 'Poorest' },
+  { value: 'poorer', label: 'Poorer' },
   { value: 'poor', label: 'Poor' },
-  { value: 'middle', label: 'Middle' },
-  { value: 'better_off', label: 'Better Off' },
+  { value: 'better', label: 'Better' },
+  { value: 'rich', label: 'Rich' },
 ];
 
 export const DEFAULT_GENDERS = [
