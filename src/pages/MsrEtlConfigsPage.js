@@ -48,7 +48,7 @@ function MsrEtlConfigsPage({ history, classes, rights, fetchingMsrEtlServices, e
   }
 
   const handleEditFilters = (service) => {
-    historyPush(modulesManager, history, 'msrEtl.route.filters', [service.nameOfService]);
+    historyPush(modulesManager, history, `${MSR_ETL_MODULE_NAME}.route.filters`, [service.nameOfService]);
   };
 
   return (
