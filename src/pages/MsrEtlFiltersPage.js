@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
 
 function loadSavedFilters(serviceName) {
   try {
-    const raw = localStorage.getItem(`msrEtl_filters_${serviceName}`);
+    const raw = localStorage.getItem(`${MSR_ETL_MODULE_NAME}_filters_${serviceName}`);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -78,7 +78,7 @@ function MsrEtlFiltersPage({
 
   const save = (data) => {
     if (data) {
-      localStorage.setItem(`msrEtl_filters_${serviceName}`, JSON.stringify(data));
+      localStorage.setItem(`${MSR_ETL_MODULE_NAME}_filters_${serviceName}`, JSON.stringify(data));
     }
   };
 
