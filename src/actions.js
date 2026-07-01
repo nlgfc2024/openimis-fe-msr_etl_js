@@ -47,6 +47,11 @@ export function fetchMsrUbrIndividuals(filters = {}) {
   if (filters.minAge) params.minAge = filters.minAge;
   if (filters.maxAge) params.maxAge = filters.maxAge;
   if (filters.gender) params.gender = filters.gender;
+  if (filters.householdHasLabour) params.householdHasLabour = filters.householdHasLabour;
+  if (filters.femaleHeadedHousehold) params.femaleHeadedHousehold = filters.femaleHeadedHousehold;
+  if (filters.exclusionPrograms?.length) params.exclusionPrograms = filters.exclusionPrograms;
+  params.lowerPercentileCategory = filters.lowerPercentileCategory ?? 0;
+  params.upperPercentileCategory = filters.upperPercentileCategory ?? 100;
   const payload = formatQuery('msrUbrIndividuals', params, projection);
   return graphql(payload, ACTION_TYPE.FETCH_UBR_INDIVIDUALS);
 }

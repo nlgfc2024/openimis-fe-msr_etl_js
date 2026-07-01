@@ -17,6 +17,18 @@ const DEFAULT_GENDERS = [
   { value: 'other', label: 'Other' },
 ];
 
+const YES_NO_OPTIONS = [
+  { value: 'yes', label: 'Yes' },
+  { value: 'no', label: 'No' },
+];
+
+const EXCLUSION_PROGRAM_OPTIONS = [
+  { value: 'social_cash_transfer', label: 'Social Cash Transfer' },
+  { value: 'public_works_programme', label: 'Public Works Programme' },
+  { value: 'vsl_comsip', label: 'VSL/COMSIP' },
+  { value: 'microfinance', label: 'Microfinance' },
+];
+
 const styles = (theme) => ({
   item: theme.paper.item
 });
@@ -28,6 +40,16 @@ function loadSavedFilters(serviceName) {
   } catch {
     return null;
   }
+}
+
+function findSelectedOption(options, value) {
+  if (!value) return null;
+  return options.find((option) => option.value === value) || null;
+}
+
+function findSelectedOptions(options, values) {
+  if (!Array.isArray(values)) return [];
+  return options.filter((option) => values.includes(option.value));
 }
 
 /**
@@ -74,6 +96,11 @@ function HouseholdFiltersPanel({
   const onMaxAgeChange = (value) => onChange('maxAge')(value);
   const onGenderChange = (value) => onChange('gender')(value?.value ?? '');
   const onPercentileChange = (value) => onChange('percentile')(value ?? 0);
+  const onLowerPercentileCategoryChange = (value) => onChange('lowerPercentileCategory')(value ?? 0);
+  const onUpperPercentileCategoryChange = (value) => onChange('upperPercentileCategory')(value ?? 100);
+  const onHouseholdHasLabourChange = (value) => onChange('householdHasLabour')(value?.value ?? '');
+  const onFemaleHeadedHouseholdChange = (value) => onChange('femaleHeadedHousehold')(value?.value ?? '');
+  const onExclusionProgramsChange = (value) => onChange('exclusionPrograms')((value || []).map((option) => option.value));
 
   const handleInputChange = () => {};
 
@@ -104,6 +131,32 @@ function HouseholdFiltersPanel({
           value={edited.percentile}
           onChange={onPercentileChange}
           readOnly={readOnly}
+        />
+      </Grid>
+
+      {/* Lower Percentile Category */}
+      <Grid item xs={4} md={3} className={classes.item}>
+        <NumberInput
+          module="msrEtl"
+          label={formatMessage(intl, 'msrEtl', 'household.filter.lowerPercentileCategory')}
+          min={0}
+          max={100}
+          value={edited.lowerPercentileCategory ?? 0}
+          onChange={onLowerPercentileCategoryChange}
+          readOnly
+        />
+      </Grid>
+
+      {/* Upper Percentile Category */}
+      <Grid item xs={4} md={3} className={classes.item}>
+        <NumberInput
+          module="msrEtl"
+          label={formatMessage(intl, 'msrEtl', 'household.filter.upperPercentileCategory')}
+          min={0}
+          max={100}
+          value={edited.upperPercentileCategory ?? 100}
+          onChange={onUpperPercentileCategoryChange}
+          readOnly
         />
       </Grid>
 
@@ -149,11 +202,54 @@ function HouseholdFiltersPanel({
             module="msrEtl"
             label={formatMessage(intl, 'msrEtl', 'household.filter.gender')}
             options={genderOptions}
-            value={edited.gender}
+            value={findSelectedOption(genderOptions, edited.gender)}
             onChange={onGenderChange}
             onInputChange={handleInputChange}
             getOptionLabel={(option) => option.label}
             getOptionSelected={(option, v) => option.value === v?.value}
+          readOnly={readOnly}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6} className={classes.item}>
+        <Autocomplete
+          module="msrEtl"
+          label={formatMessage(intl, 'msrEtl', 'household.filter.householdHasLabour')}
+          options={YES_NO_OPTIONS}
+          value={findSelectedOption(YES_NO_OPTIONS, edited.householdHasLabour)}
+          onChange={onHouseholdHasLabourChange}
+          onInputChange={handleInputChange}
+          getOptionLabel={(option) => option.label}
+          getOptionSelected={(option, v) => option.value === v?.value}
+          readOnly={readOnly}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6} className={classes.item}>
+        <Autocomplete
+          module="msrEtl"
+          label={formatMessage(intl, 'msrEtl', 'household.filter.femaleHeadedHousehold')}
+          options={YES_NO_OPTIONS}
+          value={findSelectedOption(YES_NO_OPTIONS, edited.femaleHeadedHousehold)}
+          onChange={onFemaleHeadedHouseholdChange}
+          onInputChange={handleInputChange}
+          getOptionLabel={(option) => option.label}
+          getOptionSelected={(option, v) => option.value === v?.value}
+          readOnly={readOnly}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6} className={classes.item}>
+        <Autocomplete
+          module="msrEtl"
+          label={formatMessage(intl, 'msrEtl', 'household.filter.exclusionPrograms')}
+          multiple
+          options={EXCLUSION_PROGRAM_OPTIONS}
+          value={findSelectedOptions(EXCLUSION_PROGRAM_OPTIONS, edited.exclusionPrograms)}
+          onChange={onExclusionProgramsChange}
+          onInputChange={handleInputChange}
+          getOptionLabel={(option) => option.label}
+          getOptionSelected={(option, v) => option.value === v?.value}
           readOnly={readOnly}
         />
       </Grid>
