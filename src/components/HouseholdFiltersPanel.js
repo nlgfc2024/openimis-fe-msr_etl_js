@@ -3,31 +3,7 @@ import { Grid } from '@material-ui/core';
 import { injectIntl } from 'react-intl';
 import { PublishedComponent, formatMessage, Autocomplete, NumberInput, withModulesManager } from '@openimis/fe-core';
 import { withTheme, withStyles } from '@material-ui/core/styles';
-
-const DEFAULT_CLASSIFICATIONS = [
-  { value: 'poorest', label: 'Poorest' },
-  { value: 'poor', label: 'Poor' },
-  { value: 'middle', label: 'Middle' },
-  { value: 'better_off', label: 'Better Off' },
-];
-
-const DEFAULT_GENDERS = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-  { value: 'other', label: 'Other' },
-];
-
-const YES_NO_OPTIONS = [
-  { value: 'yes', label: 'Yes' },
-  { value: 'no', label: 'No' },
-];
-
-const EXCLUSION_PROGRAM_OPTIONS = [
-  { value: 'social_cash_transfer', label: 'Social Cash Transfer' },
-  { value: 'public_works_programme', label: 'Public Works Programme' },
-  { value: 'vsl_comsip', label: 'VSL/COMSIP' },
-  { value: 'microfinance', label: 'Microfinance' },
-];
+import { DEFAULT_CLASSIFICATIONS, DEFAULT_GENDERS, YES_NO_OPTIONS, EXCLUSION_PROGRAM_OPTIONS } from '../constants';
 
 const styles = (theme) => ({
   item: theme.paper.item
