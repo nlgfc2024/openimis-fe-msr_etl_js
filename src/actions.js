@@ -33,10 +33,6 @@ export function fetchMsrEtlServices() {
 export function fetchMsrUbrIndividuals(filters = {}) {
   const projection = [
     'count',
-    'district',
-    'ta',
-    'village',
-    'individuals',
   ];
   const params = {};
   if (filters.location?.district) params.district = filters.location.district;
