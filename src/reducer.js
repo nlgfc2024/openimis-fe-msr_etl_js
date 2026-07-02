@@ -13,8 +13,8 @@ export const ACTION_TYPE = {
   // ETL services list
   FETCH_ETL_SERVICES: 'MSR_ETL_FETCH_ETL_SERVICES',
 
-  // Fetch UBR individuals
-  FETCH_UBR_INDIVIDUALS: 'MSR_ETL_FETCH_UBR_INDIVIDUALS',
+  // Execute ETL service
+  EXECUTE_ETL_SERVICE: 'MSR_ETL_EXECUTE_ETL_SERVICE',
 };
 
 const INITIAL_STATE = {
@@ -24,9 +24,9 @@ const INITIAL_STATE = {
   etlServices: [],
   errorEtlServices: null,
 
-  // UBR individuals fetch result
-  fetchingMsrUbrIndividuals: false,
-  errorMsrUbrIndividuals: null,
+  // Execute ETL service
+  executingMsrEtlService: false,
+  errorMsrEtlExecution: null,
 };
 
 function reducer(state = INITIAL_STATE, action) {
@@ -69,34 +69,34 @@ function reducer(state = INITIAL_STATE, action) {
       };
 
     // -------------------------
-    // UBR individuals
+    // Execute ETL service
     // -------------------------
-    case REQUEST(ACTION_TYPE.FETCH_UBR_INDIVIDUALS):
+    case REQUEST(ACTION_TYPE.EXECUTE_ETL_SERVICE):
       return {
         ...state,
-        fetchingMsrUbrIndividuals: true,
-        errorMsrUbrIndividuals: null,
+        executingMsrEtlService: true,
+        errorMsrEtlExecution: null,
       };
 
-    case SUCCESS(ACTION_TYPE.FETCH_UBR_INDIVIDUALS):
+    case SUCCESS(ACTION_TYPE.EXECUTE_ETL_SERVICE):
       return {
         ...state,
-        fetchingMsrUbrIndividuals: false,
-        errorMsrUbrIndividuals: formatGraphQLError(action.payload),
+        executingMsrEtlService: false,
+        errorMsrEtlExecution: formatGraphQLError(action.payload),
       };
 
-    case ERROR(ACTION_TYPE.FETCH_UBR_INDIVIDUALS):
+    case ERROR(ACTION_TYPE.EXECUTE_ETL_SERVICE):
       return {
         ...state,
-        fetchingMsrUbrIndividuals: false,
-        errorMsrUbrIndividuals: formatServerError(action.payload),
+        executingMsrEtlService: false,
+        errorMsrEtlExecution: formatServerError(action.payload),
       };
 
-    case CLEAR(ACTION_TYPE.FETCH_UBR_INDIVIDUALS):
+    case CLEAR(ACTION_TYPE.EXECUTE_ETL_SERVICE):
       return {
         ...state,
-        fetchingMsrUbrIndividuals: false,
-        errorMsrUbrIndividuals: null,
+        executingMsrEtlService: false,
+        errorMsrEtlExecution: null,
       };
 
     default:

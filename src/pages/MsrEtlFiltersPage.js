@@ -16,7 +16,7 @@ import { connect } from 'react-redux';
 
 import { MSR_ETL_MODULE_NAME, MSR_ETL_SERVICES } from '../constants';
 import HouseholdFiltersPanel from '../components/HouseholdFiltersPanel';
-import { fetchMsrUbrIndividuals, clearMsrUbrIndividuals } from '../actions';
+import { executeMsrEtlService, clearMsrEtlExecution } from '../actions';
 
 const useStyles = makeStyles((theme) => ({
   page: theme.page,
@@ -41,10 +41,10 @@ function MsrEtlFiltersPage({
   match,
   intl,
   rights,
-  fetchingMsrUbrIndividuals,
-  errorMsrUbrIndividuals,
-  fetchMsrUbrIndividuals,
-  clearMsrUbrIndividuals,
+  executingMsrEtlService,
+  errorMsrEtlExecution,
+  executeMsrEtlService,
+  clearMsrEtlExecution,
 }) {
   const modulesManager = useModulesManager();
   const classes = useStyles();
@@ -60,7 +60,7 @@ function MsrEtlFiltersPage({
     const saved = loadSavedFilters(serviceName);
     if (saved) setEdited(saved);
     setReset((prev) => prev + 1);
-    clearMsrUbrIndividuals();
+    clearMsrEtlExecution();
   }, [serviceName]);
 
   const pageTitle = formatMessageWithValues(
@@ -85,7 +85,7 @@ function MsrEtlFiltersPage({
 
   const onPullData = () => {
     save(edited);
-    if (MSR_ETL_SERVICES.UBR_INDIVIDUAL_SERVICE === serviceName) return fetchMsrUbrIndividuals({...edited});
+    return executeMsrEtlService(serviceName, edited);
   };
 
   const filterPanel = renderFilterPanel();
@@ -123,20 +123,20 @@ function MsrEtlFiltersPage({
         </Button>
       </Box>
 
-      <ProgressOrError progress={fetchingMsrUbrIndividuals} error={errorMsrUbrIndividuals} />
+      <ProgressOrError progress={executingMsrEtlService} error={errorMsrEtlExecution} />
     </div>
   );
 }
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
-  fetchMsrUbrIndividuals,
-  clearMsrUbrIndividuals,
+  executeMsrEtlService,
+  clearMsrEtlExecution,
 }, dispatch);
 
 const mapStateToProps = (state) => ({
   rights: state.core?.user?.i_user?.rights ?? [],
-  fetchingMsrUbrIndividuals: state.msrEtl.fetchingMsrUbrIndividuals,
-  errorMsrUbrIndividuals: state.msrEtl.errorMsrUbrIndividuals,
+  executingMsrEtlService: state.msrEtl.executingMsrEtlService,
+  errorMsrEtlExecution: state.msrEtl.errorMsrEtlExecution,
 });
 
 export default injectIntl(connect(mapStateToProps, mapDispatchToProps)(MsrEtlFiltersPage));

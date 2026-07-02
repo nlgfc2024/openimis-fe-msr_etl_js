@@ -2,6 +2,7 @@
 /* eslint-disable camelcase */
 import {
   graphql,
+  graphqlMutation,
   formatQuery,
 } from '@openimis/fe-core';
 import { ACTION_TYPE } from './reducer';
@@ -18,6 +19,22 @@ const ETL_SERVICES_PROJECTION = () => [
 ];
 
 // ---------------------
+// Helpers
+// ---------------------
+
+function extractLocationCodes(location) {
+  const codes = {};
+  let current = location;
+  while (current) {
+    if (current.type === 'D') codes.district = current.code;
+    else if (current.type === 'W') codes.ta = current.code;
+    else if (current.type === 'V') codes.village = current.code;
+    current = current.parent ?? null;
+  }
+  return codes;
+}
+
+// ---------------------
 // Queries
 // ---------------------
 
@@ -30,25 +47,33 @@ export function fetchMsrEtlServices() {
   return graphql(payload, ACTION_TYPE.FETCH_ETL_SERVICES);
 }
 
-export function fetchMsrUbrIndividuals(filters = {}) {
-  const projection = [
-    'count',
-  ];
-  const params = {};
-  if (filters.location?.district) params.district = filters.location.district;
-  if (filters.location?.ta) params.ta = filters.location.ta;
-  if (filters.location?.village) params.village = filters.location.village;
-  if (filters.percentile) params.wealthQuintiles = filters.classification;
-  if (filters.minAge) params.minAge = filters.minAge;
-  if (filters.maxAge) params.maxAge = filters.maxAge;
-  if (filters.gender) params.gender = filters.gender;
-  if (filters.householdHasLabour) params.HasLabour = filters.householdHasLabour;
-  if (filters.femaleHeadedHousehold) params.householdHeadGender = filters.femaleHeadedHousehold;
-  if (filters.exclusionPrograms?.length) params.excludedProgrammeCodes = filters.exclusionPrograms;
-  params.lowerPercentileCategory = filters.lowerPercentileCategory ?? 0;
-  params.upperPercentileCategory = filters.upperPercentileCategory ?? 100;
-  const payload = formatQuery('msrUbrIndividuals', params, projection);
-  return graphql(payload, ACTION_TYPE.FETCH_UBR_INDIVIDUALS);
+const EXECUTE_ETL_SERVICE_MUTATION = `
+  mutation executeMsrEtlService($input: MsrEtlServiceMutationInput!) {
+    executeMsrEtlService(input: $input) {
+      clientMutationId
+      internalId
+    }
+  }
+`;
+
+export function executeMsrEtlService(serviceName, filters = {}) {
+  const input = { nameOfService: serviceName };
+  if (filters.location) {
+    const { district, ta, village } = extractLocationCodes(filters.location);
+    if (district) input.district = district;
+    if (ta) input.ta = ta;
+    if (village) input.village = village;
+  }
+  if (filters.classifications?.length) input.wealthQuintiles = filters.classifications.map((c) => c.value);
+  if (filters.minAge != null) input.minAge = filters.minAge;
+  if (filters.maxAge != null) input.maxAge = filters.maxAge;
+  if (filters.gender) input.gender = filters.gender;
+  if (filters.householdHasLabour) input.hasLabour = filters.householdHasLabour;
+  if (filters.femaleHeadedHousehold) input.householdHeadGender = filters.femaleHeadedHousehold;
+  if (filters.exclusionPrograms?.length) input.excludedProgrammeCodes = filters.exclusionPrograms;
+  input.lowerPercentileCategory = filters.lowerPercentileCategory ?? 0;
+  input.upperPercentileCategory = filters.upperPercentileCategory ?? 100;
+  return graphqlMutation(EXECUTE_ETL_SERVICE_MUTATION, { input }, ACTION_TYPE.EXECUTE_ETL_SERVICE);
 }
 
 // ---------------------
@@ -59,6 +84,6 @@ export const clearEtlServices = () => (dispatch) => {
   dispatch({ type: CLEAR(ACTION_TYPE.FETCH_ETL_SERVICES) });
 };
 
-export const clearMsrUbrIndividuals = () => (dispatch) => {
-  dispatch({ type: CLEAR(ACTION_TYPE.FETCH_UBR_INDIVIDUALS) });
+export const clearMsrEtlExecution = () => (dispatch) => {
+  dispatch({ type: CLEAR(ACTION_TYPE.EXECUTE_ETL_SERVICE) });
 };
