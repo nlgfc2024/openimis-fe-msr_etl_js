@@ -3,7 +3,7 @@ import { Grid } from '@material-ui/core';
 import { injectIntl } from 'react-intl';
 import { PublishedComponent, formatMessage, Autocomplete, NumberInput, withModulesManager } from '@openimis/fe-core';
 import { withTheme, withStyles } from '@material-ui/core/styles';
-import { MSR_ETL_MODULE_NAME, DEFAULT_CLASSIFICATIONS, DEFAULT_GENDERS, YES_NO_OPTIONS, EXCLUSION_PROGRAM_OPTIONS } from '../constants';
+import { MSR_ETL_MODULE_NAME, DEFAULT_CLASSIFICATIONS, YES_NO_OPTIONS, EXCLUSION_PROGRAM_OPTIONS } from '../constants';
 
 const styles = (theme) => ({
   item: theme.paper.item
@@ -32,19 +32,18 @@ function findSelectedOptions(options, values) {
  * HouseholdFiltersPanel
  *
  * Provides filter fields for household ETL services: wealth classification,
- * location, min/max age, and gender.
+ * location, min/max age.
  *
  * The component is rendered by the openIMIS `Form` helper, so it receives
  * `edited` / `onEditedChanged` / `readOnly` props.
  */
 function HouseholdFiltersPanel({
   intl, modulesManager, edited, onEditedChanged, readOnly, classes, serviceName,
-  classifications, genders,
+  classifications,
 }) {
   const [initialized, setInitialized] = useState(false);
 
   const classificationOptions = classifications?.length ? classifications : DEFAULT_CLASSIFICATIONS;
-  const genderOptions = genders?.length ? genders : DEFAULT_GENDERS;
 
   // Load saved filters from localStorage on mount if no edited data
   useEffect(() => {
@@ -70,8 +69,6 @@ function HouseholdFiltersPanel({
   const onLocationChange = (value) => onChange('location')(value);
   const onMinAgeChange = (value) => onChange('minAge')(value);
   const onMaxAgeChange = (value) => onChange('maxAge')(value);
-  const onGenderChange = (value) => onChange('gender')(value?.value ?? '');
-  const onPercentileChange = (value) => onChange('percentile')(value ?? 0);
   const onLowerPercentileCategoryChange = (value) => onChange('lowerPercentileCategory')(value ?? 0);
   const onUpperPercentileCategoryChange = (value) => onChange('upperPercentileCategory')(value ?? 100);
   const onHouseholdHasLabourChange = (value) => onChange('householdHasLabour')(value?.value ?? '');
@@ -94,18 +91,6 @@ function HouseholdFiltersPanel({
             onInputChange={handleInputChange}
             getOptionLabel={(option) => option.label}
             getOptionSelected={(option, v) => option.value === v?.value}
-          readOnly={readOnly}
-        />
-      </Grid>
-
-      {/* Wealth percentile */}
-      <Grid item xs={4} md={6} className={classes.item}>
-        <NumberInput
-          module={MSR_ETL_MODULE_NAME}
-          label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'household.filter.percentile')}
-          min={0}
-          value={edited.percentile}
-          onChange={onPercentileChange}
           readOnly={readOnly}
         />
       </Grid>
@@ -160,29 +145,14 @@ function HouseholdFiltersPanel({
         />
       </Grid>
 
-        {/* Max Age */}
-        <Grid item xs={12} md={3} className={classes.item}>
-          <NumberInput
-          module={MSR_ETL_MODULE_NAME}
-            label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'household.filter.maxAge')}
-            min={0}
-            value={edited.maxAge}
-            onChange={onMaxAgeChange}
-            readOnly={readOnly}
-          />
-        </Grid>
-
-        {/* Gender */}
-        <Grid item xs={12} md={6} className={classes.item}>
-          <Autocomplete
-            module={MSR_ETL_MODULE_NAME}
-            label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'household.filter.gender')}
-            options={genderOptions}
-            value={findSelectedOption(genderOptions, edited.gender)}
-            onChange={onGenderChange}
-            onInputChange={handleInputChange}
-            getOptionLabel={(option) => option.label}
-            getOptionSelected={(option, v) => option.value === v?.value}
+      {/* Max Age */}
+      <Grid item xs={12} md={3} className={classes.item}>
+        <NumberInput
+        module={MSR_ETL_MODULE_NAME}
+          label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'household.filter.maxAge')}
+          min={0}
+          value={edited.maxAge}
+          onChange={onMaxAgeChange}
           readOnly={readOnly}
         />
       </Grid>

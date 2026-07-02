@@ -6,29 +6,23 @@ export const RIGHT_MSR_ETL_EXPORT = 953002;
 
 // Household filter options
 export const DEFAULT_CLASSIFICATIONS = [
-  { value: 'poorest', label: 'Poorest' },
-  { value: 'poorer', label: 'Poorer' },
-  { value: 'poor', label: 'Poor' },
-  { value: 'better', label: 'Better' },
-  { value: 'rich', label: 'Rich' },
-];
-
-export const DEFAULT_GENDERS = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-  { value: 'other', label: 'Other' },
+  { value: 1, label: 'Poorest' },
+  { value: 2, label: 'Poorer' },
+  { value: 3, label: 'Poor' },
+  { value: 4, label: 'Better Off' },
+  { value: 5, label: 'Rich' },
 ];
 
 export const YES_NO_OPTIONS = [
-  { value: 'yes', label: 'Yes' },
-  { value: 'no', label: 'No' },
+  { value: true, label: 'Yes' },
+  { value: false, label: 'No' },
 ];
 
 export const EXCLUSION_PROGRAM_OPTIONS = [
-  { value: '1', label: 'Social Cash Transfer' },
-  { value: '2', label: 'Public Works Programme' },
-  { value: '3', label: 'VSL/COMSIP' },
-  { value: '4', label: 'Microfinance' },
+  { value: 1, label: 'Social Cash Transfer' },
+  { value: 2, label: 'Public Works Programme' },
+  { value: 3, label: 'VSL/COMSIP' },
+  { value: 4, label: 'Microfinance' },
 ];
 
 // ETL service class names (must match the Python class names on the backend)
