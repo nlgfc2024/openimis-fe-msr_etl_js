@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import { Box, Button } from '@material-ui/core';
+import React, { useState, useEffect } from "react";
+import { withTheme, withStyles } from "@material-ui/core/styles";
+import { Box, Button } from "@material-ui/core";
 import {
   useHistory,
   useModulesManager,
@@ -8,24 +8,54 @@ import {
   formatMessageWithValues,
   Form,
   ProgressOrError,
-} from '@openimis/fe-core';
-import { injectIntl } from 'react-intl';
-import { makeStyles } from '@material-ui/styles';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
+} from "@openimis/fe-core";
+import { injectIntl } from "react-intl";
+import { makeStyles } from "@material-ui/styles";
+import { bindActionCreators } from "redux";
+import { connect } from "react-redux";
 
-import { MSR_ETL_MODULE_NAME, MSR_ETL_SERVICES } from '../constants';
-import HouseholdFiltersPanel from '../components/HouseholdFiltersPanel';
-import { fetchMsrUbrIndividuals, clearMsrUbrIndividuals } from '../actions';
+import { MSR_ETL_MODULE_NAME, MSR_ETL_SERVICES } from "../constants";
+import HouseholdFiltersPanel from "../components/HouseholdFiltersPanel";
+import LocationFiltersPanel from "../components/LocationFiltersPanel";
+import { fetchMsrUbrIndividuals, clearMsrUbrIndividuals, fetchMsrUbrLocations, clearMsrUbrLocations } from "../actions";
+
+const SERVICE_KIND = {
+  INDIVIDUAL: "individual",
+  LOCATION: "location",
+};
+
+function getServiceKind(serviceName) {
+  const normalized = String(serviceName || "")
+    .trim()
+    .toLowerCase();
+
+  if (normalized === MSR_ETL_SERVICES.UBR_LOCATION_SERVICE.toLowerCase()) {
+    return SERVICE_KIND.LOCATION;
+  }
+
+  if (normalized === MSR_ETL_SERVICES.UBR_INDIVIDUAL_SERVICE.toLowerCase()) {
+    return SERVICE_KIND.INDIVIDUAL;
+  }
+
+  // Be tolerant to backend naming variants and prefer location by default.
+  if (normalized.includes("location")) {
+    return SERVICE_KIND.LOCATION;
+  }
+
+  if (normalized.includes("individual")) {
+    return SERVICE_KIND.INDIVIDUAL;
+  }
+
+  return SERVICE_KIND.LOCATION;
+}
 
 const useStyles = makeStyles((theme) => ({
   page: theme.page,
   actions: {
-    display: 'flex',
+    display: "flex",
     gap: theme.spacing(2),
     marginTop: theme.spacing(2),
   },
-
 }));
 
 function loadSavedFilters(serviceName) {
@@ -43,15 +73,20 @@ function MsrEtlFiltersPage({
   rights,
   fetchingMsrUbrIndividuals,
   errorMsrUbrIndividuals,
+  fetchingMsrUbrLocations,
+  errorMsrUbrLocations,
   fetchMsrUbrIndividuals,
   clearMsrUbrIndividuals,
+  fetchMsrUbrLocations,
+  clearMsrUbrLocations,
 }) {
   const modulesManager = useModulesManager();
   const classes = useStyles();
   const history = useHistory();
   const { formatMessage } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
 
-  const serviceName = match?.params?.service_name ?? '';
+  const serviceName = match?.params?.service_name ?? "";
+  const serviceKind = getServiceKind(serviceName);
 
   const [edited, setEdited] = useState(() => loadSavedFilters(serviceName) || {});
   const [reset, setReset] = useState(0);
@@ -61,14 +96,10 @@ function MsrEtlFiltersPage({
     if (saved) setEdited(saved);
     setReset((prev) => prev + 1);
     clearMsrUbrIndividuals();
+    clearMsrUbrLocations();
   }, [serviceName]);
 
-  const pageTitle = formatMessageWithValues(
-    intl,
-    MSR_ETL_MODULE_NAME,
-    'filters.pageTitle',
-    { service: serviceName },
-  );
+  const pageTitle = formatMessageWithValues(intl, MSR_ETL_MODULE_NAME, "filters.pageTitle", { service: serviceName });
 
   const back = () => history.goBack();
 
@@ -79,14 +110,21 @@ function MsrEtlFiltersPage({
   };
 
   const renderFilterPanel = () => {
-    if (MSR_ETL_SERVICES.UBR_INDIVIDUAL_SERVICE === serviceName) return HouseholdFiltersPanel;
+    if (serviceKind === SERVICE_KIND.INDIVIDUAL) return HouseholdFiltersPanel;
+    if (serviceKind === SERVICE_KIND.LOCATION) return LocationFiltersPanel;
     return null;
   };
 
   const onPullData = () => {
     save(edited);
-    if (MSR_ETL_SERVICES.UBR_INDIVIDUAL_SERVICE === serviceName) return fetchMsrUbrIndividuals({...edited});
+    if (serviceKind === SERVICE_KIND.INDIVIDUAL) return fetchMsrUbrIndividuals({ ...edited });
+    if (serviceKind === SERVICE_KIND.LOCATION) return fetchMsrUbrLocations({ ...edited });
+    return null;
   };
+
+  const fetching = serviceKind === SERVICE_KIND.LOCATION ? fetchingMsrUbrLocations : fetchingMsrUbrIndividuals;
+
+  const error = serviceKind === SERVICE_KIND.LOCATION ? errorMsrUbrLocations : errorMsrUbrIndividuals;
 
   const filterPanel = renderFilterPanel();
 
@@ -116,27 +154,35 @@ function MsrEtlFiltersPage({
       />
       <Box className={classes.actions}>
         <Button variant="contained" color="primary" onClick={onPullData}>
-          {formatMessage('filters.pullData')}
+          {formatMessage("filters.pullData")}
         </Button>
         <Button variant="outlined" onClick={back}>
-          {formatMessage('dialog.cancel')}
+          {formatMessage("dialog.cancel")}
         </Button>
       </Box>
 
-      <ProgressOrError progress={fetchingMsrUbrIndividuals} error={errorMsrUbrIndividuals} />
+      <ProgressOrError progress={fetching} error={error} />
     </div>
   );
 }
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({
-  fetchMsrUbrIndividuals,
-  clearMsrUbrIndividuals,
-}, dispatch);
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      fetchMsrUbrIndividuals,
+      clearMsrUbrIndividuals,
+      fetchMsrUbrLocations,
+      clearMsrUbrLocations,
+    },
+    dispatch,
+  );
 
 const mapStateToProps = (state) => ({
   rights: state.core?.user?.i_user?.rights ?? [],
   fetchingMsrUbrIndividuals: state.msrEtl.fetchingMsrUbrIndividuals,
   errorMsrUbrIndividuals: state.msrEtl.errorMsrUbrIndividuals,
+  fetchingMsrUbrLocations: state.msrEtl.fetchingMsrUbrLocations,
+  errorMsrUbrLocations: state.msrEtl.errorMsrUbrLocations,
 });
 
 export default injectIntl(connect(mapStateToProps, mapDispatchToProps)(MsrEtlFiltersPage));
