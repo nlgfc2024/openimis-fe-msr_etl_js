@@ -47,17 +47,17 @@ export function fetchMsrEtlServices() {
   return graphql(payload, ACTION_TYPE.FETCH_ETL_SERVICES);
 }
 
-const EXECUTE_ETL_SERVICE_MUTATION = `
-  mutation executeMsrEtlService($input: MsrEtlServiceMutationInput!) {
-    executeMsrEtlService(input: $input) {
+const EXECUTE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
+  mutation executeMsrUbrIndividualsImport($input: ExecuteMsrUbrIndividualsImportMutationInput!) {
+    executeMsrUbrIndividualsImport(input: $input) {
       clientMutationId
       internalId
     }
   }
 `;
 
-export function executeMsrEtlService(serviceName, filters = {}) {
-  const input = { nameOfService: serviceName };
+export function executeMsrUbrIndividualsImport(filters = {}) {
+  const input = {};
   if (filters.location) {
     const { district, ta, village } = extractLocationCodes(filters.location);
     if (district) input.district = district;
@@ -73,7 +73,11 @@ export function executeMsrEtlService(serviceName, filters = {}) {
   if (filters.exclusionPrograms?.length) input.excludedProgrammeCodes = filters.exclusionPrograms;
   input.lowerPercentileCategory = filters.lowerPercentileCategory ?? 0;
   input.upperPercentileCategory = filters.upperPercentileCategory ?? 100;
-  return graphqlMutation(EXECUTE_ETL_SERVICE_MUTATION, { input }, ACTION_TYPE.EXECUTE_ETL_SERVICE);
+  return graphqlMutation(
+    EXECUTE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION,
+    { input },
+    ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT,
+  );
 }
 
 // ---------------------
@@ -85,5 +89,5 @@ export const clearEtlServices = () => (dispatch) => {
 };
 
 export const clearMsrEtlExecution = () => (dispatch) => {
-  dispatch({ type: CLEAR(ACTION_TYPE.EXECUTE_ETL_SERVICE) });
+  dispatch({ type: CLEAR(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT) });
 };

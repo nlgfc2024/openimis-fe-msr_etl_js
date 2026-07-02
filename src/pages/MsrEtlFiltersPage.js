@@ -16,7 +16,7 @@ import { connect } from 'react-redux';
 
 import { MSR_ETL_MODULE_NAME, MSR_ETL_SERVICES } from '../constants';
 import HouseholdFiltersPanel from '../components/HouseholdFiltersPanel';
-import { executeMsrEtlService, clearMsrEtlExecution } from '../actions';
+import { executeMsrUbrIndividualsImport, clearMsrEtlExecution } from '../actions';
 
 const useStyles = makeStyles((theme) => ({
   page: theme.page,
@@ -41,9 +41,9 @@ function MsrEtlFiltersPage({
   match,
   intl,
   rights,
-  executingMsrEtlService,
-  errorMsrEtlExecution,
-  executeMsrEtlService,
+  executingUbrIndividualsImport,
+  errorUbrIndividualsImport,
+  executeMsrUbrIndividualsImport,
   clearMsrEtlExecution,
 }) {
   const modulesManager = useModulesManager();
@@ -85,7 +85,9 @@ function MsrEtlFiltersPage({
 
   const onPullData = () => {
     save(edited);
-    return executeMsrEtlService(serviceName, edited);
+    if (MSR_ETL_SERVICES.UBR_INDIVIDUAL_SERVICE === serviceName) {
+      return executeMsrUbrIndividualsImport(edited);
+    }
   };
 
   const filterPanel = renderFilterPanel();
@@ -123,20 +125,20 @@ function MsrEtlFiltersPage({
         </Button>
       </Box>
 
-      <ProgressOrError progress={executingMsrEtlService} error={errorMsrEtlExecution} />
+      <ProgressOrError progress={executingUbrIndividualsImport} error={errorUbrIndividualsImport} />
     </div>
   );
 }
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
-  executeMsrEtlService,
+  executeMsrUbrIndividualsImport,
   clearMsrEtlExecution,
 }, dispatch);
 
 const mapStateToProps = (state) => ({
   rights: state.core?.user?.i_user?.rights ?? [],
-  executingMsrEtlService: state.msrEtl.executingMsrEtlService,
-  errorMsrEtlExecution: state.msrEtl.errorMsrEtlExecution,
+  executingUbrIndividualsImport: state.msrEtl.executingUbrIndividualsImport,
+  errorUbrIndividualsImport: state.msrEtl.errorUbrIndividualsImport,
 });
 
 export default injectIntl(connect(mapStateToProps, mapDispatchToProps)(MsrEtlFiltersPage));
