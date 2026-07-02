@@ -8,6 +8,8 @@
   "etlServices.actions": "Actions",
   "etlServices.editFilters": "Edit Filters",
   "etlServices.editFilters.tooltip": "Configure import filters for this ETL service",
+  "etlServices.initialPull": "Initial Pull",
+  "etlServices.initialPull.tooltip": "Register a background job to pull all locations",
 
   "filters.pageTitle": "Filters — {service}",
   "filters.pullData": "Pull Data",
@@ -17,5 +19,11 @@
   "household.filter.minAge": "Min Age",
   "household.filter.maxAge": "Max Age",
   "household.filter.gender": "Gender",
-  "location": "Location"
+  "location": "Location",
+  "location.district": "District",
+  "location.tas": "TAs",
+  "location.gvh": "GVH",
+  "location.hint.initial": "Select District to continue.",
+  "location.hint.selectTa": "Select TA to continue.",
+  "location.hint.selectGvh": "Select GVH to complete location selection."
 }
