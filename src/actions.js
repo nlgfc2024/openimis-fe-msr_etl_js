@@ -23,11 +23,12 @@ function buildFilters(params) {
 // ---------------------
 
 function extractLocationCodes(location) {
+  // Malawi hierarchy: District = Location type R, TA = type D, GVH = type W, Village = type V.
   const codes = {};
   let current = location;
   while (current) {
-    if (current.type === "D") codes.district = current.code;
-    else if (current.type === "W") codes.ta = current.code;
+    if (current.type === "R") codes.district = current.code;
+    else if (current.type === "D") codes.ta = current.code;
     else if (current.type === "V") codes.village = current.code;
     current = current.parent ?? null;
   }
