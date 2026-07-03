@@ -7,8 +7,8 @@ export const ACTION_TYPE = {
   // ETL services list
   FETCH_ETL_SERVICES: "MSR_ETL_FETCH_ETL_SERVICES",
 
-  // Execute ETL service
-  EXECUTE_ETL_SERVICE: "MSR_ETL_EXECUTE_ETL_SERVICE",
+  // Execute UBR individuals import
+  EXECUTE_UBR_INDIVIDUALS_IMPORT: "MSR_ETL_EXECUTE_UBR_INDIVIDUALS_IMPORT",
 
   // Fetch UBR locations
   FETCH_UBR_LOCATIONS: "MSR_ETL_FETCH_UBR_LOCATIONS",
@@ -33,9 +33,9 @@ const INITIAL_STATE = {
   etlServices: [],
   errorEtlServices: null,
 
-  // Execute ETL service
-  executingMsrEtlService: false,
-  errorMsrEtlExecution: null,
+  // Execute UBR individuals import
+  executingUbrIndividualsImport: false,
+  errorUbrIndividualsImport: null,
 
   // UBR locations fetch result
   fetchingMsrUbrLocations: false,
@@ -115,34 +115,34 @@ function reducer(state = INITIAL_STATE, action) {
       };
 
     // -------------------------
-    // Execute ETL service
+    // Execute UBR individuals import
     // -------------------------
-    case REQUEST(ACTION_TYPE.EXECUTE_ETL_SERVICE):
+    case REQUEST(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT):
       return {
         ...state,
-        executingMsrEtlService: true,
-        errorMsrEtlExecution: null,
+        executingUbrIndividualsImport: true,
+        errorUbrIndividualsImport: null,
       };
 
-    case SUCCESS(ACTION_TYPE.EXECUTE_ETL_SERVICE):
+    case SUCCESS(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT):
       return {
         ...state,
-        executingMsrEtlService: false,
-        errorMsrEtlExecution: formatGraphQLError(action.payload),
+        executingUbrIndividualsImport: false,
+        errorUbrIndividualsImport: formatGraphQLError(action.payload),
       };
 
-    case ERROR(ACTION_TYPE.EXECUTE_ETL_SERVICE):
+    case ERROR(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT):
       return {
         ...state,
-        executingMsrEtlService: false,
-        errorMsrEtlExecution: formatServerError(action.payload),
+        executingUbrIndividualsImport: false,
+        errorUbrIndividualsImport: formatServerError(action.payload),
       };
 
-    case CLEAR(ACTION_TYPE.EXECUTE_ETL_SERVICE):
+    case CLEAR(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT):
       return {
         ...state,
-        executingMsrEtlService: false,
-        errorMsrEtlExecution: null,
+        executingUbrIndividualsImport: false,
+        errorUbrIndividualsImport: null,
       };
 
     // -------------------------

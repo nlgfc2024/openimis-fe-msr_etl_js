@@ -19,6 +19,22 @@ function buildFilters(params) {
 }
 
 // ---------------------
+// Helpers
+// ---------------------
+
+function extractLocationCodes(location) {
+  const codes = {};
+  let current = location;
+  while (current) {
+    if (current.type === "D") codes.district = current.code;
+    else if (current.type === "W") codes.ta = current.code;
+    else if (current.type === "V") codes.village = current.code;
+    current = current.parent ?? null;
+  }
+  return codes;
+}
+
+// ---------------------
 // Queries
 // ---------------------
 
@@ -27,29 +43,37 @@ export function fetchMsrEtlServices() {
   return graphql(payload, ACTION_TYPE.FETCH_ETL_SERVICES);
 }
 
-const EXECUTE_ETL_SERVICE_MUTATION = `
-  mutation executeMsrEtlService($input: MsrEtlServiceMutationInput!) {
-    executeMsrEtlService(input: $input) {
+const EXECUTE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
+  mutation executeMsrUbrIndividualsImport($input: ExecuteMsrUbrIndividualsImportMutationInput!) {
+    executeMsrUbrIndividualsImport(input: $input) {
       clientMutationId
       internalId
     }
   }
 `;
 
-export function executeMsrEtlService(serviceName, filters = {}) {
-  const input = { nameOfService: serviceName };
-  if (filters.location?.district) input.district = filters.location.district;
-  if (filters.location?.ta) input.ta = filters.location.ta;
-  if (filters.location?.village) input.village = filters.location.village;
-  if (filters.classifications?.length) input.classification = filters.classifications.map((c) => c.value);
-  if (filters.percentile != null) {
-    input.lowerPercentileCategory = 0;
-    input.upperPercentileCategory = filters.percentile;
+export function executeMsrUbrIndividualsImport(filters = {}) {
+  const input = {};
+  if (filters.location) {
+    const { district, ta, village } = extractLocationCodes(filters.location);
+    if (district) input.district = district;
+    if (ta) input.ta = ta;
+    if (village) input.village = village;
   }
+  if (filters.classifications?.length) input.wealthQuintiles = filters.classifications.map((c) => c.value);
   if (filters.minAge != null) input.minAge = filters.minAge;
   if (filters.maxAge != null) input.maxAge = filters.maxAge;
   if (filters.gender) input.gender = filters.gender;
-  return graphqlMutation(EXECUTE_ETL_SERVICE_MUTATION, { input }, ACTION_TYPE.EXECUTE_ETL_SERVICE);
+  if (filters.householdHasLabour) input.hasLabour = filters.householdHasLabour;
+  if (filters.femaleHeadedHousehold) input.householdHeadGender = filters.femaleHeadedHousehold;
+  if (filters.exclusionPrograms?.length) input.excludedProgrammeCodes = filters.exclusionPrograms;
+  input.lowerPercentileCategory = filters.lowerPercentileCategory ?? 0;
+  input.upperPercentileCategory = filters.upperPercentileCategory ?? 100;
+  return graphqlMutation(
+    EXECUTE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION,
+    { input },
+    ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT,
+  );
 }
 
 /**
@@ -110,7 +134,7 @@ export const clearEtlServices = () => (dispatch) => {
 };
 
 export const clearMsrEtlExecution = () => (dispatch) => {
-  dispatch({ type: CLEAR(ACTION_TYPE.EXECUTE_ETL_SERVICE) });
+  dispatch({ type: CLEAR(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT) });
 };
 
 export const clearMsrUbrLocations = () => (dispatch) => {

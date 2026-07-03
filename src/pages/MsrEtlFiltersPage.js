@@ -18,7 +18,7 @@ import { MSR_ETL_MODULE_NAME, MSR_ETL_SERVICES } from "../constants";
 import HouseholdFiltersPanel from "../components/HouseholdFiltersPanel";
 import LocationFiltersPanel from "../components/LocationFiltersPanel";
 import {
-  executeMsrEtlService,
+  executeMsrUbrIndividualsImport,
   clearMsrEtlExecution,
   fetchMsrUbrLocations,
   clearMsrUbrLocations,
@@ -65,7 +65,7 @@ const useStyles = makeStyles((theme) => ({
 
 function loadSavedFilters(serviceName) {
   try {
-    const raw = localStorage.getItem(`msrEtl_filters_${serviceName}`);
+    const raw = localStorage.getItem(`${MSR_ETL_MODULE_NAME}_filters_${serviceName}`);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -76,11 +76,11 @@ function MsrEtlFiltersPage({
   match,
   intl,
   rights,
-  executingMsrEtlService,
-  errorMsrEtlExecution,
+  executingUbrIndividualsImport,
+  errorUbrIndividualsImport,
   fetchingMsrUbrLocations,
   errorMsrUbrLocations,
-  executeMsrEtlService,
+  executeMsrUbrIndividualsImport,
   clearMsrEtlExecution,
   fetchMsrUbrLocations,
   clearMsrUbrLocations,
@@ -110,7 +110,7 @@ function MsrEtlFiltersPage({
 
   const save = (data) => {
     if (data) {
-      localStorage.setItem(`msrEtl_filters_${serviceName}`, JSON.stringify(data));
+      localStorage.setItem(`${MSR_ETL_MODULE_NAME}_filters_${serviceName}`, JSON.stringify(data));
     }
   };
 
@@ -123,12 +123,12 @@ function MsrEtlFiltersPage({
   const onPullData = () => {
     save(edited);
     if (serviceKind === SERVICE_KIND.LOCATION) return fetchMsrUbrLocations({ ...edited });
-    return executeMsrEtlService(serviceName, edited);
+    return executeMsrUbrIndividualsImport(edited);
   };
 
-  const fetching = serviceKind === SERVICE_KIND.LOCATION ? fetchingMsrUbrLocations : executingMsrEtlService;
+  const fetching = serviceKind === SERVICE_KIND.LOCATION ? fetchingMsrUbrLocations : executingUbrIndividualsImport;
 
-  const error = serviceKind === SERVICE_KIND.LOCATION ? errorMsrUbrLocations : errorMsrEtlExecution;
+  const error = serviceKind === SERVICE_KIND.LOCATION ? errorMsrUbrLocations : errorUbrIndividualsImport;
 
   const filterPanel = renderFilterPanel();
 
@@ -173,7 +173,7 @@ function MsrEtlFiltersPage({
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
-      executeMsrEtlService,
+      executeMsrUbrIndividualsImport,
       clearMsrEtlExecution,
       fetchMsrUbrLocations,
       clearMsrUbrLocations,
@@ -183,8 +183,8 @@ const mapDispatchToProps = (dispatch) =>
 
 const mapStateToProps = (state) => ({
   rights: state.core?.user?.i_user?.rights ?? [],
-  executingMsrEtlService: state.msrEtl.executingMsrEtlService,
-  errorMsrEtlExecution: state.msrEtl.errorMsrEtlExecution,
+  executingUbrIndividualsImport: state.msrEtl.executingUbrIndividualsImport,
+  errorUbrIndividualsImport: state.msrEtl.errorUbrIndividualsImport,
   fetchingMsrUbrLocations: state.msrEtl.fetchingMsrUbrLocations,
   errorMsrUbrLocations: state.msrEtl.errorMsrUbrLocations,
 });
