@@ -25,17 +25,17 @@ test("Location Code Extraction", async (t) => {
 
 test("Location Type Detection", async (t) => {
   await t.test("recognizes district type", () => {
-    assert.strictEqual(getLocationType({ type: "D" }), "district");
-    assert.strictEqual(getLocationType({ type: "d" }), "district");
+    assert.strictEqual(getLocationType({ type: "R" }), "district");
+    assert.strictEqual(getLocationType({ type: "r" }), "district");
   });
 
   await t.test("recognizes ta type", () => {
-    assert.strictEqual(getLocationType({ type: "W" }), "ta");
+    assert.strictEqual(getLocationType({ type: "D" }), "ta");
     assert.strictEqual(getLocationType({ locationType: "traditional_authority" }), "ta");
   });
 
   await t.test("recognizes gvh type", () => {
-    assert.strictEqual(getLocationType({ type: "G" }), "gvh");
+    assert.strictEqual(getLocationType({ type: "W" }), "gvh");
     assert.strictEqual(getLocationType({ locationType: "group_village_head" }), "gvh");
   });
 
@@ -54,11 +54,11 @@ test("Location Normalization", async (t) => {
       parent: {
         code: "10101",
         name: "TA One",
-        type: "W",
+        type: "D",
         parent: {
           code: "101",
           name: "District One",
-          type: "D",
+          type: "R",
         },
       },
     };
@@ -72,8 +72,8 @@ test("Location Normalization", async (t) => {
 
   await t.test("normalizes cascader array format", () => {
     const selection = [
-      { code: "101", type: "D" },
-      { code: "10101", type: "W" },
+      { code: "101", type: "R" },
+      { code: "10101", type: "D" },
       { code: "10101001", type: "V" },
     ];
 
@@ -87,10 +87,10 @@ test("Location Normalization", async (t) => {
   await t.test("handles partial location selections", () => {
     const selection = {
       code: "10101",
-      type: "W",
+      type: "D",
       parent: {
         code: "101",
-        type: "D",
+        type: "R",
       },
     };
 
@@ -108,10 +108,10 @@ test("Location Filter Parameters", async (t) => {
       type: "V",
       parent: {
         code: "10101",
-        type: "W",
+        type: "D",
         parent: {
           code: "101",
-          type: "D",
+          type: "R",
         },
       },
     };
@@ -124,7 +124,7 @@ test("Location Filter Parameters", async (t) => {
   });
 
   await t.test("excludes undefined values from params", () => {
-    const params = getLocationFilterParams({ code: "101", type: "D" });
+    const params = getLocationFilterParams({ code: "101", type: "R" });
     assert.strictEqual(params.ta, undefined);
     assert.strictEqual(params.village, undefined);
   });

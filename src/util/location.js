@@ -6,10 +6,11 @@ const LOCATION_TYPES = {
   VILLAGE: "village",
 };
 
+// Malawi hierarchy: District = Location type R, TA = type D, GVH = type W, Village = type V.
 const LOCATION_TYPE_ALIASES = {
-  district: ["d"],
-  ta: ["w", "traditional_authority", "traditional-authority", "traditional authority"],
-  gvh: ["g", "group_village_head", "group-village-head", "group village head"],
+  district: ["r"],
+  ta: ["d", "traditional_authority", "traditional-authority", "traditional authority"],
+  gvh: ["w", "group_village_head", "group-village-head", "group village head"],
   village: ["v"],
 };
 
