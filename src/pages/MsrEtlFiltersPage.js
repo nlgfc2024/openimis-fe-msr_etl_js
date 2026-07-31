@@ -132,7 +132,10 @@ function MsrEtlFiltersPage({
   const error = serviceKind === SERVICE_KIND.LOCATION ? errorMsrUbrLocations : errorUbrIndividualsImport;
   const normalizedLocation = normalizeLocationSelection(edited.location);
   const mandatoryFieldsEmpty =
-    serviceKind === SERVICE_KIND.INDIVIDUAL && (!normalizedLocation.district || !normalizedLocation.ta);
+    serviceKind === SERVICE_KIND.INDIVIDUAL &&
+    (!normalizedLocation.district ||
+      !normalizedLocation.ta ||
+      (normalizedLocation.village && !normalizedLocation.gvh));
 
   const filterPanel = renderFilterPanel();
 
