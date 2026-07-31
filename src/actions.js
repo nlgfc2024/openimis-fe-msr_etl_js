@@ -3,7 +3,7 @@
 import { graphql, graphqlMutation, formatQuery } from "@openimis/fe-core";
 import { ACTION_TYPE } from "./reducer";
 import { CLEAR } from "./util/action-type";
-import { getLocationFilterParams, normalizeLocationSelection } from "./util/location";
+import { getLocationFilterParams, getUbrHouseholdLocationParams } from "./util/location";
 
 // ---------------------
 // Field projections
@@ -37,14 +37,7 @@ const EXECUTE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
 `;
 
 export function executeMsrUbrIndividualsImport(filters = {}) {
-  const input = {};
-  if (filters.location) {
-    const { district, ta, gvh, village } = normalizeLocationSelection(filters.location);
-    if (district) input.district = district;
-    if (ta) input.ta = ta;
-    if (gvh) input.gvh = gvh;
-    if (village) input.village = village;
-  }
+  const input = getUbrHouseholdLocationParams(filters.location);
   if (filters.classifications?.length) input.wealthQuintiles = filters.classifications.map((c) => c.value);
   if (filters.minAge != null) input.minAge = filters.minAge;
   if (filters.maxAge != null) input.maxAge = filters.maxAge;
