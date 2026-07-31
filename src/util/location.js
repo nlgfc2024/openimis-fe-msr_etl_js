@@ -52,7 +52,7 @@ function getLocationCode(value) {
 
 /**
  * Determine location type from various value formats.
- * Maps aliases to canonical location types (district, ta, village).
+ * Maps aliases to canonical location types (district, ta, gvh, village).
  *
  * @param {object} value - The location object to inspect
  * @returns {string|null} Canonical location type or null if not recognized
@@ -76,7 +76,7 @@ function getLocationType(value) {
 
 /**
  * Recursively traverse location parent hierarchy.
- * Collects district, ta, and village codes from nested location objects.
+ * Collects district, ta, gvh, and village codes from nested location objects.
  *
  * @param {object} node - Location node to traverse
  * @param {object} result - Accumulator for collected codes
@@ -103,10 +103,10 @@ function traverseLocationHierarchy(node, result) {
 /**
  * Normalize location selection from various input formats.
  * Handles cascader array output and hierarchical objects.
- * Returns standardized object with district, ta, and village codes.
+ * Returns standardized object with district, ta, gvh, and village codes.
  *
  * @param {Array|object} value - Location selection (from cascader or object)
- * @returns {object} Normalized location with district, ta, village keys
+ * @returns {object} Normalized location with district, ta, gvh, village keys
  */
 function normalizeLocationSelection(value) {
   if (!value) return {};
@@ -153,7 +153,7 @@ function normalizeLocationSelection(value) {
  * Convert normalized location to GraphQL query parameters.
  * Filters out empty values for clean API calls.
  *
- * @param {object} location - Location object (with district, ta, village keys)
+ * @param {object} location - Location object (with district, ta, gvh, village keys)
  * @returns {object} Query parameters with only non-empty values
  */
 function getLocationFilterParams(location) {

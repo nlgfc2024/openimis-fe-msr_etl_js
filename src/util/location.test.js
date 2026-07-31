@@ -52,13 +52,18 @@ test("Location Normalization", async (t) => {
       name: "Village A",
       type: "V",
       parent: {
-        code: "10101",
-        name: "TA One",
-        type: "D",
+        code: "1010101",
+        name: "GVH One",
+        type: "W",
         parent: {
-          code: "101",
-          name: "District One",
-          type: "R",
+          code: "10101",
+          name: "TA One",
+          type: "D",
+          parent: {
+            code: "101",
+            name: "District One",
+            type: "R",
+          },
         },
       },
     };
@@ -66,6 +71,7 @@ test("Location Normalization", async (t) => {
     assert.deepStrictEqual(normalizeLocationSelection(selection), {
       district: "101",
       ta: "10101",
+      gvh: "1010101",
       village: "10101001",
     });
   });
@@ -74,12 +80,14 @@ test("Location Normalization", async (t) => {
     const selection = [
       { code: "101", type: "R" },
       { code: "10101", type: "D" },
+      { code: "1010101", type: "W" },
       { code: "10101001", type: "V" },
     ];
 
     assert.deepStrictEqual(normalizeLocationSelection(selection), {
       district: "101",
       ta: "10101",
+      gvh: "1010101",
       village: "10101001",
     });
   });
@@ -107,11 +115,15 @@ test("Location Filter Parameters", async (t) => {
       code: "10101001",
       type: "V",
       parent: {
-        code: "10101",
-        type: "D",
+        code: "1010101",
+        type: "W",
         parent: {
-          code: "101",
-          type: "R",
+          code: "10101",
+          type: "D",
+          parent: {
+            code: "101",
+            type: "R",
+          },
         },
       },
     };
@@ -119,6 +131,7 @@ test("Location Filter Parameters", async (t) => {
     assert.deepStrictEqual(getLocationFilterParams(selection), {
       district: "101",
       ta: "10101",
+      gvh: "1010101",
       village: "10101001",
     });
   });
@@ -126,6 +139,7 @@ test("Location Filter Parameters", async (t) => {
   await t.test("excludes undefined values from params", () => {
     const params = getLocationFilterParams({ code: "101", type: "R" });
     assert.strictEqual(params.ta, undefined);
+    assert.strictEqual(params.gvh, undefined);
     assert.strictEqual(params.village, undefined);
   });
 });

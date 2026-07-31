@@ -3,7 +3,7 @@
 import { graphql, graphqlMutation, formatQuery } from "@openimis/fe-core";
 import { ACTION_TYPE } from "./reducer";
 import { CLEAR } from "./util/action-type";
-import { getLocationFilterParams } from "./util/location";
+import { getLocationFilterParams, normalizeLocationSelection } from "./util/location";
 
 // ---------------------
 // Field projections
@@ -16,23 +16,6 @@ function buildFilters(params) {
   return Object.entries(params)
     .filter(([, value]) => value !== undefined && value !== null && value !== "")
     .map(([key, value]) => (typeof value === "number" ? `${key}: ${value}` : `${key}: "${value}"`));
-}
-
-// ---------------------
-// Helpers
-// ---------------------
-
-function extractLocationCodes(location) {
-  // Malawi hierarchy: District = Location type R, TA = type D, GVH = type W, Village = type V.
-  const codes = {};
-  let current = location;
-  while (current) {
-    if (current.type === "R") codes.district = current.code;
-    else if (current.type === "D") codes.ta = current.code;
-    else if (current.type === "V") codes.village = current.code;
-    current = current.parent ?? null;
-  }
-  return codes;
 }
 
 // ---------------------
@@ -56,9 +39,10 @@ const EXECUTE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
 export function executeMsrUbrIndividualsImport(filters = {}) {
   const input = {};
   if (filters.location) {
-    const { district, ta, village } = extractLocationCodes(filters.location);
+    const { district, ta, gvh, village } = normalizeLocationSelection(filters.location);
     if (district) input.district = district;
     if (ta) input.ta = ta;
+    if (gvh) input.gvh = gvh;
     if (village) input.village = village;
   }
   if (filters.classifications?.length) input.wealthQuintiles = filters.classifications.map((c) => c.value);
@@ -82,7 +66,7 @@ export function executeMsrUbrIndividualsImport(filters = {}) {
  * Normalizes location filters and queries location data from MSR ETL service.
  *
  * @param {object} filters - Filter object with optional location property
- * @param {object} filters.location - Location codes (district, ta, village)
+ * @param {object} filters.location - Location codes (district, ta, gvh, village)
  * @returns {object} Redux action for location fetch
  */
 export function fetchMsrUbrLocations(filters = {}) {
