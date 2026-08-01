@@ -20,7 +20,7 @@ const ROUTE_MSR_ETL_FILTERS = 'msr-etl/filters';
 
 const DEFAULT_CONFIG = {
   translations: [{ key: 'en', messages: flatten(messages_en) }],
-  reducers: [{ key: 'msrEtl', reducer }],
+  reducers: [{ key: MSR_ETL_MODULE_NAME, reducer }],
   'core.Router': [
     { path: ROUTE_MSR_ETL_CONFIGS, component: MsrEtlConfigsPage },
     { path: `${ROUTE_MSR_ETL_FILTERS}/:service_name`, component: MsrEtlFiltersPage },
@@ -31,12 +31,12 @@ const DEFAULT_CONFIG = {
       icon: <SyncAltIcon />,
       route: `/${ROUTE_MSR_ETL_CONFIGS}`,
       filter: (rights) => rights.includes(RIGHT_MSR_ETL_SEARCH),
-      id: 'msrEtl.configs',
+      id: `${MSR_ETL_MODULE_NAME}.configs`,
     },
   ],
   refs: [
-    { key: 'msrEtl.route.configs', ref: ROUTE_MSR_ETL_CONFIGS },
-    { key: 'msrEtl.route.filters', ref: ROUTE_MSR_ETL_FILTERS },
+    { key: `${MSR_ETL_MODULE_NAME}.route.configs`, ref: ROUTE_MSR_ETL_CONFIGS },
+    { key: `${MSR_ETL_MODULE_NAME}.route.filters`, ref: ROUTE_MSR_ETL_FILTERS },
   ],
 };
 
