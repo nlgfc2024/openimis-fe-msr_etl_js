@@ -11,7 +11,6 @@ import {
   Paper,
   Button,
   Tooltip,
-  Typography,
 } from '@material-ui/core';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import {
@@ -19,6 +18,7 @@ import {
   useModulesManager,
   useTranslations,
   ProgressOrError,
+  PublishedComponent,
   historyPush,
   withModulesManager,
 } from '@openimis/fe-core';
@@ -26,9 +26,8 @@ import { injectIntl } from 'react-intl';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import {
   fetchMsrEtlServices,
-  scheduleUbrLocationInitialPull,
-  clearScheduleUbrLocationInitialPull,
-  fetchUbrLocationInitialPullStatus,
+  scheduleMsrUbrLocationsImport,
+  clearScheduleUbrLocationsImport,
 } from '../actions';
 import {
   MSR_ETL_MODULE_NAME,
@@ -49,9 +48,6 @@ const styles = (theme) => ({
     gap: theme.spacing(1),
     flexWrap: 'wrap',
   },
-  statusMessage: {
-    marginTop: theme.spacing(1),
-  },
 });
 
 function MsrEtlConfigsPage({
@@ -61,12 +57,9 @@ function MsrEtlConfigsPage({
   fetchingMsrEtlServices,
   etlServices,
   errorEtlServices,
-  schedulingUbrLocationInitialPull,
-  errorScheduleUbrLocationInitialPull,
-  locationInitialPullRequestId,
-  locationInitialPullStatus,
-  fetchingLocationInitialPullStatus,
-  errorLocationInitialPullStatus,
+  schedulingUbrLocationsImport,
+  errorScheduleUbrLocationsImport,
+  scheduledUbrLocationsImportClientMutationId,
 }) {
   const dispatch = useDispatch();
   const modulesManager = useModulesManager();
@@ -75,18 +68,6 @@ function MsrEtlConfigsPage({
   useEffect(() => {
     dispatch(fetchMsrEtlServices());
   }, []);
-
-  useEffect(() => {
-    const requestId = typeof locationInitialPullRequestId === 'string' ? locationInitialPullRequestId.trim() : '';
-    if (!requestId) return undefined;
-    if (["COMPLETED", "FAILED"].includes(locationInitialPullStatus?.status)) return undefined;
-
-    const poll = () => dispatch(fetchUbrLocationInitialPullStatus(requestId));
-    poll();
-    const intervalId = setInterval(poll, 3000);
-
-    return () => clearInterval(intervalId);
-  }, [locationInitialPullRequestId, locationInitialPullStatus?.status]);
 
   if (!rights.includes(RIGHT_MSR_ETL_SEARCH)) {
     return null;
@@ -97,8 +78,8 @@ function MsrEtlConfigsPage({
   };
 
   const handleLocationInitialPull = () => {
-    dispatch(clearScheduleUbrLocationInitialPull());
-    dispatch(scheduleUbrLocationInitialPull());
+    dispatch(clearScheduleUbrLocationsImport());
+    dispatch(scheduleMsrUbrLocationsImport());
   };
 
   const isLocationService = (serviceName) => {
@@ -107,10 +88,6 @@ function MsrEtlConfigsPage({
   };
 
   const canScheduleInitialPull = rights.includes(RIGHT_MSR_ETL_EXPORT);
-  const isProcessingPullStatus = ["SUBMITTED", "QUEUED", "PROCESSING"].includes(locationInitialPullStatus?.status);
-  const locationPullStatusText = locationInitialPullStatus
-    ? `${locationInitialPullStatus.status}: ${locationInitialPullStatus.message || ''}`.trim()
-    : null;
 
   return (
     <div className={classes.page}>
@@ -151,7 +128,7 @@ function MsrEtlConfigsPage({
                           size="small"
                           startIcon={<CloudDownloadIcon />}
                           onClick={handleLocationInitialPull}
-                          disabled={schedulingUbrLocationInitialPull || isProcessingPullStatus}
+                          disabled={schedulingUbrLocationsImport}
                         >
                           {formatMessage('etlServices.initialPull')}
                         </Button>
@@ -164,14 +141,12 @@ function MsrEtlConfigsPage({
           </TableBody>
         </Table>
       </TableContainer>
-      <ProgressOrError
-        progress={schedulingUbrLocationInitialPull || fetchingLocationInitialPullStatus || isProcessingPullStatus}
-        error={errorScheduleUbrLocationInitialPull || errorLocationInitialPullStatus}
-      />
-      {!!locationPullStatusText && (
-        <Typography variant="body2" color="textSecondary" className={classes.statusMessage}>
-          {locationPullStatusText}
-        </Typography>
+      <ProgressOrError progress={schedulingUbrLocationsImport} error={errorScheduleUbrLocationsImport} />
+      {!!scheduledUbrLocationsImportClientMutationId && (
+        <PublishedComponent
+          pubRef="core.AsyncJobProgress"
+          clientMutationId={scheduledUbrLocationsImportClientMutationId}
+        />
       )}
     </div>
   );
@@ -182,12 +157,9 @@ const mapStateToProps = (state) => ({
   fetchingMsrEtlServices: state.msrEtl.fetchingMsrEtlServices,
   etlServices: state.msrEtl.etlServices,
   errorEtlServices: state.msrEtl.errorEtlServices,
-  schedulingUbrLocationInitialPull: state.msrEtl.schedulingUbrLocationInitialPull,
-  errorScheduleUbrLocationInitialPull: state.msrEtl.errorScheduleUbrLocationInitialPull,
-  locationInitialPullRequestId: state.msrEtl.locationInitialPullRequestId,
-  locationInitialPullStatus: state.msrEtl.locationInitialPullStatus,
-  fetchingLocationInitialPullStatus: state.msrEtl.fetchingLocationInitialPullStatus,
-  errorLocationInitialPullStatus: state.msrEtl.errorLocationInitialPullStatus,
+  schedulingUbrLocationsImport: state.msrEtl.schedulingUbrLocationsImport,
+  errorScheduleUbrLocationsImport: state.msrEtl.errorScheduleUbrLocationsImport,
+  scheduledUbrLocationsImportClientMutationId: state.msrEtl.scheduledUbrLocationsImportClientMutationId,
 });
 
 export default withModulesManager(injectIntl(withTheme(withStyles(styles)(connect(mapStateToProps)(MsrEtlConfigsPage)))));
