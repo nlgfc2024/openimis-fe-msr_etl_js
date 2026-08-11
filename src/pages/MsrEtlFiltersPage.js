@@ -8,6 +8,7 @@ import {
   formatMessageWithValues,
   Form,
   ProgressOrError,
+  PublishedComponent,
 } from "@openimis/fe-core";
 import { injectIntl } from "react-intl";
 import { makeStyles } from "@material-ui/styles";
@@ -18,8 +19,8 @@ import { MSR_ETL_MODULE_NAME, MSR_ETL_SERVICES } from "../constants";
 import HouseholdFiltersPanel from "../components/HouseholdFiltersPanel";
 import LocationFiltersPanel from "../components/LocationFiltersPanel";
 import {
-  executeMsrUbrIndividualsImport,
-  clearMsrEtlExecution,
+  scheduleMsrUbrIndividualsImport,
+  clearScheduleUbrIndividualsImport,
   fetchMsrUbrLocations,
   clearMsrUbrLocations,
 } from "../actions";
@@ -77,12 +78,13 @@ function MsrEtlFiltersPage({
   match,
   intl,
   rights,
-  executingUbrIndividualsImport,
-  errorUbrIndividualsImport,
+  schedulingUbrIndividualsImport,
+  errorScheduleUbrIndividualsImport,
+  scheduledUbrIndividualsImportClientMutationId,
   fetchingMsrUbrLocations,
   errorMsrUbrLocations,
-  executeMsrUbrIndividualsImport,
-  clearMsrEtlExecution,
+  scheduleMsrUbrIndividualsImport,
+  clearScheduleUbrIndividualsImport,
   fetchMsrUbrLocations,
   clearMsrUbrLocations,
 }) {
@@ -101,7 +103,7 @@ function MsrEtlFiltersPage({
     const saved = loadSavedFilters(serviceName);
     if (saved) setEdited(saved);
     setReset((prev) => prev + 1);
-    clearMsrEtlExecution();
+    clearScheduleUbrIndividualsImport();
     clearMsrUbrLocations();
   }, [serviceName]);
 
@@ -124,12 +126,15 @@ function MsrEtlFiltersPage({
   const onPullData = () => {
     save(edited);
     if (serviceKind === SERVICE_KIND.LOCATION) return fetchMsrUbrLocations({ ...edited });
-    return executeMsrUbrIndividualsImport(edited);
+    return scheduleMsrUbrIndividualsImport(edited);
   };
 
-  const fetching = serviceKind === SERVICE_KIND.LOCATION ? fetchingMsrUbrLocations : executingUbrIndividualsImport;
+  // true only for the schedule round trip, not the import itself
+  const fetching = serviceKind === SERVICE_KIND.LOCATION ? fetchingMsrUbrLocations : schedulingUbrIndividualsImport;
 
-  const error = serviceKind === SERVICE_KIND.LOCATION ? errorMsrUbrLocations : errorUbrIndividualsImport;
+  const error = serviceKind === SERVICE_KIND.LOCATION ? errorMsrUbrLocations : errorScheduleUbrIndividualsImport;
+  const isIndividualImportScheduled =
+    serviceKind === SERVICE_KIND.INDIVIDUAL && !!scheduledUbrIndividualsImportClientMutationId;
   const normalizedLocation = normalizeLocationSelection(edited.location);
   const mandatoryFieldsEmpty =
     serviceKind === SERVICE_KIND.INDIVIDUAL &&
@@ -172,7 +177,14 @@ function MsrEtlFiltersPage({
         </Button>
       </Box>
 
-      <ProgressOrError progress={fetching} error={error} />
+      {isIndividualImportScheduled ? (
+        <PublishedComponent
+          pubRef="core.AsyncJobProgress"
+          clientMutationId={scheduledUbrIndividualsImportClientMutationId}
+        />
+      ) : (
+        <ProgressOrError progress={fetching} error={error} />
+      )}
     </div>
   );
 }
@@ -180,8 +192,8 @@ function MsrEtlFiltersPage({
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
-      executeMsrUbrIndividualsImport,
-      clearMsrEtlExecution,
+      scheduleMsrUbrIndividualsImport,
+      clearScheduleUbrIndividualsImport,
       fetchMsrUbrLocations,
       clearMsrUbrLocations,
     },
@@ -190,8 +202,9 @@ const mapDispatchToProps = (dispatch) =>
 
 const mapStateToProps = (state) => ({
   rights: state.core?.user?.i_user?.rights ?? [],
-  executingUbrIndividualsImport: state.msrEtl.executingUbrIndividualsImport,
-  errorUbrIndividualsImport: state.msrEtl.errorUbrIndividualsImport,
+  schedulingUbrIndividualsImport: state.msrEtl.schedulingUbrIndividualsImport,
+  errorScheduleUbrIndividualsImport: state.msrEtl.errorScheduleUbrIndividualsImport,
+  scheduledUbrIndividualsImportClientMutationId: state.msrEtl.scheduledUbrIndividualsImportClientMutationId,
   fetchingMsrUbrLocations: state.msrEtl.fetchingMsrUbrLocations,
   errorMsrUbrLocations: state.msrEtl.errorMsrUbrLocations,
 });
