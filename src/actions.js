@@ -1,42 +1,36 @@
 // Disable due to core architecture
 /* eslint-disable camelcase */
-import { graphql, graphqlMutation, formatQuery } from "@openimis/fe-core";
+import { graphql, graphqlWithVariables, formatQuery } from "@openimis/fe-core";
 import { ACTION_TYPE } from "./reducer";
 import { CLEAR } from "./util/action-type";
 import { getLocationFilterParams, getUbrHouseholdLocationParams } from "./util/location";
 
-// ---------------------
-// Field projections
-// ---------------------
-
 const ETL_SERVICES_PROJECTION = () => ["etlServices { nameOfService }"];
 
-// formatQuery expects an array of pre-formatted "key: value" filter strings, not a plain object.
 function buildFilters(params) {
   return Object.entries(params)
     .filter(([, value]) => value !== undefined && value !== null && value !== "")
     .map(([key, value]) => (typeof value === "number" ? `${key}: ${value}` : `${key}: "${value}"`));
 }
 
-// ---------------------
-// Queries
-// ---------------------
-
 export function fetchMsrEtlServices() {
   const payload = formatQuery("msrEtlServicesByServiceName", [], ETL_SERVICES_PROJECTION());
   return graphql(payload, ACTION_TYPE.FETCH_ETL_SERVICES);
 }
 
-const EXECUTE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
-  mutation executeMsrUbrIndividualsImport($input: ExecuteMsrUbrIndividualsImportMutationInput!) {
-    executeMsrUbrIndividualsImport(input: $input) {
+const SCHEDULE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
+  mutation scheduleMsrUbrIndividualsImport($input: ScheduleMsrUbrIndividualsImportMutationInput!) {
+    scheduleMsrUbrIndividualsImport(input: $input) {
       clientMutationId
       internalId
     }
   }
 `;
 
-export function executeMsrUbrIndividualsImport(filters = {}) {
+// clientMutationId is generated here rather than by fe-core's graphqlMutation
+// so it is available for core.AsyncJobProgress as soon as the request fires.
+export function scheduleMsrUbrIndividualsImport(filters = {}) {
+  const clientMutationId = crypto.randomUUID();
   const input = getUbrHouseholdLocationParams(filters.location);
   if (filters.classifications?.length) input.wealthQuintiles = filters.classifications.map((c) => c.value);
   if (filters.minAge != null) input.minAge = filters.minAge;
@@ -45,12 +39,16 @@ export function executeMsrUbrIndividualsImport(filters = {}) {
   if (filters.householdHasLabour) input.hasLabour = filters.householdHasLabour;
   if (filters.femaleHeadedHousehold) input.householdHeadGender = filters.femaleHeadedHousehold;
   if (filters.exclusionPrograms?.length) input.excludedProgrammeCodes = filters.exclusionPrograms;
-  input.lowerPercentileCategory = filters.lowerPercentileCategory ?? 0;
-  input.upperPercentileCategory = filters.upperPercentileCategory ?? 100;
-  return graphqlMutation(
-    EXECUTE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION,
+  // unset defers to the backend's 0-10 default range
+  if (filters.lowerPercentileCategory != null) input.lowerPercentileCategory = filters.lowerPercentileCategory;
+  if (filters.upperPercentileCategory != null) input.upperPercentileCategory = filters.upperPercentileCategory;
+  input.clientMutationId = clientMutationId;
+
+  return graphqlWithVariables(
+    SCHEDULE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION,
     { input },
-    ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT,
+    ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT,
+    { clientMutationId },
   );
 }
 
@@ -79,46 +77,37 @@ export function fetchMsrUbrLocations(filters = {}) {
   return graphql(payload, ACTION_TYPE.FETCH_UBR_LOCATIONS);
 }
 
-export function scheduleUbrLocationInitialPull() {
-  const payload = `mutation ImportLocations {
-    executeMsrEtlService(input: { nameOfService: "UBRLocationService" }) {
+const SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION = `
+  mutation scheduleMsrUbrLocationsImport($input: ScheduleMsrUbrLocationsImportMutationInput!) {
+    scheduleMsrUbrLocationsImport(input: $input) {
       clientMutationId
       internalId
     }
-  }`;
-  return graphql(payload, ACTION_TYPE.SCHEDULE_UBR_LOCATION_INITIAL_PULL);
-}
-
-export function fetchUbrLocationInitialPullStatus(requestId) {
-  const normalizedRequestId = typeof requestId === "string" ? requestId.trim() : "";
-  if (!normalizedRequestId) {
-    return () => undefined;
   }
+`;
 
-  const payload = formatQuery(
-    "msrUbrLocationInitialPullStatus",
-    buildFilters({ requestId: normalizedRequestId }),
-    ["requestId", "status", "message", "startedAt", "finishedAt", "updatedAt"],
+export function scheduleMsrUbrLocationsImport() {
+  const clientMutationId = crypto.randomUUID();
+  return graphqlWithVariables(
+    SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION,
+    { input: { clientMutationId } },
+    ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT,
+    { clientMutationId },
   );
-  return graphql(payload, ACTION_TYPE.FETCH_UBR_LOCATION_INITIAL_PULL_STATUS, { requestId: normalizedRequestId });
 }
-
-// ---------------------
-// Clear actions
-// ---------------------
 
 export const clearEtlServices = () => (dispatch) => {
   dispatch({ type: CLEAR(ACTION_TYPE.FETCH_ETL_SERVICES) });
 };
 
-export const clearMsrEtlExecution = () => (dispatch) => {
-  dispatch({ type: CLEAR(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT) });
+export const clearScheduleUbrIndividualsImport = () => (dispatch) => {
+  dispatch({ type: CLEAR(ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT) });
 };
 
 export const clearMsrUbrLocations = () => (dispatch) => {
   dispatch({ type: CLEAR(ACTION_TYPE.FETCH_UBR_LOCATIONS) });
 };
 
-export const clearScheduleUbrLocationInitialPull = () => (dispatch) => {
-  dispatch({ type: CLEAR(ACTION_TYPE.SCHEDULE_UBR_LOCATION_INITIAL_PULL) });
+export const clearScheduleUbrLocationsImport = () => (dispatch) => {
+  dispatch({ type: CLEAR(ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT) });
 };
