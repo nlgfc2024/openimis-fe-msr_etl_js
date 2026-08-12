@@ -15,6 +15,14 @@ export const ACTION_TYPE = {
 
   // Schedule full UBR location import (background job)
   SCHEDULE_UBR_LOCATIONS_IMPORT: "MSR_ETL_SCHEDULE_UBR_LOCATIONS_IMPORT",
+
+  // Duplicate-submission guard: is a job of this type already active?
+  FETCH_ACTIVE_MSR_ETL_JOB: "MSR_ETL_FETCH_ACTIVE_MSR_ETL_JOB",
+};
+
+const JOB_TYPE_TO_CLIENT_MUTATION_ID_FIELD = {
+  ubr_individuals_import: "scheduledUbrIndividualsImportClientMutationId",
+  ubr_locations_import: "scheduledUbrLocationsImportClientMutationId",
 };
 
 /**
@@ -211,6 +219,17 @@ function reducer(state = INITIAL_STATE, action) {
         errorScheduleUbrLocationsImport: null,
         scheduledUbrLocationsImportClientMutationId: null,
       };
+
+    // -------------------------
+    // Active job check (duplicate-submission guard)
+    // -------------------------
+    case SUCCESS(ACTION_TYPE.FETCH_ACTIVE_MSR_ETL_JOB): {
+      const field = JOB_TYPE_TO_CLIENT_MUTATION_ID_FIELD[action.meta?.jobType];
+      const activeJob = action.payload.data?.asyncJobs?.edges?.[0]?.node;
+      if (!field || !activeJob?.clientMutationId) return state;
+      // never overwrite a job already tracked from this page (e.g. just scheduled)
+      return { ...state, [field]: state[field] || activeJob.clientMutationId };
+    }
 
     default:
       return state;
