@@ -23,6 +23,18 @@ export function fetchMsrEtlServices() {
   return graphql(payload, ACTION_TYPE.FETCH_ETL_SERVICES);
 }
 
+const ACTIVE_JOB_STATUSES_GQL = "[RECEIVED, QUEUED, RUNNING]";
+
+// Duplicate-submission guard: is a matching job already active for this user?
+export function fetchActiveMsrEtlJob(jobType) {
+  const query = `{
+    asyncJobs(module: "msr_etl", jobType: "${jobType}", status_In: ${ACTIVE_JOB_STATUSES_GQL}, first: 1) {
+      edges { node { clientMutationId } }
+    }
+  }`;
+  return graphql(query, ACTION_TYPE.FETCH_ACTIVE_MSR_ETL_JOB, { jobType });
+}
+
 const SCHEDULE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
   mutation scheduleMsrUbrIndividualsImport($input: ScheduleMsrUbrIndividualsImportMutationInput!) {
     scheduleMsrUbrIndividualsImport(input: $input) {

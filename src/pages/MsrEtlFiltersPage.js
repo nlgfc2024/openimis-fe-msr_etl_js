@@ -5,6 +5,7 @@ import {
   useHistory,
   useModulesManager,
   useTranslations,
+  useAsyncJob,
   formatMessageWithValues,
   Form,
   ProgressOrError,
@@ -23,8 +24,10 @@ import {
   clearScheduleUbrIndividualsImport,
   fetchMsrUbrLocations,
   clearMsrUbrLocations,
+  fetchActiveMsrEtlJob,
 } from "../actions";
 import { normalizeLocationSelection } from "../util/location";
+import { translateMsrEtlError } from "../util/errors";
 
 const SERVICE_KIND = {
   INDIVIDUAL: "individual",
@@ -87,6 +90,7 @@ function MsrEtlFiltersPage({
   clearScheduleUbrIndividualsImport,
   fetchMsrUbrLocations,
   clearMsrUbrLocations,
+  fetchActiveMsrEtlJob,
 }) {
   const modulesManager = useModulesManager();
   const classes = useStyles();
@@ -105,6 +109,9 @@ function MsrEtlFiltersPage({
     setReset((prev) => prev + 1);
     clearScheduleUbrIndividualsImport();
     clearMsrUbrLocations();
+    if (getServiceKind(serviceName) === SERVICE_KIND.INDIVIDUAL) {
+      fetchActiveMsrEtlJob("ubr_individuals_import");
+    }
   }, [serviceName]);
 
   const pageTitle = formatMessageWithValues(intl, MSR_ETL_MODULE_NAME, "filters.pageTitle", { service: serviceName });
@@ -132,15 +139,21 @@ function MsrEtlFiltersPage({
   // true only for the schedule round trip, not the import itself
   const fetching = serviceKind === SERVICE_KIND.LOCATION ? fetchingMsrUbrLocations : schedulingUbrIndividualsImport;
 
-  const error = serviceKind === SERVICE_KIND.LOCATION ? errorMsrUbrLocations : errorScheduleUbrIndividualsImport;
+  const rawError = serviceKind === SERVICE_KIND.LOCATION ? errorMsrUbrLocations : errorScheduleUbrIndividualsImport;
+  const error = translateMsrEtlError(rawError, formatMessage);
   const isIndividualImportScheduled =
     serviceKind === SERVICE_KIND.INDIVIDUAL && !!scheduledUbrIndividualsImportClientMutationId;
+  const { isTerminal: isTrackedJobTerminal } = useAsyncJob({
+    clientMutationId: isIndividualImportScheduled ? scheduledUbrIndividualsImportClientMutationId : undefined,
+  });
   const normalizedLocation = normalizeLocationSelection(edited.location);
   const mandatoryFieldsEmpty =
     serviceKind === SERVICE_KIND.INDIVIDUAL &&
     (!normalizedLocation.district ||
       !normalizedLocation.ta ||
       (normalizedLocation.village && !normalizedLocation.gvh));
+  // duplicate-submission guard: a matching job is still RECEIVED/QUEUED/RUNNING
+  const blockedByActiveJob = isIndividualImportScheduled && !isTrackedJobTerminal;
 
   const filterPanel = renderFilterPanel();
 
@@ -169,7 +182,12 @@ function MsrEtlFiltersPage({
         rights={rights}
       />
       <Box className={classes.actions}>
-        <Button variant="contained" color="primary" onClick={onPullData} disabled={fetching || mandatoryFieldsEmpty}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={onPullData}
+          disabled={fetching || mandatoryFieldsEmpty || blockedByActiveJob}
+        >
           {formatMessage("filters.pullData")}
         </Button>
         <Button variant="outlined" onClick={back}>
@@ -196,6 +214,7 @@ const mapDispatchToProps = (dispatch) =>
       clearScheduleUbrIndividualsImport,
       fetchMsrUbrLocations,
       clearMsrUbrLocations,
+      fetchActiveMsrEtlJob,
     },
     dispatch,
   );

@@ -17,6 +17,7 @@ import {
   Helmet,
   useModulesManager,
   useTranslations,
+  useAsyncJob,
   ProgressOrError,
   PublishedComponent,
   historyPush,
@@ -28,6 +29,7 @@ import {
   fetchMsrEtlServices,
   scheduleMsrUbrLocationsImport,
   clearScheduleUbrLocationsImport,
+  fetchActiveMsrEtlJob,
 } from '../actions';
 import {
   MSR_ETL_MODULE_NAME,
@@ -35,6 +37,7 @@ import {
   RIGHT_MSR_ETL_EXPORT,
   MSR_ETL_SERVICES,
 } from '../constants';
+import { translateMsrEtlError } from '../util/errors';
 
 const styles = (theme) => ({
   page: theme.page,
@@ -67,7 +70,13 @@ function MsrEtlConfigsPage({
 
   useEffect(() => {
     dispatch(fetchMsrEtlServices());
+    dispatch(fetchActiveMsrEtlJob('ubr_locations_import'));
   }, []);
+
+  const isLocationsImportTracked = !!scheduledUbrLocationsImportClientMutationId;
+  const { isTerminal: isTrackedLocationsJobTerminal } = useAsyncJob({
+    clientMutationId: isLocationsImportTracked ? scheduledUbrLocationsImportClientMutationId : undefined,
+  });
 
   if (!rights.includes(RIGHT_MSR_ETL_SEARCH)) {
     return null;
@@ -81,6 +90,9 @@ function MsrEtlConfigsPage({
     dispatch(clearScheduleUbrLocationsImport());
     dispatch(scheduleMsrUbrLocationsImport());
   };
+
+  // duplicate-submission guard: a matching job is still RECEIVED/QUEUED/RUNNING
+  const blockedByActiveJob = isLocationsImportTracked && !isTrackedLocationsJobTerminal;
 
   const isLocationService = (serviceName) => {
     const normalized = String(serviceName || '').toLowerCase();
@@ -128,7 +140,7 @@ function MsrEtlConfigsPage({
                           size="small"
                           startIcon={<CloudDownloadIcon />}
                           onClick={handleLocationInitialPull}
-                          disabled={schedulingUbrLocationsImport}
+                          disabled={schedulingUbrLocationsImport || blockedByActiveJob}
                         >
                           {formatMessage('etlServices.initialPull')}
                         </Button>
@@ -141,7 +153,10 @@ function MsrEtlConfigsPage({
           </TableBody>
         </Table>
       </TableContainer>
-      <ProgressOrError progress={schedulingUbrLocationsImport} error={errorScheduleUbrLocationsImport} />
+      <ProgressOrError
+        progress={schedulingUbrLocationsImport}
+        error={translateMsrEtlError(errorScheduleUbrLocationsImport, formatMessage)}
+      />
       {!!scheduledUbrLocationsImportClientMutationId && (
         <PublishedComponent
           pubRef="core.AsyncJobProgress"

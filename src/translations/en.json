@@ -14,6 +14,8 @@
   "filters.pageTitle": "Filters — {service}",
   "filters.pullData": "Pull Data",
 
+  "errors.gatewayTimeout": "This is taking longer than expected. The import continues in the background - check the progress panel for updates.",
+
   "household.filter.classification": "Wealth Classification",
   "household.filter.minAge": "Min Age",
   "household.filter.maxAge": "Max Age",
