@@ -13,6 +13,11 @@ function buildFilters(params) {
     .map(([key, value]) => (typeof value === "number" ? `${key}: ${value}` : `${key}: "${value}"`));
 }
 
+// crypto.randomUUID requires a secure context; fall back on plain HTTP
+function generateClientMutationId() {
+  return crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export function fetchMsrEtlServices() {
   const payload = formatQuery("msrEtlServicesByServiceName", [], ETL_SERVICES_PROJECTION());
   return graphql(payload, ACTION_TYPE.FETCH_ETL_SERVICES);
@@ -30,7 +35,7 @@ const SCHEDULE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
 // clientMutationId is generated here rather than by fe-core's graphqlMutation
 // so it is available for core.AsyncJobProgress as soon as the request fires.
 export function scheduleMsrUbrIndividualsImport(filters = {}) {
-  const clientMutationId = crypto.randomUUID();
+  const clientMutationId = generateClientMutationId();
   const input = getUbrHouseholdLocationParams(filters.location);
   if (filters.classifications?.length) input.wealthQuintiles = filters.classifications.map((c) => c.value);
   if (filters.minAge != null) input.minAge = filters.minAge;
@@ -87,7 +92,7 @@ const SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION = `
 `;
 
 export function scheduleMsrUbrLocationsImport() {
-  const clientMutationId = crypto.randomUUID();
+  const clientMutationId = generateClientMutationId();
   return graphqlWithVariables(
     SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION,
     { input: { clientMutationId } },
