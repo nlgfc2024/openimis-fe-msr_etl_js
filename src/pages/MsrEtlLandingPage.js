@@ -25,7 +25,7 @@ const styles = (theme) => ({
     borderBottom: "4px solid transparent",
   },
   tabContent: {
-    paddingBottom: theme.spacing(2.5),
+    paddingBottom: theme.spacing(0.5),
   },
 });
 

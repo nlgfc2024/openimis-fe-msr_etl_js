@@ -18,13 +18,12 @@ import { makeStyles } from "@material-ui/styles";
 import { MSR_ETL_MODULE_NAME, MSR_ETL_JOB_TYPE, RIGHT_MSR_ETL_EXPORT } from "../../constants";
 import LocationFiltersPanel from "../../components/LocationFiltersPanel";
 import {
-  fetchMsrUbrLocations,
-  clearMsrUbrLocations,
   scheduleMsrUbrLocationsImport,
   clearScheduleUbrLocationsImport,
   fetchActiveMsrEtlJob,
 } from "../../actions";
 import { translateMsrEtlError } from "../../util/errors";
+import { normalizeLocationSelection } from "../../util/location";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_location`;
 
@@ -54,8 +53,6 @@ function LocationImportTab({ intl, rights }) {
 
   const [edited, setEdited] = useState(() => loadSavedFilters() || {});
 
-  const fetchingMsrUbrLocations = useSelector((state) => state.msrEtl.fetchingMsrUbrLocations);
-  const errorMsrUbrLocations = useSelector((state) => state.msrEtl.errorMsrUbrLocations);
   const schedulingUbrLocationsImport = useSelector((state) => state.msrEtl.schedulingUbrLocationsImport);
   const errorScheduleUbrLocationsImport = useSelector((state) => state.msrEtl.errorScheduleUbrLocationsImport);
   const scheduledUbrLocationsImportClientMutationId = useSelector(
@@ -63,7 +60,6 @@ function LocationImportTab({ intl, rights }) {
   );
 
   useEffect(() => {
-    dispatch(clearMsrUbrLocations());
     dispatch(fetchActiveMsrEtlJob(MSR_ETL_JOB_TYPE.UBR_LOCATIONS_IMPORT));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -72,8 +68,17 @@ function LocationImportTab({ intl, rights }) {
   const { isTerminal: isTrackedJobTerminal } = useAsyncJob({
     clientMutationId: isImportTracked ? scheduledUbrLocationsImportClientMutationId : undefined,
   });
-  // duplicate-submission guard: a matching job is still RECEIVED/QUEUED/RUNNING
+  // duplicate-submission guard: a matching job is still RECEIVED/QUEUED/RUNNING,
+  // shared between Pull Data and Initial Pull - only one location import at a time
   const blockedByActiveJob = isImportTracked && !isTrackedJobTerminal;
+
+  const normalizedLocation = normalizeLocationSelection(edited.location);
+  const hasLocationFilter = !!(
+    normalizedLocation.district
+    || normalizedLocation.ta
+    || normalizedLocation.gvh
+    || normalizedLocation.village
+  );
 
   const save = (data) => {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -81,7 +86,8 @@ function LocationImportTab({ intl, rights }) {
 
   const onPullData = () => {
     save(edited);
-    dispatch(fetchMsrUbrLocations({ ...edited }));
+    dispatch(clearScheduleUbrLocationsImport());
+    dispatch(scheduleMsrUbrLocationsImport(edited));
   };
 
   const onInitialPull = () => {
@@ -101,7 +107,12 @@ function LocationImportTab({ intl, rights }) {
         rights={rights}
       />
       <Box className={classes.actions}>
-        <Button variant="contained" color="primary" onClick={onPullData} disabled={fetchingMsrUbrLocations}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={onPullData}
+          disabled={schedulingUbrLocationsImport || !hasLocationFilter || blockedByActiveJob}
+        >
           {formatMessage("filters.pullData")}
         </Button>
         {rights.includes(RIGHT_MSR_ETL_EXPORT) && (
@@ -121,9 +132,7 @@ function LocationImportTab({ intl, rights }) {
         )}
       </Box>
 
-      <ProgressOrError progress={fetchingMsrUbrLocations} error={errorMsrUbrLocations} />
-
-      {isImportTracked && (
+      {isImportTracked ? (
         <Box mt={2}>
           <PublishedComponent
             pubRef="core.AsyncJobProgress"
@@ -135,8 +144,7 @@ function LocationImportTab({ intl, rights }) {
             {formatMessage("etlServices.viewSyncLog")}
           </Link>
         </Box>
-      )}
-      {!isImportTracked && (
+      ) : (
         <ProgressOrError
           progress={schedulingUbrLocationsImport}
           error={translateMsrEtlError(errorScheduleUbrLocationsImport, formatMessage)}
