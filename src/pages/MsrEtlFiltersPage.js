@@ -10,6 +10,7 @@ import {
   Form,
   ProgressOrError,
   PublishedComponent,
+  Link,
 } from "@openimis/fe-core";
 import { injectIntl } from "react-intl";
 import { makeStyles } from "@material-ui/styles";
@@ -196,10 +197,17 @@ function MsrEtlFiltersPage({
       </Box>
 
       {isIndividualImportScheduled ? (
-        <PublishedComponent
-          pubRef="core.AsyncJobProgress"
-          clientMutationId={scheduledUbrIndividualsImportClientMutationId}
-        />
+        <Box>
+          <PublishedComponent
+            pubRef="core.AsyncJobProgress"
+            clientMutationId={scheduledUbrIndividualsImportClientMutationId}
+          />
+          <Link
+            to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrIndividualsImportClientMutationId}`}
+          >
+            {formatMessage("filters.viewSyncLog")}
+          </Link>
+        </Box>
       ) : (
         <ProgressOrError progress={fetching} error={error} />
       )}

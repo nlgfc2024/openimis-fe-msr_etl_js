@@ -22,6 +22,7 @@ import {
   PublishedComponent,
   historyPush,
   withModulesManager,
+  Link,
 } from '@openimis/fe-core';
 import { injectIntl } from 'react-intl';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
@@ -158,10 +159,17 @@ function MsrEtlConfigsPage({
         error={translateMsrEtlError(errorScheduleUbrLocationsImport, formatMessage)}
       />
       {!!scheduledUbrLocationsImportClientMutationId && (
-        <PublishedComponent
-          pubRef="core.AsyncJobProgress"
-          clientMutationId={scheduledUbrLocationsImportClientMutationId}
-        />
+        <>
+          <PublishedComponent
+            pubRef="core.AsyncJobProgress"
+            clientMutationId={scheduledUbrLocationsImportClientMutationId}
+          />
+          <Link
+            to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+          >
+            {formatMessage('etlServices.viewSyncLog')}
+          </Link>
+        </>
       )}
     </div>
   );
