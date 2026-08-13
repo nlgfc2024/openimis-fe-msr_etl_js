@@ -9,6 +9,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Grid,
   Chip,
   MenuItem,
   Select,
@@ -17,37 +18,54 @@ import {
   Tooltip,
 } from '@material-ui/core';
 import RefreshIcon from '@material-ui/icons/Refresh';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import {
   Helmet,
   useModulesManager,
   useTranslations,
   useAsyncJob,
   useParams,
+  useHistory,
   PublishedComponent,
   ProgressOrError,
   withModulesManager,
 } from '@openimis/fe-core';
 import { injectIntl } from 'react-intl';
-import { fetchMsrEtlSyncUnits, clearMsrEtlSyncUnits } from '../actions';
+import { fetchMsrEtlSyncUnits, clearMsrEtlSyncUnits, fetchMsrUbrLocations } from '../actions';
+import { buildUbrLocationNameMap } from '../util/location';
 import { MSR_ETL_MODULE_NAME } from '../constants';
 
 const FETCH_LIMIT = 300;
 
 const styles = (theme) => ({
   page: theme.page,
-  headerTitle: theme.table.title,
+  paper: theme.paper.paper,
+  paperHeader: theme.table.title,
   header: theme.table.header,
+  titleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+  },
+  titleLeft: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  titleRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+  },
+  content: {
+    padding: theme.spacing(2),
+  },
   summary: {
     display: 'flex',
     flexWrap: 'wrap',
     gap: theme.spacing(1),
-    margin: theme.spacing(2, 0),
-  },
-  toolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(2),
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(2),
   },
   truncationNotice: {
     marginTop: theme.spacing(1),
@@ -76,6 +94,7 @@ function groupCounts(units) {
 function MsrEtlSyncLogPage({ classes }) {
   const { client_mutation_id: clientMutationId } = useParams();
   const dispatch = useDispatch();
+  const history = useHistory();
   const modulesManager = useModulesManager();
   const { formatMessage, formatMessageWithValues } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
   const [syncStatusFilter, setSyncStatusFilter] = useState('');
@@ -87,6 +106,8 @@ function MsrEtlSyncLogPage({ classes }) {
   const totalCount = useSelector((state) => state.msrEtl.msrEtlSyncUnitsTotalCount);
   const fetching = useSelector((state) => state.msrEtl.fetchingMsrEtlSyncUnits);
   const error = useSelector((state) => state.msrEtl.errorMsrEtlSyncUnits);
+  const ubrLocationBatches = useSelector((state) => state.msrEtl.ubrLocationBatches);
+  const locationNameByCode = useMemo(() => buildUbrLocationNameMap(ubrLocationBatches), [ubrLocationBatches]);
 
   const refresh = () => {
     if (!jobUuid) return;
@@ -97,6 +118,11 @@ function MsrEtlSyncLogPage({ classes }) {
   };
 
   useEffect(() => {
+    dispatch(fetchMsrUbrLocations({}));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     refresh();
     return () => dispatch(clearMsrEtlSyncUnits());
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -104,73 +130,92 @@ function MsrEtlSyncLogPage({ classes }) {
 
   const groups = useMemo(() => groupCounts(units), [units]);
 
+  const unitCodeLabel = (unit) => {
+    const name = locationNameByCode[unit.unitCode];
+    return name ? `${unit.unitCode} - ${name}` : unit.unitCode;
+  };
+
   return (
     <div className={classes.page}>
       <Helmet title={formatMessage('syncLog.pageTitle')} />
-      <PublishedComponent pubRef="core.AsyncJobProgress" clientMutationId={clientMutationId} />
+      <Paper className={classes.paper}>
+        <Grid container className={`${classes.paperHeader} ${classes.titleRow}`}>
+          <Grid item className={classes.titleLeft}>
+            <Tooltip title={formatMessage('syncLog.back')}>
+              <IconButton onClick={() => history.goBack()} size="small">
+                <ChevronLeftIcon />
+              </IconButton>
+            </Tooltip>
+            <Typography variant="h6">{formatMessage('syncLog.pageTitle')}</Typography>
+          </Grid>
+          <Grid item className={classes.titleRight}>
+            <Select value={syncStatusFilter} onChange={(e) => setSyncStatusFilter(e.target.value)} displayEmpty>
+              <MenuItem value="">{formatMessage('syncLog.filter.all')}</MenuItem>
+              <MenuItem value="FAILED">{formatMessage('syncLog.filter.failedOnly')}</MenuItem>
+              <MenuItem value="SYNCED">{formatMessage('syncLog.filter.syncedOnly')}</MenuItem>
+              <MenuItem value="PENDING">{formatMessage('syncLog.filter.pendingOnly')}</MenuItem>
+            </Select>
+            <Tooltip title={formatMessage('syncLog.refresh')}>
+              <IconButton onClick={refresh} size="small">
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+          </Grid>
+        </Grid>
 
-      <div className={classes.summary}>
-        {Object.entries(groups).map(([unitType, counts]) => (
-          <Chip
-            key={unitType}
-            label={`${unitType}: ${counts.staged} staged, ${counts.synced} synced${
-              counts.failed ? `, ${counts.failed} failed` : ''
-            }`}
-            color={counts.failed ? 'secondary' : 'default'}
-          />
-        ))}
-      </div>
+        <div className={classes.content}>
+          <PublishedComponent pubRef="core.AsyncJobProgress" clientMutationId={clientMutationId} />
 
-      <div className={classes.toolbar}>
-        <Select value={syncStatusFilter} onChange={(e) => setSyncStatusFilter(e.target.value)} displayEmpty>
-          <MenuItem value="">{formatMessage('syncLog.filter.all')}</MenuItem>
-          <MenuItem value="FAILED">{formatMessage('syncLog.filter.failedOnly')}</MenuItem>
-          <MenuItem value="SYNCED">{formatMessage('syncLog.filter.syncedOnly')}</MenuItem>
-          <MenuItem value="PENDING">{formatMessage('syncLog.filter.pendingOnly')}</MenuItem>
-        </Select>
-        <Tooltip title={formatMessage('syncLog.refresh')}>
-          <IconButton onClick={refresh} size="small">
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
-      </div>
-
-      <TableContainer component={Paper}>
-        <Table size="small">
-          <TableHead className={classes.header}>
-            <TableRow className={classes.headerTitle}>
-              <TableCell>{formatMessage('syncLog.unitType')}</TableCell>
-              <TableCell>{formatMessage('syncLog.unitCode')}</TableCell>
-              <TableCell>{formatMessage('syncLog.stageStatus')}</TableCell>
-              <TableCell>{formatMessage('syncLog.syncStatus')}</TableCell>
-              <TableCell>{formatMessage('syncLog.attempts')}</TableCell>
-              <TableCell>{formatMessage('syncLog.errorDetail')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <ProgressOrError progress={fetching} error={error} />
-            {!fetching && units.map((unit) => (
-              <TableRow key={unit.id}>
-                <TableCell>{unit.unitType}</TableCell>
-                <TableCell>{unit.unitCode}</TableCell>
-                <TableCell>
-                  <Chip size="small" label={unit.stageStatus} color={SYNC_STATUS_COLOR[unit.stageStatus]} />
-                </TableCell>
-                <TableCell>
-                  <Chip size="small" label={unit.syncStatus} color={SYNC_STATUS_COLOR[unit.syncStatus]} />
-                </TableCell>
-                <TableCell>{unit.attempts}</TableCell>
-                <TableCell>{unit.errorDetail}</TableCell>
-              </TableRow>
+          <div className={classes.summary}>
+            {Object.entries(groups).map(([unitType, counts]) => (
+              <Chip
+                key={unitType}
+                label={`${unitType}: ${counts.staged} staged, ${counts.synced} synced${
+                  counts.failed ? `, ${counts.failed} failed` : ''
+                }`}
+                color={counts.failed ? 'secondary' : 'default'}
+              />
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {totalCount > units.length && (
-        <Typography variant="body2" color="textSecondary" className={classes.truncationNotice}>
-          {formatMessageWithValues('syncLog.truncated', { shown: units.length, total: totalCount })}
-        </Typography>
-      )}
+          </div>
+
+          <TableContainer>
+            <Table size="small">
+              <TableHead className={classes.header}>
+                <TableRow className={classes.paperHeader}>
+                  <TableCell>{formatMessage('syncLog.unitType')}</TableCell>
+                  <TableCell>{formatMessage('syncLog.unitCode')}</TableCell>
+                  <TableCell>{formatMessage('syncLog.stageStatus')}</TableCell>
+                  <TableCell>{formatMessage('syncLog.syncStatus')}</TableCell>
+                  <TableCell>{formatMessage('syncLog.attempts')}</TableCell>
+                  <TableCell>{formatMessage('syncLog.errorDetail')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <ProgressOrError progress={fetching} error={error} />
+                {!fetching && units.map((unit) => (
+                  <TableRow key={unit.id}>
+                    <TableCell>{unit.unitType}</TableCell>
+                    <TableCell>{unitCodeLabel(unit)}</TableCell>
+                    <TableCell>
+                      <Chip size="small" label={unit.stageStatus} color={SYNC_STATUS_COLOR[unit.stageStatus]} />
+                    </TableCell>
+                    <TableCell>
+                      <Chip size="small" label={unit.syncStatus} color={SYNC_STATUS_COLOR[unit.syncStatus]} />
+                    </TableCell>
+                    <TableCell>{unit.attempts}</TableCell>
+                    <TableCell>{unit.errorDetail}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          {totalCount > units.length && (
+            <Typography variant="body2" color="textSecondary" className={classes.truncationNotice}>
+              {formatMessageWithValues('syncLog.truncated', { shown: units.length, total: totalCount })}
+            </Typography>
+          )}
+        </div>
+      </Paper>
     </div>
   );
 }

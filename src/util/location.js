@@ -194,12 +194,31 @@ function getUbrHouseholdLocationParams(location) {
   return params;
 }
 
+/**
+ * Build a UBR location code -> name lookup from `msrUbrLocations` batches,
+ * e.g. { "210": "Dowa" }, for labeling sync log unit codes.
+ *
+ * @param {Array} batches - `ubrLocationBatches` from msrEtl redux state
+ * @returns {object} Map of geo_location_code -> geo_location_name
+ */
+function buildUbrLocationNameMap(batches) {
+  const map = {};
+  (batches || []).forEach((batch) => {
+    (Array.isArray(batch?.locations) ? batch.locations : []).forEach((location) => {
+      const code = location?.geo_location_code;
+      if (code) map[String(code)] = location?.geo_location_name || String(code);
+    });
+  });
+  return map;
+}
+
 export {
   getLocationCode,
   getLocationType,
   normalizeLocationSelection,
   getLocationFilterParams,
   getUbrHouseholdLocationParams,
+  buildUbrLocationNameMap,
   LOCATION_TYPES,
 };
 
@@ -211,6 +230,7 @@ if (typeof module !== "undefined" && module.exports) {
     normalizeLocationSelection,
     getLocationFilterParams,
     getUbrHouseholdLocationParams,
+    buildUbrLocationNameMap,
     LOCATION_TYPES,
   };
 }
