@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
-import { FormControl, Grid, InputLabel, Paper, Select, FormHelperText, MenuItem, Typography } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
 import { injectIntl } from "react-intl";
-import { formatMessage, withModulesManager } from "@openimis/fe-core";
+import { formatMessage, withModulesManager, Autocomplete } from "@openimis/fe-core";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
@@ -10,24 +10,6 @@ import { fetchMsrUbrLocations } from "../actions";
 
 const styles = (theme) => ({
   item: theme.paper.item,
-  panel: {
-    padding: theme.spacing(2),
-  },
-  title: {
-    marginBottom: theme.spacing(1),
-  },
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    gap: theme.spacing(1),
-  },
-  helper: {
-    marginTop: theme.spacing(0.5),
-    color: theme.palette.text.secondary,
-  },
-  error: {
-    marginTop: theme.spacing(0.5),
-  },
 });
 
 function toLocations(batch) {
@@ -50,6 +32,11 @@ function mapOptions(locations) {
     .filter(Boolean);
 }
 
+function findSelectedOption(options, value) {
+  if (!value) return null;
+  return options.find((option) => option.value === value) || null;
+}
+
 function LocationFiltersPanel({
   intl,
   edited,
@@ -57,7 +44,6 @@ function LocationFiltersPanel({
   readOnly,
   classes,
   fetchingMsrUbrLocations,
-  errorMsrUbrLocations,
   ubrLocationBatches,
   fetchMsrUbrLocations,
 }) {
@@ -114,112 +100,70 @@ function LocationFiltersPanel({
     });
   };
 
-  const onDistrictChange = (event) => {
-    const district = event.target.value || "";
+  const onDistrictChange = (option) => {
+    const district = option?.value || "";
     setLocation({ district });
     if (district) {
       fetchMsrUbrLocations({ location: { district } });
     }
   };
 
-  const onTaChange = (event) => {
-    const ta = event.target.value || "";
-    const nextLocation = { district: selectedDistrict, ta };
-    setLocation(nextLocation);
+  const onTaChange = (option) => {
+    const ta = option?.value || "";
+    setLocation({ district: selectedDistrict, ta });
   };
 
-  const onGvhChange = (event) => {
-    const gvh = event.target.value || "";
+  const onGvhChange = (option) => {
+    const gvh = option?.value || "";
     setLocation({ district: selectedDistrict, ta: selectedTa, gvh });
   };
 
+  const handleInputChange = () => {};
+
   return (
-    <Paper elevation={0} variant="outlined" className={classes.panel}>
-      <Typography variant="subtitle2" className={classes.title}>
-        {formatMessage(intl, "msrEtl", "location")}
-      </Typography>
-
-      <Grid container spacing={2} className={classes.container}>
-        <Grid item xs={12} md={6} className={classes.item}>
-          <FormControl variant="outlined" fullWidth size="small" disabled={readOnly || fetchingMsrUbrLocations}>
-            <InputLabel>{formatMessage(intl, "msrEtl", "location.district")}</InputLabel>
-            <Select
-              value={selectedDistrict}
-              onChange={onDistrictChange}
-              label={formatMessage(intl, "msrEtl", "location.district")}
-            >
-              <MenuItem value="" />
-              {districtOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} md={6} className={classes.item}>
-          <FormControl
-            variant="outlined"
-            fullWidth
-            size="small"
-            disabled={readOnly || !selectedDistrict || fetchingMsrUbrLocations}
-          >
-            <InputLabel>{formatMessage(intl, "msrEtl", "location.tas")}</InputLabel>
-            <Select value={selectedTa} onChange={onTaChange} label={formatMessage(intl, "msrEtl", "location.tas")}>
-              <MenuItem value="" />
-              {taOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12} md={6} className={classes.item}>
-          <FormControl
-            variant="outlined"
-            fullWidth
-            size="small"
-            disabled={readOnly || !selectedTa || fetchingMsrUbrLocations}
-          >
-            <InputLabel>{formatMessage(intl, "msrEtl", "location.gvh")}</InputLabel>
-            <Select value={selectedGvh} onChange={onGvhChange} label={formatMessage(intl, "msrEtl", "location.gvh")}>
-              <MenuItem value="" />
-              {gvhOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12}>
-          {!selectedDistrict && (
-            <FormHelperText className={classes.helper}>
-              {formatMessage(intl, "msrEtl", "location.hint.initial")}
-            </FormHelperText>
-          )}
-          {!!selectedDistrict && !selectedTa && (
-            <FormHelperText className={classes.helper}>
-              {formatMessage(intl, "msrEtl", "location.hint.selectTa")}
-            </FormHelperText>
-          )}
-          {!!selectedTa && !selectedGvh && (
-            <FormHelperText className={classes.helper}>
-              {formatMessage(intl, "msrEtl", "location.hint.selectGvh")}
-            </FormHelperText>
-          )}
-          {!!errorMsrUbrLocations && (
-            <FormHelperText error className={classes.error}>
-              {String(errorMsrUbrLocations)}
-            </FormHelperText>
-          )}
-        </Grid>
+    <Grid container className={classes.item}>
+      <Grid item xs={12} md={4} className={classes.item}>
+        <Autocomplete
+          module="msrEtl"
+          label={formatMessage(intl, "msrEtl", "location.district")}
+          options={districtOptions}
+          value={findSelectedOption(districtOptions, selectedDistrict)}
+          onChange={onDistrictChange}
+          onInputChange={handleInputChange}
+          getOptionLabel={(option) => option.label}
+          getOptionSelected={(option, v) => option.value === v?.value}
+          readOnly={readOnly || fetchingMsrUbrLocations}
+        />
       </Grid>
-    </Paper>
+
+      <Grid item xs={12} md={4} className={classes.item}>
+        <Autocomplete
+          module="msrEtl"
+          label={formatMessage(intl, "msrEtl", "location.tas")}
+          options={taOptions}
+          value={findSelectedOption(taOptions, selectedTa)}
+          onChange={onTaChange}
+          onInputChange={handleInputChange}
+          getOptionLabel={(option) => option.label}
+          getOptionSelected={(option, v) => option.value === v?.value}
+          readOnly={readOnly || !selectedDistrict || fetchingMsrUbrLocations}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4} className={classes.item}>
+        <Autocomplete
+          module="msrEtl"
+          label={formatMessage(intl, "msrEtl", "location.gvh")}
+          options={gvhOptions}
+          value={findSelectedOption(gvhOptions, selectedGvh)}
+          onChange={onGvhChange}
+          onInputChange={handleInputChange}
+          getOptionLabel={(option) => option.label}
+          getOptionSelected={(option, v) => option.value === v?.value}
+          readOnly={readOnly || !selectedTa || fetchingMsrUbrLocations}
+        />
+      </Grid>
+    </Grid>
   );
 }
 
@@ -242,7 +186,6 @@ LocationFiltersPanel.propTypes = {
   onEditedChanged: PropTypes.func.isRequired,
   readOnly: PropTypes.bool,
   fetchingMsrUbrLocations: PropTypes.bool,
-  errorMsrUbrLocations: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   ubrLocationBatches: PropTypes.arrayOf(
     PropTypes.shape({
       dataType: PropTypes.string,
@@ -252,11 +195,6 @@ LocationFiltersPanel.propTypes = {
   fetchMsrUbrLocations: PropTypes.func.isRequired,
   classes: PropTypes.shape({
     item: PropTypes.string,
-    panel: PropTypes.string,
-    title: PropTypes.string,
-    container: PropTypes.string,
-    helper: PropTypes.string,
-    error: PropTypes.string,
   }).isRequired,
 };
 
@@ -264,13 +202,11 @@ LocationFiltersPanel.defaultProps = {
   edited: null,
   readOnly: false,
   fetchingMsrUbrLocations: false,
-  errorMsrUbrLocations: null,
   ubrLocationBatches: [],
 };
 
 const mapStateToProps = (state) => ({
   fetchingMsrUbrLocations: state.msrEtl?.fetchingMsrUbrLocations,
-  errorMsrUbrLocations: state.msrEtl?.errorMsrUbrLocations,
   ubrLocationBatches: state.msrEtl?.ubrLocationBatches || [],
 });
 
