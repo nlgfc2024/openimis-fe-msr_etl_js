@@ -1,11 +1,9 @@
 // Disable due to core architecture
 /* eslint-disable camelcase */
-import { graphql, graphqlWithVariables, formatQuery } from "@openimis/fe-core";
+import { graphql, graphqlWithVariables, formatQuery, formatPageQueryWithCount } from "@openimis/fe-core";
 import { ACTION_TYPE } from "./reducer";
 import { CLEAR } from "./util/action-type";
 import { getLocationFilterParams, getUbrHouseholdLocationParams } from "./util/location";
-
-const ETL_SERVICES_PROJECTION = () => ["etlServices { nameOfService }"];
 
 function buildFilters(params) {
   return Object.entries(params)
@@ -16,11 +14,6 @@ function buildFilters(params) {
 // crypto.randomUUID requires a secure context; fall back on plain HTTP
 function generateClientMutationId() {
   return crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-export function fetchMsrEtlServices() {
-  const payload = formatQuery("msrEtlServicesByServiceName", [], ETL_SERVICES_PROJECTION());
-  return graphql(payload, ACTION_TYPE.FETCH_ETL_SERVICES);
 }
 
 const ACTIVE_JOB_STATUSES_GQL = "[RECEIVED, QUEUED, RUNNING]";
@@ -113,10 +106,6 @@ export function scheduleMsrUbrLocationsImport() {
   );
 }
 
-export const clearEtlServices = () => (dispatch) => {
-  dispatch({ type: CLEAR(ACTION_TYPE.FETCH_ETL_SERVICES) });
-};
-
 export const clearScheduleUbrIndividualsImport = () => (dispatch) => {
   dispatch({ type: CLEAR(ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT) });
 };
@@ -144,3 +133,11 @@ export function fetchMsrEtlSyncUnits(jobUuid, { unitType, syncStatus, limit = 10
 export const clearMsrEtlSyncUnits = () => (dispatch) => {
   dispatch({ type: CLEAR(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS) });
 };
+
+const RECENT_JOBS_PROJECTION = ["uuid", "jobType", "status", "clientMutationId", "createdAt", "finishedAt", "error"];
+
+// params come from Searcher's filtersToQueryParams (pagination/orderBy/defaultFilters)
+export function fetchRecentMsrEtlJobs(params) {
+  const payload = formatPageQueryWithCount("asyncJobs", params, RECENT_JOBS_PROJECTION);
+  return graphql(payload, ACTION_TYPE.FETCH_RECENT_MSR_ETL_JOBS);
+}
