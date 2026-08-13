@@ -10,6 +10,7 @@ import messages_en from './translations/en.json';
 import reducer from './reducer';
 import MsrEtlConfigsPage from './pages/MsrEtlConfigsPage';
 import MsrEtlFiltersPage from './pages/MsrEtlFiltersPage';
+import MsrEtlSyncLogPage from './pages/MsrEtlSyncLogPage';
 import {
   MSR_ETL_MODULE_NAME,
   RIGHT_MSR_ETL_SEARCH,
@@ -17,6 +18,7 @@ import {
 
 const ROUTE_MSR_ETL_CONFIGS = 'msr-etl';
 const ROUTE_MSR_ETL_FILTERS = 'msr-etl/filters';
+const ROUTE_MSR_ETL_SYNC_LOG = 'msr-etl/sync-log';
 
 const DEFAULT_CONFIG = {
   translations: [{ key: 'en', messages: flatten(messages_en) }],
@@ -24,6 +26,7 @@ const DEFAULT_CONFIG = {
   'core.Router': [
     { path: ROUTE_MSR_ETL_CONFIGS, component: MsrEtlConfigsPage },
     { path: `${ROUTE_MSR_ETL_FILTERS}/:service_name`, component: MsrEtlFiltersPage },
+    { path: `${ROUTE_MSR_ETL_SYNC_LOG}/:client_mutation_id`, component: MsrEtlSyncLogPage },
   ],
   'socialProtection.MainMenu': [
     {
@@ -37,6 +40,7 @@ const DEFAULT_CONFIG = {
   refs: [
     { key: `${MSR_ETL_MODULE_NAME}.route.configs`, ref: ROUTE_MSR_ETL_CONFIGS },
     { key: `${MSR_ETL_MODULE_NAME}.route.filters`, ref: ROUTE_MSR_ETL_FILTERS },
+    { key: `${MSR_ETL_MODULE_NAME}.route.syncLog`, ref: ROUTE_MSR_ETL_SYNC_LOG },
   ],
 };
 

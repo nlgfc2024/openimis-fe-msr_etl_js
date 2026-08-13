@@ -10,11 +10,27 @@
   "etlServices.editFilters.tooltip": "Configure import filters for this ETL service",
   "etlServices.initialPull": "Initial Pull",
   "etlServices.initialPull.tooltip": "Register a background job to pull all locations",
+  "etlServices.viewSyncLog": "View sync log",
 
   "filters.pageTitle": "Filters — {service}",
   "filters.pullData": "Pull Data",
+  "filters.viewSyncLog": "View sync log",
 
   "errors.gatewayTimeout": "This is taking longer than expected. The import continues in the background - check the progress panel for updates.",
+
+  "syncLog.pageTitle": "Sync Log",
+  "syncLog.filter.all": "All statuses",
+  "syncLog.filter.failedOnly": "Failed only",
+  "syncLog.filter.syncedOnly": "Synced only",
+  "syncLog.filter.pendingOnly": "Pending only",
+  "syncLog.refresh": "Refresh",
+  "syncLog.unitType": "Type",
+  "syncLog.unitCode": "Code",
+  "syncLog.stageStatus": "Stage Status",
+  "syncLog.syncStatus": "Sync Status",
+  "syncLog.attempts": "Attempts",
+  "syncLog.errorDetail": "Error Detail",
+  "syncLog.truncated": "Showing {shown} of {total} units. Use the status filter to narrow the results.",
 
   "household.filter.classification": "Wealth Classification",
   "household.filter.minAge": "Min Age",
