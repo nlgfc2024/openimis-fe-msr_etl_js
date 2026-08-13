@@ -3,18 +3,43 @@
 
   "dialog.cancel": "Cancel",
 
-  "etlServices.pageTitle": "Import Data - Filters",
-  "etlServices.serviceName": "ETL Service",
-  "etlServices.actions": "Actions",
-  "etlServices.editFilters": "Edit Filters",
-  "etlServices.editFilters.tooltip": "Configure import filters for this ETL service",
   "etlServices.initialPull": "Initial Pull",
   "etlServices.initialPull.tooltip": "Register a background job to pull all locations",
+  "etlServices.viewSyncLog": "View sync log",
 
-  "filters.pageTitle": "Filters — {service}",
   "filters.pullData": "Pull Data",
+  "filters.viewSyncLog": "View sync log",
 
   "errors.gatewayTimeout": "This is taking longer than expected. The import continues in the background - check the progress panel for updates.",
+
+  "landing.pageTitle": "MSR ETL",
+  "landing.tab.location": "Location",
+  "landing.tab.individuals": "Individuals",
+  "landing.tab.logs": "Logs",
+
+  "logs.pageTitle": "Recent Jobs",
+  "logs.jobType": "Job Type",
+  "logs.status": "Status",
+  "logs.createdAt": "Created",
+  "logs.finishedAt": "Finished",
+  "logs.error": "Error",
+  "logs.details": "Details",
+  "logs.viewSyncLog": "View sync log",
+
+  "syncLog.pageTitle": "Sync Log",
+  "syncLog.back": "Back",
+  "syncLog.filter.all": "All statuses",
+  "syncLog.filter.failedOnly": "Failed only",
+  "syncLog.filter.syncedOnly": "Synced only",
+  "syncLog.filter.pendingOnly": "Pending only",
+  "syncLog.refresh": "Refresh",
+  "syncLog.unitType": "Type",
+  "syncLog.unitCode": "Code",
+  "syncLog.stageStatus": "Stage Status",
+  "syncLog.syncStatus": "Sync Status",
+  "syncLog.attempts": "Attempts",
+  "syncLog.errorDetail": "Error Detail",
+  "syncLog.truncated": "Showing {shown} of {total} units. Use the status filter to narrow the results.",
 
   "household.filter.classification": "Wealth Classification",
   "household.filter.minAge": "Min Age",
@@ -28,8 +53,5 @@
   "location": "Location",
   "location.district": "District",
   "location.tas": "TAs",
-  "location.gvh": "GVH",
-  "location.hint.initial": "Select District to continue.",
-  "location.hint.selectTa": "Select TA to continue.",
-  "location.hint.selectGvh": "Select GVH to complete location selection."
+  "location.gvh": "GVH"
 }

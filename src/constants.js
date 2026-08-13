@@ -25,9 +25,8 @@ export const EXCLUSION_PROGRAM_OPTIONS = [
   { value: 4, label: 'Microfinance' },
 ];
 
-// ETL service class names (must match the Python class names on the backend)
-export const MSR_ETL_SERVICES = {
-  UBR_INDIVIDUAL_SERVICE: "UBRIndividualService",
-  UBR_LOCATION_SERVICE: "UBRLocationService",
-  EXAMPLE_INDIVIDUAL_ETL_SERVICE: "ExampleIndividualETLService",
+// core.AsyncJob job_type values (must match msr_etl/jobs.py on the backend)
+export const MSR_ETL_JOB_TYPE = {
+  UBR_INDIVIDUALS_IMPORT: "ubr_individuals_import",
+  UBR_LOCATIONS_IMPORT: "ubr_locations_import",
 };
