@@ -62,15 +62,7 @@ export function scheduleMsrUbrIndividualsImport(filters = {}) {
   );
 }
 
-/**
- * Fetch UBR locations filtered by geographic location codes.
- * Normalizes location filters and queries location data from MSR ETL service.
- *
- * @param {object} filters - Filter object with optional location property
- * @param {object} filters.location - Location codes (district, ta, gvh, village)
- * @returns {object} Redux action for location fetch
- */
-export function fetchMsrUbrLocations(filters = {}) {
+function buildMsrUbrLocationsPayload(filters = {}) {
   const projection = ["count", "batches { dataType count locations }"];
   const location = filters.location || filters;
   const params = {
@@ -83,8 +75,13 @@ export function fetchMsrUbrLocations(filters = {}) {
   if (location?.gvh) params.gvh = String(location.gvh);
   if (location?.village) params.village = String(location.village);
 
-  const payload = formatQuery("msrUbrLocations", buildFilters(params), projection);
-  return graphql(payload, ACTION_TYPE.FETCH_UBR_LOCATIONS);
+  return formatQuery("msrUbrLocations", buildFilters(params), projection);
+}
+
+// Populates the District/TA/GVH cascading dropdown options and the sync log
+// page's code-to-name lookup.
+export function fetchMsrUbrLocationOptions(filters = {}) {
+  return graphql(buildMsrUbrLocationsPayload(filters), ACTION_TYPE.FETCH_UBR_LOCATION_OPTIONS);
 }
 
 const SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION = `
@@ -96,11 +93,19 @@ const SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION = `
   }
 `;
 
-export function scheduleMsrUbrLocationsImport() {
+// Unfiltered (no location) schedules a full country-wide import; a location
+// filter scopes the job to just that district/ta/gvh/village.
+export function scheduleMsrUbrLocationsImport(filters = {}) {
   const clientMutationId = generateClientMutationId();
+  const location = filters.location || filters;
+  const input = {
+    ...getLocationFilterParams(location),
+    clientMutationId,
+  };
+
   return graphqlWithVariables(
     SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION,
-    { input: { clientMutationId } },
+    { input },
     ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT,
     { clientMutationId },
   );
@@ -108,10 +113,6 @@ export function scheduleMsrUbrLocationsImport() {
 
 export const clearScheduleUbrIndividualsImport = () => (dispatch) => {
   dispatch({ type: CLEAR(ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT) });
-};
-
-export const clearMsrUbrLocations = () => (dispatch) => {
-  dispatch({ type: CLEAR(ACTION_TYPE.FETCH_UBR_LOCATIONS) });
 };
 
 export const clearScheduleUbrLocationsImport = () => (dispatch) => {

@@ -50,8 +50,5 @@
   "household.filter.householdHasLabour": "Household Has Labour",
   "household.filter.femaleHeadedHousehold": "Female-Headed Household",
   "household.filter.exclusionPrograms": "Exclusion Programs",
-  "location": "Location",
-  "location.district": "District",
-  "location.tas": "TAs",
-  "location.gvh": "GVH"
+  "location": "Location"
 }

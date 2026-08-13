@@ -31,8 +31,8 @@ import {
   withModulesManager,
 } from '@openimis/fe-core';
 import { injectIntl } from 'react-intl';
-import { fetchMsrEtlSyncUnits, clearMsrEtlSyncUnits, fetchMsrUbrLocations } from '../actions';
-import { buildUbrLocationNameMap } from '../util/location';
+import { fetchMsrEtlSyncUnits, clearMsrEtlSyncUnits, fetchMsrUbrLocationOptions } from '../actions';
+import { buildUbrLocationNameMap, getUbrLocationName } from '../util/location';
 import { MSR_ETL_MODULE_NAME } from '../constants';
 
 const FETCH_LIMIT = 300;
@@ -106,8 +106,11 @@ function MsrEtlSyncLogPage({ classes }) {
   const totalCount = useSelector((state) => state.msrEtl.msrEtlSyncUnitsTotalCount);
   const fetching = useSelector((state) => state.msrEtl.fetchingMsrEtlSyncUnits);
   const error = useSelector((state) => state.msrEtl.errorMsrEtlSyncUnits);
-  const ubrLocationBatches = useSelector((state) => state.msrEtl.ubrLocationBatches);
-  const locationNameByCode = useMemo(() => buildUbrLocationNameMap(ubrLocationBatches), [ubrLocationBatches]);
+  const ubrLocationOptionBatches = useSelector((state) => state.msrEtl.ubrLocationOptionBatches);
+  const locationNameByCode = useMemo(
+    () => buildUbrLocationNameMap(ubrLocationOptionBatches),
+    [ubrLocationOptionBatches],
+  );
 
   const refresh = () => {
     if (!jobUuid) return;
@@ -118,7 +121,7 @@ function MsrEtlSyncLogPage({ classes }) {
   };
 
   useEffect(() => {
-    dispatch(fetchMsrUbrLocations({}));
+    dispatch(fetchMsrUbrLocationOptions({}));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -131,7 +134,7 @@ function MsrEtlSyncLogPage({ classes }) {
   const groups = useMemo(() => groupCounts(units), [units]);
 
   const unitCodeLabel = (unit) => {
-    const name = locationNameByCode[unit.unitCode];
+    const name = getUbrLocationName(locationNameByCode, unit.unitType, unit.unitCode);
     return name ? `${unit.unitCode} - ${name}` : unit.unitCode;
   };
 

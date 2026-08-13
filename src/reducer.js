@@ -8,8 +8,9 @@ export const ACTION_TYPE = {
   // Schedule UBR individuals import (background job)
   SCHEDULE_UBR_INDIVIDUALS_IMPORT: "MSR_ETL_SCHEDULE_UBR_INDIVIDUALS_IMPORT",
 
-  // Fetch UBR locations
-  FETCH_UBR_LOCATIONS: "MSR_ETL_FETCH_UBR_LOCATIONS",
+  // Fetch UBR locations for the District/TA/GVH cascading dropdown options
+  // and the sync log page's code-to-name lookup
+  FETCH_UBR_LOCATION_OPTIONS: "MSR_ETL_FETCH_UBR_LOCATION_OPTIONS",
 
   // Schedule full UBR location import (background job)
   SCHEDULE_UBR_LOCATIONS_IMPORT: "MSR_ETL_SCHEDULE_UBR_LOCATIONS_IMPORT",
@@ -35,10 +36,10 @@ const INITIAL_STATE = {
   errorScheduleUbrIndividualsImport: null,
   scheduledUbrIndividualsImportClientMutationId: null,
 
-  // UBR locations fetch result
-  fetchingMsrUbrLocations: false,
-  ubrLocationBatches: [],
-  errorMsrUbrLocations: null,
+  // District/TA/GVH cascading dropdown options
+  fetchingUbrLocationOptions: false,
+  ubrLocationOptionBatches: [],
+  errorUbrLocationOptions: null,
 
   // Schedule UBR locations import
   schedulingUbrLocationsImport: false,
@@ -121,40 +122,31 @@ function reducer(state = INITIAL_STATE, action) {
       };
 
     // -------------------------
-    // UBR locations
+    // UBR location dropdown options
     // -------------------------
-    case REQUEST(ACTION_TYPE.FETCH_UBR_LOCATIONS):
+    case REQUEST(ACTION_TYPE.FETCH_UBR_LOCATION_OPTIONS):
       return {
         ...state,
-        fetchingMsrUbrLocations: true,
-        errorMsrUbrLocations: null,
+        fetchingUbrLocationOptions: true,
+        errorUbrLocationOptions: null,
       };
 
-    case SUCCESS(ACTION_TYPE.FETCH_UBR_LOCATIONS):
+    case SUCCESS(ACTION_TYPE.FETCH_UBR_LOCATION_OPTIONS):
       return {
         ...state,
-        fetchingMsrUbrLocations: false,
-        ubrLocationBatches: mergeLocationBatches(
-          state.ubrLocationBatches,
+        fetchingUbrLocationOptions: false,
+        ubrLocationOptionBatches: mergeLocationBatches(
+          state.ubrLocationOptionBatches,
           action.payload.data?.msrUbrLocations?.batches ?? [],
         ),
-        errorMsrUbrLocations: formatGraphQLError(action.payload),
+        errorUbrLocationOptions: formatGraphQLError(action.payload),
       };
 
-    case ERROR(ACTION_TYPE.FETCH_UBR_LOCATIONS):
+    case ERROR(ACTION_TYPE.FETCH_UBR_LOCATION_OPTIONS):
       return {
         ...state,
-        fetchingMsrUbrLocations: false,
-        ubrLocationBatches: [],
-        errorMsrUbrLocations: formatServerError(action.payload),
-      };
-
-    case CLEAR(ACTION_TYPE.FETCH_UBR_LOCATIONS):
-      return {
-        ...state,
-        fetchingMsrUbrLocations: false,
-        ubrLocationBatches: [],
-        errorMsrUbrLocations: null,
+        fetchingUbrLocationOptions: false,
+        errorUbrLocationOptions: formatServerError(action.payload),
       };
 
     // -------------------------
