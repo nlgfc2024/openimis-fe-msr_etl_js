@@ -18,6 +18,9 @@ export const ACTION_TYPE = {
 
   // Duplicate-submission guard: is a job of this type already active?
   FETCH_ACTIVE_MSR_ETL_JOB: "MSR_ETL_FETCH_ACTIVE_MSR_ETL_JOB",
+
+  // Per-unit staging/sync status for the sync-log page
+  FETCH_MSR_ETL_SYNC_UNITS: "MSR_ETL_FETCH_MSR_ETL_SYNC_UNITS",
 };
 
 const JOB_TYPE_TO_CLIENT_MUTATION_ID_FIELD = {
@@ -52,6 +55,13 @@ const INITIAL_STATE = {
   schedulingUbrLocationsImport: false,
   errorScheduleUbrLocationsImport: null,
   scheduledUbrLocationsImportClientMutationId: null,
+
+  // Sync-log page
+  fetchingMsrEtlSyncUnits: false,
+  msrEtlSyncUnits: [],
+  msrEtlSyncUnitsCount: 0,
+  msrEtlSyncUnitsTotalCount: 0,
+  errorMsrEtlSyncUnits: null,
 };
 
 function mergeLocationBatches(previousBatches = [], incomingBatches = []) {
@@ -230,6 +240,45 @@ function reducer(state = INITIAL_STATE, action) {
       // never overwrite a job already tracked from this page (e.g. just scheduled)
       return { ...state, [field]: state[field] || activeJob.clientMutationId };
     }
+
+    // -------------------------
+    // Sync-log page
+    // -------------------------
+    case REQUEST(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS):
+      return {
+        ...state,
+        fetchingMsrEtlSyncUnits: true,
+        errorMsrEtlSyncUnits: null,
+      };
+
+    case SUCCESS(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS): {
+      const result = action.payload.data?.msrEtlSyncUnits;
+      return {
+        ...state,
+        fetchingMsrEtlSyncUnits: false,
+        msrEtlSyncUnits: result?.units ?? [],
+        msrEtlSyncUnitsCount: result?.count ?? 0,
+        msrEtlSyncUnitsTotalCount: result?.totalCount ?? 0,
+        errorMsrEtlSyncUnits: formatGraphQLError(action.payload),
+      };
+    }
+
+    case ERROR(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS):
+      return {
+        ...state,
+        fetchingMsrEtlSyncUnits: false,
+        errorMsrEtlSyncUnits: formatServerError(action.payload),
+      };
+
+    case CLEAR(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS):
+      return {
+        ...state,
+        fetchingMsrEtlSyncUnits: false,
+        msrEtlSyncUnits: [],
+        msrEtlSyncUnitsCount: 0,
+        msrEtlSyncUnitsTotalCount: 0,
+        errorMsrEtlSyncUnits: null,
+      };
 
     default:
       return state;

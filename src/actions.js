@@ -128,3 +128,19 @@ export const clearMsrUbrLocations = () => (dispatch) => {
 export const clearScheduleUbrLocationsImport = () => (dispatch) => {
   dispatch({ type: CLEAR(ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT) });
 };
+
+const SYNC_UNITS_PROJECTION = [
+  "count",
+  "totalCount",
+  "units { id unitType unitCode stageStatus syncStatus recordCount errorDetail attempts updatedAt }",
+];
+
+export function fetchMsrEtlSyncUnits(jobUuid, { unitType, syncStatus, limit = 100, offset = 0 } = {}) {
+  const filters = buildFilters({ jobUuid, unitType, syncStatus, limit, offset });
+  const payload = formatQuery("msrEtlSyncUnits", filters, SYNC_UNITS_PROJECTION);
+  return graphql(payload, ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS);
+}
+
+export const clearMsrEtlSyncUnits = () => (dispatch) => {
+  dispatch({ type: CLEAR(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS) });
+};
