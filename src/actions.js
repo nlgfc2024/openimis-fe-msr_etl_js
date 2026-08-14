@@ -1,11 +1,9 @@
 // Disable due to core architecture
 /* eslint-disable camelcase */
-import { graphql, graphqlWithVariables, formatQuery } from "@openimis/fe-core";
+import { graphql, graphqlWithVariables, formatQuery, formatPageQueryWithCount } from "@openimis/fe-core";
 import { ACTION_TYPE } from "./reducer";
 import { CLEAR } from "./util/action-type";
 import { getLocationFilterParams, getUbrHouseholdLocationParams } from "./util/location";
-
-const ETL_SERVICES_PROJECTION = () => ["etlServices { nameOfService }"];
 
 function buildFilters(params) {
   return Object.entries(params)
@@ -16,11 +14,6 @@ function buildFilters(params) {
 // crypto.randomUUID requires a secure context; fall back on plain HTTP
 function generateClientMutationId() {
   return crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-export function fetchMsrEtlServices() {
-  const payload = formatQuery("msrEtlServicesByServiceName", [], ETL_SERVICES_PROJECTION());
-  return graphql(payload, ACTION_TYPE.FETCH_ETL_SERVICES);
 }
 
 const ACTIVE_JOB_STATUSES_GQL = "[RECEIVED, QUEUED, RUNNING]";
@@ -69,15 +62,7 @@ export function scheduleMsrUbrIndividualsImport(filters = {}) {
   );
 }
 
-/**
- * Fetch UBR locations filtered by geographic location codes.
- * Normalizes location filters and queries location data from MSR ETL service.
- *
- * @param {object} filters - Filter object with optional location property
- * @param {object} filters.location - Location codes (district, ta, gvh, village)
- * @returns {object} Redux action for location fetch
- */
-export function fetchMsrUbrLocations(filters = {}) {
+function buildMsrUbrLocationsPayload(filters = {}) {
   const projection = ["count", "batches { dataType count locations }"];
   const location = filters.location || filters;
   const params = {
@@ -90,8 +75,13 @@ export function fetchMsrUbrLocations(filters = {}) {
   if (location?.gvh) params.gvh = String(location.gvh);
   if (location?.village) params.village = String(location.village);
 
-  const payload = formatQuery("msrUbrLocations", buildFilters(params), projection);
-  return graphql(payload, ACTION_TYPE.FETCH_UBR_LOCATIONS);
+  return formatQuery("msrUbrLocations", buildFilters(params), projection);
+}
+
+// Populates the District/TA/GVH cascading dropdown options and the sync log
+// page's code-to-name lookup.
+export function fetchMsrUbrLocationOptions(filters = {}) {
+  return graphql(buildMsrUbrLocationsPayload(filters), ACTION_TYPE.FETCH_UBR_LOCATION_OPTIONS);
 }
 
 const SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION = `
@@ -103,28 +93,52 @@ const SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION = `
   }
 `;
 
-export function scheduleMsrUbrLocationsImport() {
+// Unfiltered (no location) schedules a full country-wide import; a location
+// filter scopes the job to just that district/ta/gvh/village.
+export function scheduleMsrUbrLocationsImport(filters = {}) {
   const clientMutationId = generateClientMutationId();
+  const location = filters.location || filters;
+  const input = {
+    ...getLocationFilterParams(location),
+    clientMutationId,
+  };
+
   return graphqlWithVariables(
     SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION,
-    { input: { clientMutationId } },
+    { input },
     ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT,
     { clientMutationId },
   );
 }
 
-export const clearEtlServices = () => (dispatch) => {
-  dispatch({ type: CLEAR(ACTION_TYPE.FETCH_ETL_SERVICES) });
-};
-
 export const clearScheduleUbrIndividualsImport = () => (dispatch) => {
   dispatch({ type: CLEAR(ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT) });
-};
-
-export const clearMsrUbrLocations = () => (dispatch) => {
-  dispatch({ type: CLEAR(ACTION_TYPE.FETCH_UBR_LOCATIONS) });
 };
 
 export const clearScheduleUbrLocationsImport = () => (dispatch) => {
   dispatch({ type: CLEAR(ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT) });
 };
+
+const SYNC_UNITS_PROJECTION = [
+  "count",
+  "totalCount",
+  "units { id unitType unitCode stageStatus syncStatus recordCount errorDetail attempts updatedAt }",
+];
+
+export function fetchMsrEtlSyncUnits(jobUuid, { unitType, syncStatus, limit = 100, offset = 0 } = {}) {
+  const filters = buildFilters({ jobUuid, unitType, syncStatus, limit, offset });
+  const payload = formatQuery("msrEtlSyncUnits", filters, SYNC_UNITS_PROJECTION);
+  return graphql(payload, ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS);
+}
+
+export const clearMsrEtlSyncUnits = () => (dispatch) => {
+  dispatch({ type: CLEAR(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS) });
+};
+
+const RECENT_JOBS_PROJECTION = ["uuid", "jobType", "status", "clientMutationId", "createdAt", "finishedAt", "error"];
+
+// params come from Searcher's filtersToQueryParams (pagination/orderBy/defaultFilters)
+export function fetchRecentMsrEtlJobs(params) {
+  const payload = formatPageQueryWithCount("asyncJobs", params, RECENT_JOBS_PROJECTION);
+  return graphql(payload, ACTION_TYPE.FETCH_RECENT_MSR_ETL_JOBS);
+}

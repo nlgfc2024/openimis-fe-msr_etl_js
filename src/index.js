@@ -1,42 +1,36 @@
-// Disable due to core architecture
-/* eslint-disable camelcase */
-/* eslint-disable import/prefer-default-export */
-import flatten from 'flat';
-import { FormattedMessage } from '@openimis/fe-core';
-import React from 'react';
-import SyncAltIcon from '@material-ui/icons/SyncAlt';
+import flatten from "flat";
+import { FormattedMessage } from "@openimis/fe-core";
+import React from "react";
+import SyncAltIcon from "@material-ui/icons/SyncAlt";
 
-import messages_en from './translations/en.json';
-import reducer from './reducer';
-import MsrEtlConfigsPage from './pages/MsrEtlConfigsPage';
-import MsrEtlFiltersPage from './pages/MsrEtlFiltersPage';
-import {
-  MSR_ETL_MODULE_NAME,
-  RIGHT_MSR_ETL_SEARCH,
-} from './constants';
+import messages_en from "./translations/en.json";
+import reducer from "./reducer";
+import MsrEtlLandingPage from "./pages/MsrEtlLandingPage";
+import MsrEtlSyncLogPage from "./pages/MsrEtlSyncLogPage";
+import { MSR_ETL_MODULE_NAME, RIGHT_MSR_ETL_SEARCH } from "./constants";
 
-const ROUTE_MSR_ETL_CONFIGS = 'msr-etl';
-const ROUTE_MSR_ETL_FILTERS = 'msr-etl/filters';
+const ROUTE_MSR_ETL_LANDING = "msr-etl";
+const ROUTE_MSR_ETL_SYNC_LOG = "msr-etl/sync-log";
 
 const DEFAULT_CONFIG = {
-  translations: [{ key: 'en', messages: flatten(messages_en) }],
+  translations: [{ key: "en", messages: flatten(messages_en) }],
   reducers: [{ key: MSR_ETL_MODULE_NAME, reducer }],
-  'core.Router': [
-    { path: ROUTE_MSR_ETL_CONFIGS, component: MsrEtlConfigsPage },
-    { path: `${ROUTE_MSR_ETL_FILTERS}/:service_name`, component: MsrEtlFiltersPage },
+  "core.Router": [
+    { path: ROUTE_MSR_ETL_LANDING, component: MsrEtlLandingPage },
+    { path: `${ROUTE_MSR_ETL_SYNC_LOG}/:client_mutation_id`, component: MsrEtlSyncLogPage },
   ],
-  'socialProtection.MainMenu': [
+  "socialProtection.MainMenu": [
     {
       text: <FormattedMessage module={MSR_ETL_MODULE_NAME} id="menu.importDataFilters" />,
       icon: <SyncAltIcon />,
-      route: `/${ROUTE_MSR_ETL_CONFIGS}`,
+      route: `/${ROUTE_MSR_ETL_LANDING}`,
       filter: (rights) => rights.includes(RIGHT_MSR_ETL_SEARCH),
       id: `${MSR_ETL_MODULE_NAME}.configs`,
     },
   ],
   refs: [
-    { key: `${MSR_ETL_MODULE_NAME}.route.configs`, ref: ROUTE_MSR_ETL_CONFIGS },
-    { key: `${MSR_ETL_MODULE_NAME}.route.filters`, ref: ROUTE_MSR_ETL_FILTERS },
+    { key: `${MSR_ETL_MODULE_NAME}.route.landing`, ref: ROUTE_MSR_ETL_LANDING },
+    { key: `${MSR_ETL_MODULE_NAME}.route.syncLog`, ref: ROUTE_MSR_ETL_SYNC_LOG },
   ],
 };
 
