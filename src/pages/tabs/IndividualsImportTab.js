@@ -82,6 +82,8 @@ function IndividualsImportTab({ intl, rights }) {
 
   const onClear = () => {
     dispatch(clearScheduleUbrIndividualsImport());
+    localStorage.removeItem(STORAGE_KEY);
+    setEdited({});
   };
 
   return (
@@ -106,7 +108,7 @@ function IndividualsImportTab({ intl, rights }) {
         >
           {formatMessage("filters.pullData")}
         </Button>
-        <Button variant="outlined" onClick={onClear} disabled={!isImportTracked || blockedByActiveJob}>
+        <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
           {formatMessage("filters.clear")}
         </Button>
       </Box>

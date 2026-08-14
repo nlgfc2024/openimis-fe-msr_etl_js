@@ -97,6 +97,8 @@ function LocationImportTab({ intl, rights }) {
 
   const onClear = () => {
     dispatch(clearScheduleUbrLocationsImport());
+    localStorage.removeItem(STORAGE_KEY);
+    setEdited({});
   };
 
   return (
@@ -134,7 +136,7 @@ function LocationImportTab({ intl, rights }) {
             </span>
           </Tooltip>
         )}
-        <Button variant="outlined" onClick={onClear} disabled={!isImportTracked || blockedByActiveJob}>
+        <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
           {formatMessage("filters.clear")}
         </Button>
       </Box>
