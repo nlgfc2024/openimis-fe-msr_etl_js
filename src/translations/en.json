@@ -9,6 +9,7 @@
 
   "filters.pullData": "Pull Data",
   "filters.viewSyncLog": "View sync log",
+  "filters.clear": "Clear",
 
   "errors.gatewayTimeout": "This is taking longer than expected. The import continues in the background - check the progress panel for updates.",
 

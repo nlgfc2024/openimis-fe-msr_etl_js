@@ -56,7 +56,6 @@ function IndividualsImportTab({ intl, rights }) {
   const clientMutationId = useSelector((state) => state.msrEtl.scheduledUbrIndividualsImportClientMutationId);
 
   useEffect(() => {
-    dispatch(clearScheduleUbrIndividualsImport());
     dispatch(fetchActiveMsrEtlJob(MSR_ETL_JOB_TYPE.UBR_INDIVIDUALS_IMPORT));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -81,6 +80,10 @@ function IndividualsImportTab({ intl, rights }) {
     dispatch(scheduleMsrUbrIndividualsImport(edited));
   };
 
+  const onClear = () => {
+    dispatch(clearScheduleUbrIndividualsImport());
+  };
+
   return (
     <div>
       <Form
@@ -103,14 +106,27 @@ function IndividualsImportTab({ intl, rights }) {
         >
           {formatMessage("filters.pullData")}
         </Button>
+        <Button variant="outlined" onClick={onClear} disabled={!isImportTracked || blockedByActiveJob}>
+          {formatMessage("filters.clear")}
+        </Button>
       </Box>
 
       {isImportTracked ? (
         <Box mt={2}>
-          <PublishedComponent pubRef="core.AsyncJobProgress" clientMutationId={clientMutationId} />
-          <Link to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}>
-            {formatMessage("filters.viewSyncLog")}
-          </Link>
+          <PublishedComponent
+            pubRef="core.AsyncJobProgress"
+            clientMutationId={clientMutationId}
+            actions={
+              <Button
+                size="small"
+                variant="outlined"
+                component={Link}
+                to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}
+              >
+                {formatMessage("filters.viewSyncLog")}
+              </Button>
+            }
+          />
         </Box>
       ) : (
         <ProgressOrError progress={scheduling} error={translateMsrEtlError(rawError, formatMessage)} />

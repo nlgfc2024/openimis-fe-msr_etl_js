@@ -95,6 +95,10 @@ function LocationImportTab({ intl, rights }) {
     dispatch(scheduleMsrUbrLocationsImport());
   };
 
+  const onClear = () => {
+    dispatch(clearScheduleUbrLocationsImport());
+  };
+
   return (
     <div>
       <Form
@@ -130,6 +134,9 @@ function LocationImportTab({ intl, rights }) {
             </span>
           </Tooltip>
         )}
+        <Button variant="outlined" onClick={onClear} disabled={!isImportTracked || blockedByActiveJob}>
+          {formatMessage("filters.clear")}
+        </Button>
       </Box>
 
       {isImportTracked ? (
@@ -137,12 +144,17 @@ function LocationImportTab({ intl, rights }) {
           <PublishedComponent
             pubRef="core.AsyncJobProgress"
             clientMutationId={scheduledUbrLocationsImportClientMutationId}
+            actions={
+              <Button
+                size="small"
+                variant="outlined"
+                component={Link}
+                to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+              >
+                {formatMessage("etlServices.viewSyncLog")}
+              </Button>
+            }
           />
-          <Link
-            to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
-          >
-            {formatMessage("etlServices.viewSyncLog")}
-          </Link>
         </Box>
       ) : (
         <ProgressOrError
