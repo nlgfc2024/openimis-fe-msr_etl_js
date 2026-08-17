@@ -104,7 +104,6 @@ function HouseholdFiltersPanel({
           max={100}
           value={edited.lowerPercentileCategory ?? 0}
           onChange={onLowerPercentileCategoryChange}
-          readOnly
         />
       </Grid>
 
@@ -117,7 +116,6 @@ function HouseholdFiltersPanel({
           max={100}
           value={edited.upperPercentileCategory ?? 100}
           onChange={onUpperPercentileCategoryChange}
-          readOnly
         />
       </Grid>
 

@@ -52,7 +52,7 @@ function getLocationCode(value) {
 
 /**
  * Determine location type from various value formats.
- * Maps aliases to canonical location types (district, ta, village).
+ * Maps aliases to canonical location types (district, ta, gvh, village).
  *
  * @param {object} value - The location object to inspect
  * @returns {string|null} Canonical location type or null if not recognized
@@ -76,7 +76,7 @@ function getLocationType(value) {
 
 /**
  * Recursively traverse location parent hierarchy.
- * Collects district, ta, and village codes from nested location objects.
+ * Collects district, ta, gvh, and village codes from nested location objects.
  *
  * @param {object} node - Location node to traverse
  * @param {object} result - Accumulator for collected codes
@@ -103,10 +103,10 @@ function traverseLocationHierarchy(node, result) {
 /**
  * Normalize location selection from various input formats.
  * Handles cascader array output and hierarchical objects.
- * Returns standardized object with district, ta, and village codes.
+ * Returns standardized object with district, ta, gvh, and village codes.
  *
  * @param {Array|object} value - Location selection (from cascader or object)
- * @returns {object} Normalized location with district, ta, village keys
+ * @returns {object} Normalized location with district, ta, gvh, village keys
  */
 function normalizeLocationSelection(value) {
   if (!value) return {};
@@ -153,7 +153,7 @@ function normalizeLocationSelection(value) {
  * Convert normalized location to GraphQL query parameters.
  * Filters out empty values for clean API calls.
  *
- * @param {object} location - Location object (with district, ta, village keys)
+ * @param {object} location - Location object (with district, ta, gvh, village keys)
  * @returns {object} Query parameters with only non-empty values
  */
 function getLocationFilterParams(location) {
@@ -169,7 +169,39 @@ function getLocationFilterParams(location) {
   return params;
 }
 
-export { getLocationCode, getLocationType, normalizeLocationSelection, getLocationFilterParams, LOCATION_TYPES };
+/**
+ * Build the ordered location parameters required by UBR household imports.
+ * District and TA are mandatory. GVH and Village are optional, but a Village
+ * is only valid when its parent GVH is present.
+ *
+ * @param {object|Array} location - Location selection or hierarchy
+ * @returns {object} Ordered District → TA → GVH → Village parameters
+ * @throws {Error} When required hierarchy levels are missing
+ */
+function getUbrHouseholdLocationParams(location) {
+  const { district, ta, gvh, village } = normalizeLocationSelection(location);
+
+  if (!district || !ta) {
+    throw new Error("District and TA are required for UBR household imports.");
+  }
+  if (village && !gvh) {
+    throw new Error("GVH is required when Village is provided.");
+  }
+
+  const params = { district, ta };
+  if (gvh) params.gvh = gvh;
+  if (village) params.village = village;
+  return params;
+}
+
+export {
+  getLocationCode,
+  getLocationType,
+  normalizeLocationSelection,
+  getLocationFilterParams,
+  getUbrHouseholdLocationParams,
+  LOCATION_TYPES,
+};
 
 // CommonJS compatibility for Node.js tests
 if (typeof module !== "undefined" && module.exports) {
@@ -178,6 +210,7 @@ if (typeof module !== "undefined" && module.exports) {
     getLocationType,
     normalizeLocationSelection,
     getLocationFilterParams,
+    getUbrHouseholdLocationParams,
     LOCATION_TYPES,
   };
 }

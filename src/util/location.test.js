@@ -1,7 +1,13 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { normalizeLocationSelection, getLocationFilterParams, getLocationCode, getLocationType } = require("./location");
+const {
+  normalizeLocationSelection,
+  getLocationFilterParams,
+  getUbrHouseholdLocationParams,
+  getLocationCode,
+  getLocationType,
+} = require("./location");
 
 // Test suite: Location normalization
 test("Location Code Extraction", async (t) => {
@@ -52,13 +58,18 @@ test("Location Normalization", async (t) => {
       name: "Village A",
       type: "V",
       parent: {
-        code: "10101",
-        name: "TA One",
-        type: "D",
+        code: "1010101",
+        name: "GVH One",
+        type: "W",
         parent: {
-          code: "101",
-          name: "District One",
-          type: "R",
+          code: "10101",
+          name: "TA One",
+          type: "D",
+          parent: {
+            code: "101",
+            name: "District One",
+            type: "R",
+          },
         },
       },
     };
@@ -66,6 +77,7 @@ test("Location Normalization", async (t) => {
     assert.deepStrictEqual(normalizeLocationSelection(selection), {
       district: "101",
       ta: "10101",
+      gvh: "1010101",
       village: "10101001",
     });
   });
@@ -74,12 +86,14 @@ test("Location Normalization", async (t) => {
     const selection = [
       { code: "101", type: "R" },
       { code: "10101", type: "D" },
+      { code: "1010101", type: "W" },
       { code: "10101001", type: "V" },
     ];
 
     assert.deepStrictEqual(normalizeLocationSelection(selection), {
       district: "101",
       ta: "10101",
+      gvh: "1010101",
       village: "10101001",
     });
   });
@@ -107,11 +121,15 @@ test("Location Filter Parameters", async (t) => {
       code: "10101001",
       type: "V",
       parent: {
-        code: "10101",
-        type: "D",
+        code: "1010101",
+        type: "W",
         parent: {
-          code: "101",
-          type: "R",
+          code: "10101",
+          type: "D",
+          parent: {
+            code: "101",
+            type: "R",
+          },
         },
       },
     };
@@ -119,6 +137,7 @@ test("Location Filter Parameters", async (t) => {
     assert.deepStrictEqual(getLocationFilterParams(selection), {
       district: "101",
       ta: "10101",
+      gvh: "1010101",
       village: "10101001",
     });
   });
@@ -126,6 +145,50 @@ test("Location Filter Parameters", async (t) => {
   await t.test("excludes undefined values from params", () => {
     const params = getLocationFilterParams({ code: "101", type: "R" });
     assert.strictEqual(params.ta, undefined);
+    assert.strictEqual(params.gvh, undefined);
     assert.strictEqual(params.village, undefined);
+  });
+});
+
+test("UBR Household Location Parameters", async (t) => {
+  await t.test("returns the complete hierarchy in relationship order", () => {
+    const selection = {
+      district: "101",
+      ta: "10101",
+      gvh: "1010101",
+      village: "101010101",
+    };
+
+    assert.deepStrictEqual(getUbrHouseholdLocationParams(selection), {
+      district: "101",
+      ta: "10101",
+      gvh: "1010101",
+      village: "101010101",
+    });
+  });
+
+  await t.test("allows a TA-scoped request without GVH or Village", () => {
+    assert.deepStrictEqual(
+      getUbrHouseholdLocationParams({ district: "101", ta: "10101" }),
+      { district: "101", ta: "10101" },
+    );
+  });
+
+  await t.test("rejects Village when its parent GVH is missing", () => {
+    assert.throws(
+      () => getUbrHouseholdLocationParams({
+        district: "101",
+        ta: "10101",
+        village: "101010101",
+      }),
+      /GVH is required when Village is provided/,
+    );
+  });
+
+  await t.test("rejects requests missing District or TA", () => {
+    assert.throws(
+      () => getUbrHouseholdLocationParams({ district: "101" }),
+      /District and TA are required/,
+    );
   });
 });

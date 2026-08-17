@@ -23,6 +23,7 @@ import {
   fetchMsrUbrLocations,
   clearMsrUbrLocations,
 } from "../actions";
+import { normalizeLocationSelection } from "../util/location";
 
 const SERVICE_KIND = {
   INDIVIDUAL: "individual",
@@ -129,6 +130,12 @@ function MsrEtlFiltersPage({
   const fetching = serviceKind === SERVICE_KIND.LOCATION ? fetchingMsrUbrLocations : executingUbrIndividualsImport;
 
   const error = serviceKind === SERVICE_KIND.LOCATION ? errorMsrUbrLocations : errorUbrIndividualsImport;
+  const normalizedLocation = normalizeLocationSelection(edited.location);
+  const mandatoryFieldsEmpty =
+    serviceKind === SERVICE_KIND.INDIVIDUAL &&
+    (!normalizedLocation.district ||
+      !normalizedLocation.ta ||
+      (normalizedLocation.village && !normalizedLocation.gvh));
 
   const filterPanel = renderFilterPanel();
 
@@ -150,14 +157,14 @@ function MsrEtlFiltersPage({
         edited={edited}
         onEditedChanged={setEdited}
         reset={reset}
-        mandatoryFieldsEmpty={null}
-        canSave={() => true}
+        mandatoryFieldsEmpty={mandatoryFieldsEmpty}
+        canSave={() => !mandatoryFieldsEmpty}
         HeadPanel={filterPanel}
         actions={[]}
         rights={rights}
       />
       <Box className={classes.actions}>
-        <Button variant="contained" color="primary" onClick={onPullData}>
+        <Button variant="contained" color="primary" onClick={onPullData} disabled={fetching || mandatoryFieldsEmpty}>
           {formatMessage("filters.pullData")}
         </Button>
         <Button variant="outlined" onClick={back}>
