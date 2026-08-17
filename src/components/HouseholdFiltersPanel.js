@@ -3,7 +3,14 @@ import { Grid } from '@material-ui/core';
 import { injectIntl } from 'react-intl';
 import { PublishedComponent, formatMessage, Autocomplete, NumberInput, withModulesManager } from '@openimis/fe-core';
 import { withTheme, withStyles } from '@material-ui/core/styles';
-import { MSR_ETL_MODULE_NAME, DEFAULT_CLASSIFICATIONS, YES_NO_OPTIONS, EXCLUSION_PROGRAM_OPTIONS } from '../constants';
+import {
+  MSR_ETL_MODULE_NAME,
+  DEFAULT_CLASSIFICATIONS,
+  YES_NO_OPTIONS,
+  HOUSEHOLD_HEAD_GENDER_OPTIONS,
+  EXCLUSION_PROGRAM_OPTIONS,
+} from '../constants';
+import { findSelectedOption } from '../util/options';
 
 const styles = (theme) => ({
   item: theme.paper.item
@@ -16,11 +23,6 @@ function loadSavedFilters(serviceName) {
   } catch {
     return null;
   }
-}
-
-function findSelectedOption(options, value) {
-  if (!value) return null;
-  return options.find((option) => option.value === value) || null;
 }
 
 function findSelectedOptions(options, values) {
@@ -173,8 +175,8 @@ function HouseholdFiltersPanel({
         <Autocomplete
           module={MSR_ETL_MODULE_NAME}
           label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'household.filter.femaleHeadedHousehold')}
-          options={YES_NO_OPTIONS}
-          value={findSelectedOption(YES_NO_OPTIONS, edited.femaleHeadedHousehold)}
+          options={HOUSEHOLD_HEAD_GENDER_OPTIONS}
+          value={findSelectedOption(HOUSEHOLD_HEAD_GENDER_OPTIONS, edited.femaleHeadedHousehold)}
           onChange={onFemaleHeadedHouseholdChange}
           onInputChange={handleInputChange}
           getOptionLabel={(option) => option.label}
