@@ -3,7 +3,8 @@
 import { graphql, graphqlWithVariables, formatQuery, formatPageQueryWithCount } from "@openimis/fe-core";
 import { ACTION_TYPE } from "./reducer";
 import { CLEAR } from "./util/action-type";
-import { getLocationFilterParams, getUbrHouseholdLocationParams } from "./util/location";
+import { getLocationFilterParams } from "./util/location";
+import { buildIndividualsImportInput } from "./util/individualsImportInput";
 
 function buildFilters(params) {
   return Object.entries(params)
@@ -41,17 +42,7 @@ const SCHEDULE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
 // so it is available for core.AsyncJobProgress as soon as the request fires.
 export function scheduleMsrUbrIndividualsImport(filters = {}) {
   const clientMutationId = generateClientMutationId();
-  const input = getUbrHouseholdLocationParams(filters.location);
-  if (filters.classifications?.length) input.wealthQuintiles = filters.classifications.map((c) => c.value);
-  if (filters.minAge != null) input.minAge = filters.minAge;
-  if (filters.maxAge != null) input.maxAge = filters.maxAge;
-  if (filters.gender) input.gender = filters.gender;
-  if (filters.householdHasLabour) input.hasLabour = filters.householdHasLabour;
-  if (filters.femaleHeadedHousehold) input.householdHeadGender = filters.femaleHeadedHousehold;
-  if (filters.exclusionPrograms?.length) input.excludedProgrammeCodes = filters.exclusionPrograms;
-  // unset defers to the backend's 0-10 default range
-  if (filters.lowerPercentileCategory != null) input.lowerPercentileCategory = filters.lowerPercentileCategory;
-  if (filters.upperPercentileCategory != null) input.upperPercentileCategory = filters.upperPercentileCategory;
+  const input = buildIndividualsImportInput(filters);
   input.clientMutationId = clientMutationId;
 
   return graphqlWithVariables(
