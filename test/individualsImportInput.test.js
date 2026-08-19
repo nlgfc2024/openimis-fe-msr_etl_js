@@ -27,26 +27,26 @@ test("Individuals import input - householdHasLabour", async (t) => {
   });
 });
 
-test("Individuals import input - femaleHeadedHousehold / householdHeadGender", async (t) => {
+test("Individuals import input - householdHeadGender", async (t) => {
   await t.test("sends the confirmed Female Int code when selected", () => {
-    const input = buildIndividualsImportInput({ location: VALID_LOCATION, femaleHeadedHousehold: 2 });
+    const input = buildIndividualsImportInput({ location: VALID_LOCATION, householdHeadGender: 2 });
     assert.strictEqual(input.householdHeadGender, 2);
     assert.strictEqual(typeof input.householdHeadGender, "number");
   });
 
   await t.test("sends the confirmed Male Int code when selected", () => {
-    const input = buildIndividualsImportInput({ location: VALID_LOCATION, femaleHeadedHousehold: 1 });
+    const input = buildIndividualsImportInput({ location: VALID_LOCATION, householdHeadGender: 1 });
     assert.strictEqual(input.householdHeadGender, 1);
     assert.strictEqual(typeof input.householdHeadGender, "number");
   });
 
   await t.test("omits householdHeadGender when unset", () => {
-    const input = buildIndividualsImportInput({ location: VALID_LOCATION, femaleHeadedHousehold: "" });
+    const input = buildIndividualsImportInput({ location: VALID_LOCATION, householdHeadGender: "" });
     assert.strictEqual("householdHeadGender" in input, false);
   });
 
   await t.test("never sends a boolean for householdHeadGender", () => {
-    const input = buildIndividualsImportInput({ location: VALID_LOCATION, femaleHeadedHousehold: 2 });
+    const input = buildIndividualsImportInput({ location: VALID_LOCATION, householdHeadGender: 2 });
     assert.notStrictEqual(input.householdHeadGender, true);
     assert.notStrictEqual(input.householdHeadGender, false);
   });
