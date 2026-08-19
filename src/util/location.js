@@ -194,12 +194,60 @@ function getUbrHouseholdLocationParams(location) {
   return params;
 }
 
+// MsrEtlSyncUnit.unitType -> msrUbrLocations batch dataType. Codes are only
+// unique within a dataType (e.g. a GVH and a District can share the same
+// numeric code), so lookups must never cross types.
+const UNIT_TYPE_TO_DATA_TYPE = {
+  DISTRICT: "D",
+  TA: "T",
+  GVH: "G",
+  VILLAGE: "V",
+};
+
+/**
+ * Build a `dataType:code -> name` lookup from `msrUbrLocations` batches,
+ * for labeling sync log unit codes (e.g. "210 - Dowa").
+ *
+ * @param {Array} batches - `ubrLocationOptionBatches` from msrEtl redux state
+ * @returns {object} Map of `${dataType}:${geo_location_code}` -> geo_location_name
+ */
+function buildUbrLocationNameMap(batches) {
+  const map = {};
+  (batches || []).forEach((batch) => {
+    const dataType = batch?.dataType;
+    if (!dataType) return;
+    (Array.isArray(batch?.locations) ? batch.locations : []).forEach((location) => {
+      const code = location?.geo_location_code;
+      if (code) map[`${dataType}:${code}`] = location?.geo_location_name || null;
+    });
+  });
+  return map;
+}
+
+/**
+ * Resolve a sync unit's location name from the map built by
+ * `buildUbrLocationNameMap`, scoped by unitType so a GVH and a District
+ * that happen to share a numeric code never resolve to each other's name.
+ *
+ * @param {object} nameMap - map from buildUbrLocationNameMap
+ * @param {string} unitType - MsrEtlSyncUnit.unitType (DISTRICT/TA/GVH/VILLAGE)
+ * @param {string} code - the unit's location code
+ * @returns {string|null} The resolved name, or null if not (yet) cached
+ */
+function getUbrLocationName(nameMap, unitType, code) {
+  const dataType = UNIT_TYPE_TO_DATA_TYPE[unitType];
+  if (!dataType || !code) return null;
+  return nameMap?.[`${dataType}:${code}`] || null;
+}
+
 export {
   getLocationCode,
   getLocationType,
   normalizeLocationSelection,
   getLocationFilterParams,
   getUbrHouseholdLocationParams,
+  buildUbrLocationNameMap,
+  getUbrLocationName,
   LOCATION_TYPES,
 };
 
@@ -211,6 +259,8 @@ if (typeof module !== "undefined" && module.exports) {
     normalizeLocationSelection,
     getLocationFilterParams,
     getUbrHouseholdLocationParams,
+    buildUbrLocationNameMap,
+    getUbrLocationName,
     LOCATION_TYPES,
   };
 }

@@ -1,54 +1,65 @@
 // Disabled due to consistency with other modules
 /* eslint-disable default-param-last */
-import { formatServerError, formatGraphQLError } from "@openimis/fe-core";
+import { formatServerError, formatGraphQLError, parseData, pageInfo } from "@openimis/fe-core";
 import { REQUEST, SUCCESS, ERROR, CLEAR } from "./util/action-type";
+import { MSR_ETL_JOB_TYPE } from "./constants";
 
 export const ACTION_TYPE = {
-  // ETL services list
-  FETCH_ETL_SERVICES: "MSR_ETL_FETCH_ETL_SERVICES",
+  // Schedule UBR individuals import (background job)
+  SCHEDULE_UBR_INDIVIDUALS_IMPORT: "MSR_ETL_SCHEDULE_UBR_INDIVIDUALS_IMPORT",
 
-  // Execute UBR individuals import
-  EXECUTE_UBR_INDIVIDUALS_IMPORT: "MSR_ETL_EXECUTE_UBR_INDIVIDUALS_IMPORT",
+  // Fetch UBR locations for the District/TA/GVH cascading dropdown options
+  // and the sync log page's code-to-name lookup
+  FETCH_UBR_LOCATION_OPTIONS: "MSR_ETL_FETCH_UBR_LOCATION_OPTIONS",
 
-  // Fetch UBR locations
-  FETCH_UBR_LOCATIONS: "MSR_ETL_FETCH_UBR_LOCATIONS",
+  // Schedule full UBR location import (background job)
+  SCHEDULE_UBR_LOCATIONS_IMPORT: "MSR_ETL_SCHEDULE_UBR_LOCATIONS_IMPORT",
 
-  // Schedule full UBR location initial pull
-  SCHEDULE_UBR_LOCATION_INITIAL_PULL: "MSR_ETL_SCHEDULE_UBR_LOCATION_INITIAL_PULL",
+  // Duplicate-submission guard: is a job of this type already active?
+  FETCH_ACTIVE_MSR_ETL_JOB: "MSR_ETL_FETCH_ACTIVE_MSR_ETL_JOB",
 
-  // Fetch status of location initial pull request
-  FETCH_UBR_LOCATION_INITIAL_PULL_STATUS: "MSR_ETL_FETCH_UBR_LOCATION_INITIAL_PULL_STATUS",
+  // Per-unit staging/sync status for the sync-log page
+  FETCH_MSR_ETL_SYNC_UNITS: "MSR_ETL_FETCH_MSR_ETL_SYNC_UNITS",
+
+  // Recent jobs list for the Logs tab
+  FETCH_RECENT_MSR_ETL_JOBS: "MSR_ETL_FETCH_RECENT_MSR_ETL_JOBS",
 };
 
-/**
- * Initial Redux state
- * @type {object}
- * @property {boolean} fetchingMsrUbrLocations - Loading indicator for location fetch
- * @property {string|null} errorMsrUbrLocations - Error message from location fetch
- */
+const JOB_TYPE_TO_CLIENT_MUTATION_ID_FIELD = {
+  [MSR_ETL_JOB_TYPE.UBR_INDIVIDUALS_IMPORT]: "scheduledUbrIndividualsImportClientMutationId",
+  [MSR_ETL_JOB_TYPE.UBR_LOCATIONS_IMPORT]: "scheduledUbrLocationsImportClientMutationId",
+};
+
 const INITIAL_STATE = {
-  // ETL services list
-  fetchingMsrEtlServices: false,
-  fetchedEtlServices: false,
-  etlServices: [],
-  errorEtlServices: null,
+  // clientMutationId is set on dispatch, before the response returns
+  schedulingUbrIndividualsImport: false,
+  errorScheduleUbrIndividualsImport: null,
+  scheduledUbrIndividualsImportClientMutationId: null,
 
-  // Execute UBR individuals import
-  executingUbrIndividualsImport: false,
-  errorUbrIndividualsImport: null,
+  // District/TA/GVH cascading dropdown options
+  fetchingUbrLocationOptions: false,
+  ubrLocationOptionBatches: [],
+  errorUbrLocationOptions: null,
 
-  // UBR locations fetch result
-  fetchingMsrUbrLocations: false,
-  ubrLocationBatches: [],
-  errorMsrUbrLocations: null,
+  // Schedule UBR locations import
+  schedulingUbrLocationsImport: false,
+  errorScheduleUbrLocationsImport: null,
+  scheduledUbrLocationsImportClientMutationId: null,
 
-  // Schedule UBR location initial pull
-  schedulingUbrLocationInitialPull: false,
-  errorScheduleUbrLocationInitialPull: null,
-  locationInitialPullRequestId: null,
-  locationInitialPullStatus: null,
-  fetchingLocationInitialPullStatus: false,
-  errorLocationInitialPullStatus: null,
+  // Sync-log page
+  fetchingMsrEtlSyncUnits: false,
+  msrEtlSyncUnits: [],
+  msrEtlSyncUnitsCount: 0,
+  msrEtlSyncUnitsTotalCount: 0,
+  errorMsrEtlSyncUnits: null,
+
+  // Logs tab
+  fetchingRecentMsrEtlJobs: false,
+  fetchedRecentMsrEtlJobs: false,
+  recentMsrEtlJobs: [],
+  recentMsrEtlJobsPageInfo: {},
+  recentMsrEtlJobsTotalCount: 0,
+  errorRecentMsrEtlJobs: null,
 };
 
 function mergeLocationBatches(previousBatches = [], incomingBatches = []) {
@@ -78,199 +89,176 @@ function mergeLocationBatches(previousBatches = [], incomingBatches = []) {
 function reducer(state = INITIAL_STATE, action) {
   switch (action.type) {
     // -------------------------
-    // ETL services list
+    // Schedule UBR individuals import
     // -------------------------
-    case REQUEST(ACTION_TYPE.FETCH_ETL_SERVICES):
+    case REQUEST(ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT):
       return {
         ...state,
-        fetchingMsrEtlServices: true,
-        fetchedEtlServices: false,
-        etlServices: [],
-        errorEtlServices: null,
+        schedulingUbrIndividualsImport: true,
+        errorScheduleUbrIndividualsImport: null,
+        scheduledUbrIndividualsImportClientMutationId: action.meta?.clientMutationId ?? null,
       };
 
-    case SUCCESS(ACTION_TYPE.FETCH_ETL_SERVICES):
+    case SUCCESS(ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT):
       return {
         ...state,
-        fetchingMsrEtlServices: false,
-        fetchedEtlServices: true,
-        etlServices: action.payload.data?.msrEtlServicesByServiceName?.etlServices ?? [],
-        errorEtlServices: formatGraphQLError(action.payload),
+        schedulingUbrIndividualsImport: false,
+        errorScheduleUbrIndividualsImport: formatGraphQLError(action.payload),
       };
 
-    case ERROR(ACTION_TYPE.FETCH_ETL_SERVICES):
+    case ERROR(ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT):
       return {
         ...state,
-        fetchingMsrEtlServices: false,
-        errorEtlServices: formatServerError(action.payload),
+        schedulingUbrIndividualsImport: false,
+        errorScheduleUbrIndividualsImport: formatServerError(action.payload),
       };
 
-    case CLEAR(ACTION_TYPE.FETCH_ETL_SERVICES):
+    case CLEAR(ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT):
       return {
         ...state,
-        fetchingMsrEtlServices: false,
-        fetchedEtlServices: false,
-        etlServices: [],
-        errorEtlServices: null,
+        schedulingUbrIndividualsImport: false,
+        errorScheduleUbrIndividualsImport: null,
+        scheduledUbrIndividualsImportClientMutationId: null,
       };
 
     // -------------------------
-    // Execute UBR individuals import
+    // UBR location dropdown options
     // -------------------------
-    case REQUEST(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT):
+    case REQUEST(ACTION_TYPE.FETCH_UBR_LOCATION_OPTIONS):
       return {
         ...state,
-        executingUbrIndividualsImport: true,
-        errorUbrIndividualsImport: null,
+        fetchingUbrLocationOptions: true,
+        errorUbrLocationOptions: null,
       };
 
-    case SUCCESS(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT):
+    case SUCCESS(ACTION_TYPE.FETCH_UBR_LOCATION_OPTIONS):
       return {
         ...state,
-        executingUbrIndividualsImport: false,
-        errorUbrIndividualsImport: formatGraphQLError(action.payload),
-      };
-
-    case ERROR(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT):
-      return {
-        ...state,
-        executingUbrIndividualsImport: false,
-        errorUbrIndividualsImport: formatServerError(action.payload),
-      };
-
-    case CLEAR(ACTION_TYPE.EXECUTE_UBR_INDIVIDUALS_IMPORT):
-      return {
-        ...state,
-        executingUbrIndividualsImport: false,
-        errorUbrIndividualsImport: null,
-      };
-
-    // -------------------------
-    // UBR locations
-    // -------------------------
-    case REQUEST(ACTION_TYPE.FETCH_UBR_LOCATIONS):
-      return {
-        ...state,
-        fetchingMsrUbrLocations: true,
-        errorMsrUbrLocations: null,
-      };
-
-    case SUCCESS(ACTION_TYPE.FETCH_UBR_LOCATIONS):
-      return {
-        ...state,
-        fetchingMsrUbrLocations: false,
-        ubrLocationBatches: mergeLocationBatches(
-          state.ubrLocationBatches,
+        fetchingUbrLocationOptions: false,
+        ubrLocationOptionBatches: mergeLocationBatches(
+          state.ubrLocationOptionBatches,
           action.payload.data?.msrUbrLocations?.batches ?? [],
         ),
-        errorMsrUbrLocations: formatGraphQLError(action.payload),
+        errorUbrLocationOptions: formatGraphQLError(action.payload),
       };
 
-    case ERROR(ACTION_TYPE.FETCH_UBR_LOCATIONS):
+    case ERROR(ACTION_TYPE.FETCH_UBR_LOCATION_OPTIONS):
       return {
         ...state,
-        fetchingMsrUbrLocations: false,
-        ubrLocationBatches: [],
-        errorMsrUbrLocations: formatServerError(action.payload),
-      };
-
-    case CLEAR(ACTION_TYPE.FETCH_UBR_LOCATIONS):
-      return {
-        ...state,
-        fetchingMsrUbrLocations: false,
-        ubrLocationBatches: [],
-        errorMsrUbrLocations: null,
+        fetchingUbrLocationOptions: false,
+        errorUbrLocationOptions: formatServerError(action.payload),
       };
 
     // -------------------------
-    // Schedule location initial pull
+    // Schedule UBR locations import
     // -------------------------
-    case REQUEST(ACTION_TYPE.SCHEDULE_UBR_LOCATION_INITIAL_PULL):
+    case REQUEST(ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT):
       return {
         ...state,
-        schedulingUbrLocationInitialPull: true,
-        errorScheduleUbrLocationInitialPull: null,
+        schedulingUbrLocationsImport: true,
+        errorScheduleUbrLocationsImport: null,
+        scheduledUbrLocationsImportClientMutationId: action.meta?.clientMutationId ?? null,
       };
 
-    case SUCCESS(ACTION_TYPE.SCHEDULE_UBR_LOCATION_INITIAL_PULL):
-      {
-        const scheduleResponse = action.payload.data?.executeMsrEtlService;
-        const requestId = scheduleResponse?.internalId || null;
-        const graphQLError = formatGraphQLError(action.payload);
-        const isScheduled = !graphQLError && !!scheduleResponse;
+    case SUCCESS(ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT):
       return {
         ...state,
-        schedulingUbrLocationInitialPull: false,
-        locationInitialPullRequestId: isScheduled && requestId ? requestId : null,
-        locationInitialPullStatus: isScheduled
-          ? requestId
-            ? {
-                requestId,
-                status: "SUBMITTED",
-                message: "Location import request submitted",
-              }
-            : {
-                requestId: null,
-                status: "COMPLETED",
-                message: "Location import request submitted",
-              }
-          : null,
-        errorScheduleUbrLocationInitialPull: graphQLError,
-      };
-      }
-
-    case ERROR(ACTION_TYPE.SCHEDULE_UBR_LOCATION_INITIAL_PULL):
-      return {
-        ...state,
-        schedulingUbrLocationInitialPull: false,
-        locationInitialPullRequestId: null,
-        errorScheduleUbrLocationInitialPull: formatServerError(action.payload),
+        schedulingUbrLocationsImport: false,
+        errorScheduleUbrLocationsImport: formatGraphQLError(action.payload),
       };
 
-    case CLEAR(ACTION_TYPE.SCHEDULE_UBR_LOCATION_INITIAL_PULL):
+    case ERROR(ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT):
       return {
         ...state,
-        schedulingUbrLocationInitialPull: false,
-        errorScheduleUbrLocationInitialPull: null,
-        locationInitialPullRequestId: null,
-        locationInitialPullStatus: null,
+        schedulingUbrLocationsImport: false,
+        errorScheduleUbrLocationsImport: formatServerError(action.payload),
+      };
+
+    case CLEAR(ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT):
+      return {
+        ...state,
+        schedulingUbrLocationsImport: false,
+        errorScheduleUbrLocationsImport: null,
+        scheduledUbrLocationsImportClientMutationId: null,
       };
 
     // -------------------------
-    // Fetch location initial pull status
+    // Active job check (duplicate-submission guard)
     // -------------------------
-    case REQUEST(ACTION_TYPE.FETCH_UBR_LOCATION_INITIAL_PULL_STATUS):
+    case SUCCESS(ACTION_TYPE.FETCH_ACTIVE_MSR_ETL_JOB): {
+      const field = JOB_TYPE_TO_CLIENT_MUTATION_ID_FIELD[action.meta?.jobType];
+      const activeJob = action.payload.data?.asyncJobs?.edges?.[0]?.node;
+      if (!field || !activeJob?.clientMutationId) return state;
+      // never overwrite a job already tracked from this page (e.g. just scheduled)
+      return { ...state, [field]: state[field] || activeJob.clientMutationId };
+    }
+
+    // -------------------------
+    // Sync-log page
+    // -------------------------
+    case REQUEST(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS):
       return {
         ...state,
-        fetchingLocationInitialPullStatus: true,
-        errorLocationInitialPullStatus: null,
+        fetchingMsrEtlSyncUnits: true,
+        errorMsrEtlSyncUnits: null,
       };
 
-    case SUCCESS(ACTION_TYPE.FETCH_UBR_LOCATION_INITIAL_PULL_STATUS):
-      {
-        const statusPayload = action.payload.data?.msrUbrLocationInitialPullStatus;
-        return {
-          ...state,
-          fetchingLocationInitialPullStatus: false,
-          locationInitialPullStatus: statusPayload
-            ? {
-                requestId: statusPayload.requestId,
-                status: statusPayload.status,
-                message: statusPayload.message,
-                startedAt: statusPayload.startedAt,
-                finishedAt: statusPayload.finishedAt,
-                updatedAt: statusPayload.updatedAt,
-              }
-            : state.locationInitialPullStatus,
-          errorLocationInitialPullStatus: formatGraphQLError(action.payload),
-        };
-      }
-
-    case ERROR(ACTION_TYPE.FETCH_UBR_LOCATION_INITIAL_PULL_STATUS):
+    case SUCCESS(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS): {
+      const result = action.payload.data?.msrEtlSyncUnits;
       return {
         ...state,
-        fetchingLocationInitialPullStatus: false,
-        errorLocationInitialPullStatus: formatServerError(action.payload),
+        fetchingMsrEtlSyncUnits: false,
+        msrEtlSyncUnits: result?.units ?? [],
+        msrEtlSyncUnitsCount: result?.count ?? 0,
+        msrEtlSyncUnitsTotalCount: result?.totalCount ?? 0,
+        errorMsrEtlSyncUnits: formatGraphQLError(action.payload),
+      };
+    }
+
+    case ERROR(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS):
+      return {
+        ...state,
+        fetchingMsrEtlSyncUnits: false,
+        errorMsrEtlSyncUnits: formatServerError(action.payload),
+      };
+
+    case CLEAR(ACTION_TYPE.FETCH_MSR_ETL_SYNC_UNITS):
+      return {
+        ...state,
+        fetchingMsrEtlSyncUnits: false,
+        msrEtlSyncUnits: [],
+        msrEtlSyncUnitsCount: 0,
+        msrEtlSyncUnitsTotalCount: 0,
+        errorMsrEtlSyncUnits: null,
+      };
+
+    // -------------------------
+    // Logs tab
+    // -------------------------
+    case REQUEST(ACTION_TYPE.FETCH_RECENT_MSR_ETL_JOBS):
+      return {
+        ...state,
+        fetchingRecentMsrEtlJobs: true,
+        fetchedRecentMsrEtlJobs: false,
+        errorRecentMsrEtlJobs: null,
+      };
+
+    case SUCCESS(ACTION_TYPE.FETCH_RECENT_MSR_ETL_JOBS):
+      return {
+        ...state,
+        fetchingRecentMsrEtlJobs: false,
+        fetchedRecentMsrEtlJobs: true,
+        recentMsrEtlJobs: parseData(action.payload.data?.asyncJobs),
+        recentMsrEtlJobsPageInfo: pageInfo(action.payload.data?.asyncJobs),
+        recentMsrEtlJobsTotalCount: action.payload.data?.asyncJobs?.totalCount ?? 0,
+        errorRecentMsrEtlJobs: formatGraphQLError(action.payload),
+      };
+
+    case ERROR(ACTION_TYPE.FETCH_RECENT_MSR_ETL_JOBS):
+      return {
+        ...state,
+        fetchingRecentMsrEtlJobs: false,
+        errorRecentMsrEtlJobs: formatServerError(action.payload),
       };
 
     default:
