@@ -49,7 +49,7 @@
   "household.filter.lowerPercentileCategory": "Lower Percentile Category",
   "household.filter.upperPercentileCategory": "Upper Percentile Category",
   "household.filter.householdHasLabour": "Household Has Labour",
-  "household.filter.femaleHeadedHousehold": "Female-Headed Household",
+  "household.filter.femaleHeadedHousehold": "Household Head Gender",
   "household.filter.exclusionPrograms": "Exclusion Programs",
   "location": "Location"
 }
