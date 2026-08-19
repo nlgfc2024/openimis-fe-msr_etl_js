@@ -18,8 +18,8 @@ function buildIndividualsImportInput(filters = {}) {
   if (filters.householdHasLabour !== "" && filters.householdHasLabour != null) {
     input.hasLabour = filters.householdHasLabour;
   }
-  if (filters.femaleHeadedHousehold !== "" && filters.femaleHeadedHousehold != null) {
-    input.householdHeadGender = filters.femaleHeadedHousehold;
+  if (filters.householdHeadGender !== "" && filters.householdHeadGender != null) {
+    input.householdHeadGender = filters.householdHeadGender;
   }
   if (filters.exclusionPrograms?.length) input.excludedProgrammeCodes = filters.exclusionPrograms;
   if (filters.lowerPercentileCategory != null) input.lowerPercentileCategory = filters.lowerPercentileCategory;
