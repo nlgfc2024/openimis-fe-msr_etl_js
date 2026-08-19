@@ -18,7 +18,10 @@ export const YES_NO_OPTIONS = [
   { value: false, label: "No" },
 ];
 
-export const HOUSEHOLD_HEAD_GENDER_OPTIONS = [{ value: 2, label: "Female-headed" }];
+export const HOUSEHOLD_HEAD_GENDER_OPTIONS = [
+  { value: 1, label: "Male-headed" },
+  { value: 2, label: "Female-headed" },
+];
 
 export const EXCLUSION_PROGRAM_OPTIONS = [
   { value: 1, label: "Social Cash Transfer" },
