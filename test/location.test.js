@@ -7,7 +7,7 @@ const {
   getUbrHouseholdLocationParams,
   getLocationCode,
   getLocationType,
-} = require("./location");
+} = require("../src/util/location");
 
 // Test suite: Location normalization
 test("Location Code Extraction", async (t) => {

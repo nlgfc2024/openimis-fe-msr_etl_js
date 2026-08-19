@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { findSelectedOption } = require("./options");
+const { findSelectedOption } = require("../src/util/options");
 
 const YES_NO_OPTIONS = [
   { value: true, label: "Yes" },

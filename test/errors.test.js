@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { translateMsrEtlError } = require("./errors");
+const { translateMsrEtlError } = require("../src/util/errors");
 
 const formatMessage = (id) => `translated:${id}`;
 
