@@ -74,7 +74,7 @@ function HouseholdFiltersPanel({
   const onLowerPercentileCategoryChange = (value) => onChange('lowerPercentileCategory')(value ?? 0);
   const onUpperPercentileCategoryChange = (value) => onChange('upperPercentileCategory')(value ?? 100);
   const onHouseholdHasLabourChange = (value) => onChange('householdHasLabour')(value?.value ?? '');
-  const onFemaleHeadedHouseholdChange = (value) => onChange('femaleHeadedHousehold')(value?.value ?? '');
+  const onHouseholdHeadGenderChange = (value) => onChange('householdHeadGender')(value?.value ?? '');
   const onExclusionProgramsChange = (value) => onChange('exclusionPrograms')((value || []).map((option) => option.value));
 
   const handleInputChange = () => {};
@@ -174,10 +174,10 @@ function HouseholdFiltersPanel({
       <Grid item xs={12} md={6} className={classes.item}>
         <Autocomplete
           module={MSR_ETL_MODULE_NAME}
-          label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'household.filter.femaleHeadedHousehold')}
+          label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'household.filter.householdHeadGender')}
           options={HOUSEHOLD_HEAD_GENDER_OPTIONS}
-          value={findSelectedOption(HOUSEHOLD_HEAD_GENDER_OPTIONS, edited.femaleHeadedHousehold)}
-          onChange={onFemaleHeadedHouseholdChange}
+          value={findSelectedOption(HOUSEHOLD_HEAD_GENDER_OPTIONS, edited.householdHeadGender)}
+          onChange={onHouseholdHeadGenderChange}
           onInputChange={handleInputChange}
           getOptionLabel={(option) => option.label}
           getOptionSelected={(option, v) => option.value === v?.value}
