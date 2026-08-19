@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { buildIndividualsImportInput } = require("./individualsImportInput");
+const { buildIndividualsImportInput } = require("../src/util/individualsImportInput");
 
 const VALID_LOCATION = { district: "101", ta: "10101" };
 
@@ -28,9 +28,15 @@ test("Individuals import input - householdHasLabour", async (t) => {
 });
 
 test("Individuals import input - femaleHeadedHousehold / householdHeadGender", async (t) => {
-  await t.test("sends the confirmed Int code when selected", () => {
+  await t.test("sends the confirmed Female Int code when selected", () => {
     const input = buildIndividualsImportInput({ location: VALID_LOCATION, femaleHeadedHousehold: 2 });
     assert.strictEqual(input.householdHeadGender, 2);
+    assert.strictEqual(typeof input.householdHeadGender, "number");
+  });
+
+  await t.test("sends the confirmed Male Int code when selected", () => {
+    const input = buildIndividualsImportInput({ location: VALID_LOCATION, femaleHeadedHousehold: 1 });
+    assert.strictEqual(input.householdHeadGender, 1);
     assert.strictEqual(typeof input.householdHeadGender, "number");
   });
 
