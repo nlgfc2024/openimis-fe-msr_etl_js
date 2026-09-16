@@ -24,6 +24,7 @@ function buildIndividualsImportInput(filters = {}) {
   if (filters.exclusionPrograms?.length) input.excludedProgrammeCodes = filters.exclusionPrograms;
   if (filters.lowerPercentileCategory != null) input.lowerPercentileCategory = filters.lowerPercentileCategory;
   if (filters.upperPercentileCategory != null) input.upperPercentileCategory = filters.upperPercentileCategory;
+  if (filters.sourceType) input.sourceType = filters.sourceType;
   return input;
 }
 
