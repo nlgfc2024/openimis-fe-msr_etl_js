@@ -40,6 +40,7 @@ function SourceTypeSelector({
       options={options}
       value={findSelectedOption(options, value)}
       onChange={(option) => onChange(option?.value ?? "")}
+      onInputChange={() => {}}
       getOptionLabel={(option) => option.label}
       getOptionSelected={(option, v) => option.value === v?.value}
       readOnly={readOnly}
