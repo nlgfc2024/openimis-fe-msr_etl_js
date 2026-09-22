@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { withTheme, withStyles } from "@material-ui/core/styles";
-import { Box, Button } from "@material-ui/core";
+import { Box, Button, Typography } from "@material-ui/core";
 import {
   useModulesManager,
   useTranslations,
   useAsyncJob,
+  useGraphqlQuery,
   Form,
   ProgressOrError,
   PublishedComponent,
@@ -60,13 +61,21 @@ function IndividualsImportTab({ intl, rights }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const {
+    isLoading: checkingLocationsExist,
+    data: locationsExistData,
+    error: errorLocationsExist,
+  } = useGraphqlQuery(`query MsrEtlLocationsExist { locations(first: 1) { edges { node { id } } } }`);
+  const locationsExist = checkingLocationsExist
+    ? null
+    : !!errorLocationsExist || (locationsExistData?.locations?.edges?.length ?? 0) > 0;
+
   const isImportTracked = !!clientMutationId;
   const { isTerminal: isTrackedJobTerminal } = useAsyncJob({
     clientMutationId: isImportTracked ? clientMutationId : undefined,
   });
-  // duplicate-submission guard: a matching job is still RECEIVED/QUEUED/RUNNING
-  const blockedByActiveJob = isImportTracked && !isTrackedJobTerminal;
 
+  const blockedByActiveJob = isImportTracked && !isTrackedJobTerminal;
   const normalizedLocation = normalizeLocationSelection(edited.location);
   const mandatoryFieldsEmpty =
     !normalizedLocation.district || !normalizedLocation.ta || (normalizedLocation.village && !normalizedLocation.gvh);
@@ -88,30 +97,42 @@ function IndividualsImportTab({ intl, rights }) {
 
   return (
     <div>
-      <Form
-        module={MSR_ETL_MODULE_NAME}
-        save={save}
-        edited={edited}
-        onEditedChanged={setEdited}
-        mandatoryFieldsEmpty={mandatoryFieldsEmpty}
-        canSave={() => !mandatoryFieldsEmpty}
-        HeadPanel={HouseholdFiltersPanel}
-        actions={[]}
-        rights={rights}
-      />
-      <Box className={classes.actions}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={onPullData}
-          disabled={scheduling || mandatoryFieldsEmpty || blockedByActiveJob}
-        >
-          {formatMessage("filters.pullData")}
-        </Button>
-        <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
-          {formatMessage("filters.clear")}
-        </Button>
-      </Box>
+      {locationsExist ? (
+        <>
+          <Form
+            module={MSR_ETL_MODULE_NAME}
+            save={save}
+            edited={edited}
+            onEditedChanged={setEdited}
+            mandatoryFieldsEmpty={mandatoryFieldsEmpty}
+            canSave={() => !mandatoryFieldsEmpty}
+            HeadPanel={HouseholdFiltersPanel}
+            actions={[]}
+            rights={rights}
+          />
+          <Box className={classes.actions}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={onPullData}
+              disabled={scheduling || mandatoryFieldsEmpty || blockedByActiveJob}
+            >
+              {formatMessage("filters.pullData")}
+            </Button>
+            <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
+              {formatMessage("filters.clear")}
+            </Button>
+          </Box>
+        </>
+      ) : (
+        locationsExist === false && (
+          <Box m={2}>
+            <Typography variant="body2" color="textSecondary">
+              {formatMessage("etlServices.individualsNeedLocations")}
+            </Typography>
+          </Box>
+        )
+      )}
 
       {isImportTracked ? (
         <Box mt={2}>
