@@ -93,6 +93,7 @@ export function scheduleMsrUbrLocationsImport(filters = {}) {
     ...getLocationFilterParams(location),
     clientMutationId,
   };
+  if (filters.sourceType) input.sourceType = filters.sourceType;
 
   return graphqlWithVariables(
     SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION,
@@ -132,4 +133,16 @@ const RECENT_JOBS_PROJECTION = ["uuid", "jobType", "status", "clientMutationId",
 export function fetchRecentMsrEtlJobs(params) {
   const payload = formatPageQueryWithCount("asyncJobs", params, RECENT_JOBS_PROJECTION);
   return graphql(payload, ACTION_TYPE.FETCH_RECENT_MSR_ETL_JOBS);
+}
+
+const MSR_ETL_SOURCE_TYPES_QUERY = `{
+  msrEtlSourceTypes {
+    individualSourceTypes
+    locationSourceTypes
+  }
+}`;
+
+// Populates the source selector shown on the Individuals/Location import tabs
+export function fetchMsrEtlSourceTypes() {
+  return graphql(MSR_ETL_SOURCE_TYPES_QUERY, ACTION_TYPE.FETCH_MSR_ETL_SOURCE_TYPES);
 }

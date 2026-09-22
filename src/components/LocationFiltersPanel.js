@@ -5,6 +5,7 @@ import { formatMessage, PublishedComponent } from "@openimis/fe-core";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 
 import { MSR_ETL_MODULE_NAME } from "../constants";
+import SourceTypeSelector from "./SourceTypeSelector";
 
 const styles = (theme) => ({
   item: theme.paper.item,
@@ -22,8 +23,20 @@ function LocationFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes
     onEditedChanged({ ...(edited || {}), location: value });
   };
 
+  const onSourceTypeChange = (value) => {
+    onEditedChanged({ ...(edited || {}), sourceType: value });
+  };
+
   return (
     <Grid container className={classes.item}>
+      <Grid item xs={12} md={6} className={classes.item}>
+        <SourceTypeSelector
+          kind="location"
+          value={edited?.sourceType}
+          onChange={onSourceTypeChange}
+          readOnly={readOnly}
+        />
+      </Grid>
       <Grid item xs={12} md={6} className={classes.item}>
         <PublishedComponent
           pubRef="location.LocationCascader"
