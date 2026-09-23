@@ -60,8 +60,6 @@ function LocationImportTab({ intl, rights }) {
     dispatch(fetchActiveMsrEtlJob(MSR_ETL_JOB_TYPE.UBR_LOCATIONS_IMPORT));
   }, []);
 
-  // LocationGQLTypeConnection exposes no totalCount (only pageInfo/edges), so
-  // existence is checked via edges rather than a count.
   const {
     isLoading: checkingLocationsExist,
     data: locationsExistData,
@@ -93,15 +91,16 @@ function LocationImportTab({ intl, rights }) {
     normalizedLocation.gvh ||
     normalizedLocation.village
   );
+  const hasSourceType = !!edited.sourceType;
 
-  const save = (data) => {
+  const persistFilters = (data) => {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
-  const onPullData = () => {
-    save(edited);
+  const onPullData = (data) => {
+    persistFilters(data);
     dispatch(clearScheduleUbrLocationsImport());
-    dispatch(scheduleMsrUbrLocationsImport(edited));
+    dispatch(scheduleMsrUbrLocationsImport(data));
   };
 
   const onInitialPull = () => {
@@ -117,17 +116,15 @@ function LocationImportTab({ intl, rights }) {
 
   return (
     <div>
-      {locationsExist && (
-        <Form
-          module={MSR_ETL_MODULE_NAME}
-          save={save}
-          edited={edited}
-          onEditedChanged={setEdited}
-          HeadPanel={LocationFiltersPanel}
-          actions={[]}
-          rights={rights}
-        />
-      )}
+      <Form
+        module={MSR_ETL_MODULE_NAME}
+        enableSaveButton={false}
+        edited={edited}
+        onEditedChanged={setEdited}
+        HeadPanel={locationsExist ? LocationFiltersPanel : undefined}
+        actions={[]}
+        rights={rights}
+      />
       {locationsExist === false && (
         <Box m={2}>
           <Typography variant="body2" color="textSecondary">
@@ -140,8 +137,8 @@ function LocationImportTab({ intl, rights }) {
           <Button
             variant="contained"
             color="primary"
-            onClick={onPullData}
-            disabled={schedulingUbrLocationsImport || !hasLocationFilter || blockedByActiveJob}
+            onClick={() => onPullData(edited)}
+            disabled={schedulingUbrLocationsImport || !hasLocationFilter || !hasSourceType || blockedByActiveJob}
           >
             {formatMessage("filters.pullData")}
           </Button>
