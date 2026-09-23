@@ -171,8 +171,8 @@ function getLocationFilterParams(location) {
 
 /**
  * Build the ordered location parameters required by UBR household imports.
- * District and TA are mandatory. GVH and Village are optional, but a Village
- * is only valid when its parent GVH is present.
+ * Only District is mandatory. TA, GVH and Village are optional drill-down
+ * refinements, but a Village is only valid when its parent GVH is present.
  *
  * @param {object|Array} location - Location selection or hierarchy
  * @returns {object} Ordered District → TA → GVH → Village parameters
@@ -181,14 +181,15 @@ function getLocationFilterParams(location) {
 function getUbrHouseholdLocationParams(location) {
   const { district, ta, gvh, village } = normalizeLocationSelection(location);
 
-  if (!district || !ta) {
-    throw new Error("District and TA are required for UBR household imports.");
+  if (!district) {
+    throw new Error("District is required for UBR household imports.");
   }
   if (village && !gvh) {
     throw new Error("GVH is required when Village is provided.");
   }
 
-  const params = { district, ta };
+  const params = { district };
+  if (ta) params.ta = ta;
   if (gvh) params.gvh = gvh;
   if (village) params.village = village;
   return params;
