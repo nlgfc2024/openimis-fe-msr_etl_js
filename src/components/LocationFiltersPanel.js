@@ -11,13 +11,6 @@ const styles = (theme) => ({
   item: theme.paper.item,
 });
 
-/**
- * LocationFiltersPanel
- *
- * District/TA/GVH selection for the Location import tab, sourced from
- * openIMIS's own Location DB (not the external MSR/UBR system) via
- * fe-location's LocationCascader - the same picker HouseholdFiltersPanel uses.
- */
 function LocationFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes }) {
   const onLocationChange = (value) => {
     onEditedChanged({ ...(edited || {}), location: value });
@@ -45,6 +38,8 @@ function LocationFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes
           withLabel
           label={formatMessage(intl, MSR_ETL_MODULE_NAME, "location")}
           readOnly={readOnly}
+          maxLevel={3}
+          required
         />
       </Grid>
     </Grid>
