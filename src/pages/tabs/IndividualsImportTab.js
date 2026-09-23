@@ -78,15 +78,17 @@ function IndividualsImportTab({ intl, rights }) {
   const blockedByActiveJob = isImportTracked && !isTrackedJobTerminal;
   const normalizedLocation = normalizeLocationSelection(edited.location);
   const mandatoryFieldsEmpty =
-    !normalizedLocation.district || !normalizedLocation.ta || (normalizedLocation.village && !normalizedLocation.gvh);
+    !normalizedLocation.district ||
+    !edited.sourceType ||
+    (normalizedLocation.village && !normalizedLocation.gvh);
 
-  const save = (data) => {
+  const persistFilters = (data) => {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
-  const onPullData = () => {
-    save(edited);
-    dispatch(scheduleMsrUbrIndividualsImport(edited));
+  const onPullData = (data) => {
+    persistFilters(data);
+    dispatch(scheduleMsrUbrIndividualsImport(data));
   };
 
   const onClear = () => {
@@ -97,42 +99,39 @@ function IndividualsImportTab({ intl, rights }) {
 
   return (
     <div>
-      {locationsExist ? (
-        <>
-          <Form
-            module={MSR_ETL_MODULE_NAME}
-            save={save}
-            edited={edited}
-            onEditedChanged={setEdited}
-            mandatoryFieldsEmpty={mandatoryFieldsEmpty}
-            canSave={() => !mandatoryFieldsEmpty}
-            HeadPanel={HouseholdFiltersPanel}
-            actions={[]}
-            rights={rights}
-          />
-          <Box className={classes.actions}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={onPullData}
-              disabled={scheduling || mandatoryFieldsEmpty || blockedByActiveJob}
-            >
-              {formatMessage("filters.pullData")}
-            </Button>
-            <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
-              {formatMessage("filters.clear")}
-            </Button>
-          </Box>
-        </>
-      ) : (
-        locationsExist === false && (
-          <Box m={2}>
-            <Typography variant="body2" color="textSecondary">
-              {formatMessage("etlServices.individualsNeedLocations")}
-            </Typography>
-          </Box>
-        )
+      <Form
+        module={MSR_ETL_MODULE_NAME}
+        enableSaveButton={false}
+        edited={edited}
+        onEditedChanged={setEdited}
+        HeadPanel={locationsExist ? HouseholdFiltersPanel : undefined}
+        actions={[]}
+        rights={rights}
+      />
+      {locationsExist === false && (
+        <Box m={2}>
+          <Typography variant="body2" color="textSecondary">
+            {formatMessage("etlServices.individualsNeedLocations")}
+          </Typography>
+        </Box>
       )}
+      <Box className={classes.actions}>
+        {locationsExist && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => onPullData(edited)}
+            disabled={scheduling || mandatoryFieldsEmpty || blockedByActiveJob}
+          >
+            {formatMessage("filters.pullData")}
+          </Button>
+        )}
+        {locationsExist && (
+          <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
+            {formatMessage("filters.clear")}
+          </Button>
+        )}
+      </Box>
 
       {isImportTracked ? (
         <Box mt={2}>
