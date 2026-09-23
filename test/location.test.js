@@ -185,10 +185,17 @@ test("UBR Household Location Parameters", async (t) => {
     );
   });
 
-  await t.test("rejects requests missing District or TA", () => {
+  await t.test("allows a District-scoped request without TA", () => {
+    assert.deepStrictEqual(
+      getUbrHouseholdLocationParams({ district: "101" }),
+      { district: "101" },
+    );
+  });
+
+  await t.test("rejects requests missing District", () => {
     assert.throws(
-      () => getUbrHouseholdLocationParams({ district: "101" }),
-      /District and TA are required/,
+      () => getUbrHouseholdLocationParams({ ta: "10101" }),
+      /District is required/,
     );
   });
 });
