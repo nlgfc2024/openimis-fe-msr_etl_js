@@ -6,6 +6,8 @@
   "etlServices.initialPull": "Initial Pull",
   "etlServices.initialPull.tooltip": "Register a background job to pull all locations",
   "etlServices.viewSyncLog": "View sync log",
+  "etlServices.noLocations": "No locations have been pulled yet. Run an Initial Pull to import the full location hierarchy before filtering by location.",
+  "etlServices.individualsNeedLocations": "No locations have been pulled yet. Go to the Location tab and run an Initial Pull before pulling individuals.",
 
   "filters.pullData": "Pull Data",
   "filters.viewSyncLog": "View sync log",
@@ -27,6 +29,7 @@
   "logs.error": "Error",
   "logs.details": "Details",
   "logs.viewSyncLog": "View sync log",
+  "logs.noLogs": "No import jobs yet. Pull data from the Location or Individuals tab to see history here.",
 
   "syncLog.pageTitle": "Sync Log",
   "syncLog.back": "Back",
