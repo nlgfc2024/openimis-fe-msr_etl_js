@@ -169,32 +169,6 @@ function getLocationFilterParams(location) {
   return params;
 }
 
-/**
- * Build the ordered location parameters required by UBR household imports.
- * Only District is mandatory. TA, GVH and Village are optional drill-down
- * refinements, but a Village is only valid when its parent GVH is present.
- *
- * @param {object|Array} location - Location selection or hierarchy
- * @returns {object} Ordered District → TA → GVH → Village parameters
- * @throws {Error} When required hierarchy levels are missing
- */
-function getUbrHouseholdLocationParams(location) {
-  const { district, ta, gvh, village } = normalizeLocationSelection(location);
-
-  if (!district) {
-    throw new Error("District is required for UBR household imports.");
-  }
-  if (village && !gvh) {
-    throw new Error("GVH is required when Village is provided.");
-  }
-
-  const params = { district };
-  if (ta) params.ta = ta;
-  if (gvh) params.gvh = gvh;
-  if (village) params.village = village;
-  return params;
-}
-
 // MsrEtlSyncUnit.unitType -> msrUbrLocations batch dataType. Codes are only
 // unique within a dataType (e.g. a GVH and a District can share the same
 // numeric code), so lookups must never cross types.
@@ -246,7 +220,6 @@ export {
   getLocationType,
   normalizeLocationSelection,
   getLocationFilterParams,
-  getUbrHouseholdLocationParams,
   buildUbrLocationNameMap,
   getUbrLocationName,
   LOCATION_TYPES,
@@ -259,7 +232,6 @@ if (typeof module !== "undefined" && module.exports) {
     getLocationType,
     normalizeLocationSelection,
     getLocationFilterParams,
-    getUbrHouseholdLocationParams,
     buildUbrLocationNameMap,
     getUbrLocationName,
     LOCATION_TYPES,
