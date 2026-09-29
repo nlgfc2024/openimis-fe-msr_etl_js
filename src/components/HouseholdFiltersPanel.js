@@ -93,21 +93,18 @@ function HouseholdFiltersPanel({
           />
         </Grid>
 
-        {/* Wealth Classification */}
+        {/* Location */}
         <Grid item xs={4} md={6} className={classes.item}>
-          <Autocomplete
-          module={MSR_ETL_MODULE_NAME}
-            label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'household.filter.classification')}
-            multiple
-            options={classificationOptions}
-            value={edited.classifications || []}
-            onChange={onClassificationChange}
-            onInputChange={handleInputChange}
-            getOptionLabel={(option) => option.label}
-            getOptionSelected={(option, v) => option.value === v?.value}
-          readOnly={readOnly}
-        />
-      </Grid>
+          <PublishedComponent
+            pubRef="location.LocationCascader"
+            value={edited.location}
+            onChange={onLocationChange}
+            withLabel
+            label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'location')}
+            readOnly={readOnly}
+            required
+          />
+        </Grid>
 
       {/* Lower Percentile Category */}
       <Grid item xs={4} md={3} className={classes.item}>
@@ -133,17 +130,21 @@ function HouseholdFiltersPanel({
         />
       </Grid>
 
-        {/* Location */}
+        {/* Wealth Classification */}
         <Grid item xs={4} md={6} className={classes.item}>
-          <PublishedComponent
-            pubRef="location.LocationCascader"
-            value={edited.location}
-            onChange={onLocationChange}
-            withLabel
-            label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'location')}
-            readOnly={readOnly}
-          />
-        </Grid>
+          <Autocomplete
+          module={MSR_ETL_MODULE_NAME}
+            label={formatMessage(intl, MSR_ETL_MODULE_NAME, 'household.filter.classification')}
+            multiple
+            options={classificationOptions}
+            value={edited.classifications || []}
+            onChange={onClassificationChange}
+            onInputChange={handleInputChange}
+            getOptionLabel={(option) => option.label}
+            getOptionSelected={(option, v) => option.value === v?.value}
+          readOnly={readOnly}
+        />
+      </Grid>
 
         {/* Min Age */}
         <Grid item xs={4} md={3} className={classes.item}>

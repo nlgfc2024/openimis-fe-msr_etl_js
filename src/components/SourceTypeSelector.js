@@ -7,29 +7,26 @@ import { MSR_ETL_MODULE_NAME } from "../constants";
 import { fetchMsrEtlSourceTypes } from "../actions";
 import { buildSourceTypeOptions, findSelectedOption } from "../util/options";
 
-/**
- * SourceTypeSelector
- *
- * Lets the user pick which configured data source (msr_etl.source_registry /
- * MsrEtlConfig.sources on the backend) to pull from. Renders nothing while
- * fewer than two source_types are available, so nothing changes visually
- * until an admin actually configures a second source.
- */
-function SourceTypeSelector({
-  intl, kind, value, onChange, readOnly,
-}) {
+function SourceTypeSelector({ intl, kind, value, onChange, readOnly }) {
   const dispatch = useDispatch();
   const fetched = useSelector((state) => state.msrEtl.fetchedMsrEtlSourceTypes);
-  const sourceTypes = useSelector((state) => (
-    kind === "location" ? state.msrEtl.locationSourceTypes : state.msrEtl.individualSourceTypes
-  ));
+  const sourceTypes = useSelector((state) =>
+    kind === "location" ? state.msrEtl.locationSourceTypes : state.msrEtl.individualSourceTypes,
+  );
 
   useEffect(() => {
     if (!fetched) dispatch(fetchMsrEtlSourceTypes());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (sourceTypes.length < 2) return null;
+  const isLocked = sourceTypes.length < 2;
+
+  useEffect(() => {
+    if (sourceTypes.length === 1 && value !== sourceTypes[0]) {
+      onChange(sourceTypes[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceTypes]);
 
   const options = buildSourceTypeOptions(sourceTypes);
 
@@ -43,7 +40,8 @@ function SourceTypeSelector({
       onInputChange={() => {}}
       getOptionLabel={(option) => option.label}
       getOptionSelected={(option, v) => option.value === v?.value}
-      readOnly={readOnly}
+      readOnly={readOnly || isLocked}
+      required
     />
   );
 }

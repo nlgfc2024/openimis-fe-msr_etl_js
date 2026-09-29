@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { withTheme, withStyles } from "@material-ui/core/styles";
-import { Chip } from "@material-ui/core";
+import { Box, Chip, Typography } from "@material-ui/core";
 import { useModulesManager, useTranslations, Searcher, Link } from "@openimis/fe-core";
 import { injectIntl } from "react-intl";
 
@@ -57,24 +57,35 @@ function MsrEtlLogsTab() {
     module: { value: "msr_etl", filter: `module: "msr_etl"` },
   });
 
+  const noJobs = fetched && !fetching && !error && jobs.length === 0;
+
   return (
-    <Searcher
-      module={MSR_ETL_MODULE_NAME}
-      fetch={fetch}
-      items={jobs}
-      itemsPageInfo={jobsPageInfo}
-      fetchingItems={fetching}
-      fetchedItems={fetched}
-      errorItems={error}
-      tableTitle={formatMessage("logs.pageTitle")}
-      headers={headers}
-      itemFormatters={itemFormatters}
-      rowIdentifier={rowIdentifier}
-      rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
-      defaultPageSize={DEFAULT_PAGE_SIZE}
-      defaultOrderBy="-createdAt"
-      defaultFilters={defaultFilters()}
-    />
+    <>
+      <Searcher
+        module={MSR_ETL_MODULE_NAME}
+        fetch={fetch}
+        items={jobs}
+        itemsPageInfo={jobsPageInfo}
+        fetchingItems={fetching}
+        fetchedItems={fetched}
+        errorItems={error}
+        tableTitle={formatMessage("logs.pageTitle")}
+        headers={headers}
+        itemFormatters={itemFormatters}
+        rowIdentifier={rowIdentifier}
+        rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}
+        defaultPageSize={DEFAULT_PAGE_SIZE}
+        defaultOrderBy="-createdAt"
+        defaultFilters={defaultFilters()}
+      />
+      {noJobs && (
+        <Box m={2}>
+          <Typography variant="body2" color="textSecondary">
+            {formatMessage("logs.noLogs")}
+          </Typography>
+        </Box>
+      )}
+    </>
   );
 }
 
