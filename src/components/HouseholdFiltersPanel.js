@@ -11,6 +11,7 @@ import {
   EXCLUSION_PROGRAM_OPTIONS,
 } from '../constants';
 import { findSelectedOption } from '../util/options';
+import SourceTypeSelector from './SourceTypeSelector';
 
 const styles = (theme) => ({
   item: theme.paper.item
@@ -76,11 +77,22 @@ function HouseholdFiltersPanel({
   const onHouseholdHasLabourChange = (value) => onChange('householdHasLabour')(value?.value ?? '');
   const onHouseholdHeadGenderChange = (value) => onChange('householdHeadGender')(value?.value ?? '');
   const onExclusionProgramsChange = (value) => onChange('exclusionPrograms')((value || []).map((option) => option.value));
+  const onSourceTypeChange = (value) => onChange('sourceType')(value);
 
   const handleInputChange = () => {};
 
   return (
       <Grid container className={ classes.item}>
+        {/* Source */}
+        <Grid item xs={12} md={6} className={classes.item}>
+          <SourceTypeSelector
+            kind="individual"
+            value={edited.sourceType}
+            onChange={onSourceTypeChange}
+            readOnly={readOnly}
+          />
+        </Grid>
+
         {/* Wealth Classification */}
         <Grid item xs={4} md={6} className={classes.item}>
           <Autocomplete

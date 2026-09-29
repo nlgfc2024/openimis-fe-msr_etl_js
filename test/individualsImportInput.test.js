@@ -68,6 +68,18 @@ test("Individuals import input - other filters unaffected", async (t) => {
   });
 });
 
+test("Individuals import input - sourceType", async (t) => {
+  await t.test("includes sourceType when set", () => {
+    const input = buildIndividualsImportInput({ location: VALID_LOCATION, sourceType: "acme" });
+    assert.strictEqual(input.sourceType, "acme");
+  });
+
+  await t.test("omits sourceType when unset", () => {
+    const input = buildIndividualsImportInput({ location: VALID_LOCATION });
+    assert.strictEqual("sourceType" in input, false);
+  });
+});
+
 test("Individuals import input - module exports", () => {
   assert.strictEqual(typeof buildIndividualsImportInput, "function");
 });

@@ -23,6 +23,9 @@ export const ACTION_TYPE = {
 
   // Recent jobs list for the Logs tab
   FETCH_RECENT_MSR_ETL_JOBS: "MSR_ETL_FETCH_RECENT_MSR_ETL_JOBS",
+
+  // Available data source_types for the source selector (msr_etl_source_types query)
+  FETCH_MSR_ETL_SOURCE_TYPES: "MSR_ETL_FETCH_MSR_ETL_SOURCE_TYPES",
 };
 
 const JOB_TYPE_TO_CLIENT_MUTATION_ID_FIELD = {
@@ -60,6 +63,13 @@ const INITIAL_STATE = {
   recentMsrEtlJobsPageInfo: {},
   recentMsrEtlJobsTotalCount: 0,
   errorRecentMsrEtlJobs: null,
+
+  // Source selector
+  fetchingMsrEtlSourceTypes: false,
+  fetchedMsrEtlSourceTypes: false,
+  individualSourceTypes: [],
+  locationSourceTypes: [],
+  errorMsrEtlSourceTypes: null,
 };
 
 function mergeLocationBatches(previousBatches = [], incomingBatches = []) {
@@ -259,6 +269,35 @@ function reducer(state = INITIAL_STATE, action) {
         ...state,
         fetchingRecentMsrEtlJobs: false,
         errorRecentMsrEtlJobs: formatServerError(action.payload),
+      };
+
+    // -------------------------
+    // Source selector
+    // -------------------------
+    case REQUEST(ACTION_TYPE.FETCH_MSR_ETL_SOURCE_TYPES):
+      return {
+        ...state,
+        fetchingMsrEtlSourceTypes: true,
+        errorMsrEtlSourceTypes: null,
+      };
+
+    case SUCCESS(ACTION_TYPE.FETCH_MSR_ETL_SOURCE_TYPES): {
+      const result = action.payload.data?.msrEtlSourceTypes;
+      return {
+        ...state,
+        fetchingMsrEtlSourceTypes: false,
+        fetchedMsrEtlSourceTypes: true,
+        individualSourceTypes: result?.individualSourceTypes ?? [],
+        locationSourceTypes: result?.locationSourceTypes ?? [],
+        errorMsrEtlSourceTypes: formatGraphQLError(action.payload),
+      };
+    }
+
+    case ERROR(ACTION_TYPE.FETCH_MSR_ETL_SOURCE_TYPES):
+      return {
+        ...state,
+        fetchingMsrEtlSourceTypes: false,
+        errorMsrEtlSourceTypes: formatServerError(action.payload),
       };
 
     default:

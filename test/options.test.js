@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { findSelectedOption } = require("../src/util/options");
+const { findSelectedOption, buildSourceTypeOptions } = require("../src/util/options");
 
 const YES_NO_OPTIONS = [
   { value: true, label: "Yes" },
@@ -43,5 +43,23 @@ test("findSelectedOption", async (t) => {
   await t.test("does not confuse 0 with unset", () => {
     const options = [{ value: 0, label: "Zero" }, { value: 1, label: "One" }];
     assert.deepStrictEqual(findSelectedOption(options, 0), { value: 0, label: "Zero" });
+  });
+});
+
+test("buildSourceTypeOptions", async (t) => {
+  await t.test("maps each source_type to a capitalized label", () => {
+    assert.deepStrictEqual(buildSourceTypeOptions(["ubr", "acme"]), [
+      { value: "ubr", label: "Ubr" },
+      { value: "acme", label: "Acme" },
+    ]);
+  });
+
+  await t.test("returns an empty array for a non-array input", () => {
+    assert.deepStrictEqual(buildSourceTypeOptions(undefined), []);
+    assert.deepStrictEqual(buildSourceTypeOptions(null), []);
+  });
+
+  await t.test("returns an empty array for an empty list", () => {
+    assert.deepStrictEqual(buildSourceTypeOptions([]), []);
   });
 });

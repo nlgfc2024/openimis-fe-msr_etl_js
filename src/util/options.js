@@ -12,9 +12,25 @@ function findSelectedOption(options, value) {
   return options.find((option) => option.value === value) || null;
 }
 
-export { findSelectedOption };
+/**
+ * Turn a list of source_type keys (from the msrEtlSourceTypes query) into
+ * Autocomplete options. There's no display name from the backend - just the
+ * key, capitalized.
+ *
+ * @param {Array<string>} sourceTypes
+ * @returns {Array<{value: string, label: string}>}
+ */
+function buildSourceTypeOptions(sourceTypes) {
+  if (!Array.isArray(sourceTypes)) return [];
+  return sourceTypes.map((sourceType) => ({
+    value: sourceType,
+    label: sourceType.charAt(0).toUpperCase() + sourceType.slice(1),
+  }));
+}
+
+export { findSelectedOption, buildSourceTypeOptions };
 
 // CommonJS compatibility for Node.js tests
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { findSelectedOption };
+  module.exports = { findSelectedOption, buildSourceTypeOptions };
 }
