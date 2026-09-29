@@ -22,8 +22,8 @@ function SourceTypeSelector({ intl, kind, value, onChange, readOnly }) {
   const isLocked = sourceTypes.length < 2;
 
   useEffect(() => {
-    if (sourceTypes.length === 1 && value !== sourceTypes[0]) {
-      onChange(sourceTypes[0]);
+    if (sourceTypes.length === 1 && value !== sourceTypes[0].value) {
+      onChange(sourceTypes[0].value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceTypes]);
