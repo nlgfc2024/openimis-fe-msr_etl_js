@@ -47,11 +47,30 @@ test("findSelectedOption", async (t) => {
 });
 
 test("buildSourceTypeOptions", async (t) => {
-  await t.test("maps each source_type to a capitalized label", () => {
-    assert.deepStrictEqual(buildSourceTypeOptions(["ubr", "acme"]), [
-      { value: "ubr", label: "Ubr" },
-      { value: "acme", label: "Acme" },
-    ]);
+  await t.test("uses the configured display_name as the label", () => {
+    assert.deepStrictEqual(
+      buildSourceTypeOptions([
+        { value: "ubr", label: "Malawi Social Registry (MSR)" },
+        { value: "sctp", label: "SCTP MIS" },
+      ]),
+      [
+        { value: "ubr", label: "Malawi Social Registry (MSR)" },
+        { value: "sctp", label: "SCTP MIS" },
+      ],
+    );
+  });
+
+  await t.test("falls back to a capitalized source_type when label is unset", () => {
+    assert.deepStrictEqual(
+      buildSourceTypeOptions([
+        { value: "ubr", label: null },
+        { value: "acme", label: "" },
+      ]),
+      [
+        { value: "ubr", label: "Ubr" },
+        { value: "acme", label: "Acme" },
+      ],
+    );
   });
 
   await t.test("returns an empty array for a non-array input", () => {

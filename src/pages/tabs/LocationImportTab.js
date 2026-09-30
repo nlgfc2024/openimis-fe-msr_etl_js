@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { withTheme, withStyles } from "@material-ui/core/styles";
-import { Box, Button, Tooltip } from "@material-ui/core";
+import { Box, Button, Tooltip, Typography } from "@material-ui/core";
 import CloudDownloadIcon from "@material-ui/icons/CloudDownload";
 import {
   useModulesManager,
   useTranslations,
   useAsyncJob,
+  useGraphqlQuery,
   Form,
   ProgressOrError,
   PublishedComponent,
@@ -17,11 +18,7 @@ import { makeStyles } from "@material-ui/styles";
 
 import { MSR_ETL_MODULE_NAME, MSR_ETL_JOB_TYPE, RIGHT_MSR_ETL_EXPORT } from "../../constants";
 import LocationFiltersPanel from "../../components/LocationFiltersPanel";
-import {
-  scheduleMsrUbrLocationsImport,
-  clearScheduleUbrLocationsImport,
-  fetchActiveMsrEtlJob,
-} from "../../actions";
+import { scheduleMsrUbrLocationsImport, clearScheduleUbrLocationsImport, fetchActiveMsrEtlJob } from "../../actions";
 import { translateMsrEtlError } from "../../util/errors";
 import { normalizeLocationSelection } from "../../util/location";
 
@@ -61,33 +58,49 @@ function LocationImportTab({ intl, rights }) {
 
   useEffect(() => {
     dispatch(fetchActiveMsrEtlJob(MSR_ETL_JOB_TYPE.UBR_LOCATIONS_IMPORT));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const {
+    isLoading: checkingLocationsExist,
+    data: locationsExistData,
+    error: errorLocationsExist,
+    refetch: refetchLocationsExist,
+  } = useGraphqlQuery(`query MsrEtlLocationsExist { locations(first: 1) { edges { node { id } } } }`);
+  const locationsExist = checkingLocationsExist
+    ? null
+    : !!errorLocationsExist || (locationsExistData?.locations?.edges?.length ?? 0) > 0;
 
   const isImportTracked = !!scheduledUbrLocationsImportClientMutationId;
   const { isTerminal: isTrackedJobTerminal } = useAsyncJob({
     clientMutationId: isImportTracked ? scheduledUbrLocationsImportClientMutationId : undefined,
   });
-  // duplicate-submission guard: a matching job is still RECEIVED/QUEUED/RUNNING,
-  // shared between Pull Data and Initial Pull - only one location import at a time
+
   const blockedByActiveJob = isImportTracked && !isTrackedJobTerminal;
+
+  useEffect(() => {
+    if (isTrackedJobTerminal && locationsExist === false) {
+      refetchLocationsExist();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTrackedJobTerminal]);
 
   const normalizedLocation = normalizeLocationSelection(edited.location);
   const hasLocationFilter = !!(
-    normalizedLocation.district
-    || normalizedLocation.ta
-    || normalizedLocation.gvh
-    || normalizedLocation.village
+    normalizedLocation.district ||
+    normalizedLocation.ta ||
+    normalizedLocation.gvh ||
+    normalizedLocation.village
   );
+  const hasSourceType = !!edited.sourceType;
 
-  const save = (data) => {
+  const persistFilters = (data) => {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
-  const onPullData = () => {
-    save(edited);
+  const onPullData = (data) => {
+    persistFilters(data);
     dispatch(clearScheduleUbrLocationsImport());
-    dispatch(scheduleMsrUbrLocationsImport(edited));
+    dispatch(scheduleMsrUbrLocationsImport(data));
   };
 
   const onInitialPull = () => {
@@ -105,22 +118,31 @@ function LocationImportTab({ intl, rights }) {
     <div>
       <Form
         module={MSR_ETL_MODULE_NAME}
-        save={save}
+        enableSaveButton={false}
         edited={edited}
         onEditedChanged={setEdited}
-        HeadPanel={LocationFiltersPanel}
+        HeadPanel={locationsExist ? LocationFiltersPanel : undefined}
         actions={[]}
         rights={rights}
       />
+      {locationsExist === false && (
+        <Box m={2}>
+          <Typography variant="body2" color="textSecondary">
+            {formatMessage("etlServices.noLocations")}
+          </Typography>
+        </Box>
+      )}
       <Box className={classes.actions}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={onPullData}
-          disabled={schedulingUbrLocationsImport || !hasLocationFilter || blockedByActiveJob}
-        >
-          {formatMessage("filters.pullData")}
-        </Button>
+        {locationsExist && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => onPullData(edited)}
+            disabled={schedulingUbrLocationsImport || !hasLocationFilter || !hasSourceType || blockedByActiveJob}
+          >
+            {formatMessage("filters.pullData")}
+          </Button>
+        )}
         {rights.includes(RIGHT_MSR_ETL_EXPORT) && (
           <Tooltip title={formatMessage("etlServices.initialPull.tooltip")}>
             <span>
@@ -136,9 +158,11 @@ function LocationImportTab({ intl, rights }) {
             </span>
           </Tooltip>
         )}
-        <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
-          {formatMessage("filters.clear")}
-        </Button>
+        {locationsExist && (
+          <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
+            {formatMessage("filters.clear")}
+          </Button>
+        )}
       </Box>
 
       {isImportTracked ? (

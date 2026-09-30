@@ -13,18 +13,18 @@ function findSelectedOption(options, value) {
 }
 
 /**
- * Turn a list of source_type keys (from the msrEtlSourceTypes query) into
- * Autocomplete options. There's no display name from the backend - just the
- * key, capitalized.
+ * Turn the msrEtlSourceTypes query's {value, label} pairs into Autocomplete
+ * options. Falls back to the capitalized source_type key when the admin
+ * hasn't configured a display_name for that source.
  *
- * @param {Array<string>} sourceTypes
+ * @param {Array<{value: string, label: string|null}>} sourceTypes
  * @returns {Array<{value: string, label: string}>}
  */
 function buildSourceTypeOptions(sourceTypes) {
   if (!Array.isArray(sourceTypes)) return [];
   return sourceTypes.map((sourceType) => ({
-    value: sourceType,
-    label: sourceType.charAt(0).toUpperCase() + sourceType.slice(1),
+    value: sourceType.value,
+    label: sourceType.label || (sourceType.value.charAt(0).toUpperCase() + sourceType.value.slice(1)),
   }));
 }
 
