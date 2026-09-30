@@ -17,10 +17,10 @@ import { injectIntl } from "react-intl";
 import { makeStyles } from "@material-ui/styles";
 
 import { MSR_ETL_MODULE_NAME, MSR_ETL_JOB_TYPE, RIGHT_MSR_ETL_EXPORT } from "../../constants";
-import DynamicFiltersPanel from "../../components/DynamicFiltersPanel";
+import LocationFiltersPanel from "../../components/LocationFiltersPanel";
 import { scheduleMsrUbrLocationsImport, clearScheduleUbrLocationsImport, fetchActiveMsrEtlJob } from "../../actions";
 import { translateMsrEtlError } from "../../util/errors";
-import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
+import { normalizeLocationSelection } from "../../util/location";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_location`;
 
@@ -84,9 +84,14 @@ function LocationImportTab({ intl, rights }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTrackedJobTerminal]);
 
-  const locationSourceTypes = useSelector((state) => state.msrEtl.locationSourceTypes);
-  const schema = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
-  const canPullData = !!edited.sourceType && schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
+  const normalizedLocation = normalizeLocationSelection(edited.location);
+  const hasLocationFilter = !!(
+    normalizedLocation.district ||
+    normalizedLocation.ta ||
+    normalizedLocation.gvh ||
+    normalizedLocation.village
+  );
+  const hasSourceType = !!edited.sourceType;
 
   const persistFilters = (data) => {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -95,7 +100,7 @@ function LocationImportTab({ intl, rights }) {
   const onPullData = (data) => {
     persistFilters(data);
     dispatch(clearScheduleUbrLocationsImport());
-    dispatch(scheduleMsrUbrLocationsImport({ sourceType: data.sourceType, filters: data.filters }));
+    dispatch(scheduleMsrUbrLocationsImport(data));
   };
 
   const onInitialPull = () => {
@@ -116,8 +121,7 @@ function LocationImportTab({ intl, rights }) {
         enableSaveButton={false}
         edited={edited}
         onEditedChanged={setEdited}
-        HeadPanel={locationsExist ? DynamicFiltersPanel : undefined}
-        kind="location"
+        HeadPanel={locationsExist ? LocationFiltersPanel : undefined}
         actions={[]}
         rights={rights}
       />
@@ -134,7 +138,7 @@ function LocationImportTab({ intl, rights }) {
             variant="contained"
             color="primary"
             onClick={() => onPullData(edited)}
-            disabled={schedulingUbrLocationsImport || !canPullData || blockedByActiveJob}
+            disabled={schedulingUbrLocationsImport || !hasLocationFilter || !hasSourceType || blockedByActiveJob}
           >
             {formatMessage("filters.pullData")}
           </Button>

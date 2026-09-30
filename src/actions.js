@@ -4,6 +4,7 @@ import { graphql, graphqlWithVariables, formatQuery, formatPageQueryWithCount } 
 import { ACTION_TYPE } from "./reducer";
 import { CLEAR } from "./util/action-type";
 import { getLocationFilterParams } from "./util/location";
+import { buildIndividualsImportInput } from "./util/individualsImportInput";
 
 function buildFilters(params) {
   return Object.entries(params)
@@ -39,12 +40,10 @@ const SCHEDULE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION = `
 
 // clientMutationId is generated here rather than by fe-core's graphqlMutation
 // so it is available for core.AsyncJobProgress as soon as the request fires.
-// `filters` is whatever the selected source's filter_schema produced - the
-// backend resolves which ones its service actually accepts, so nothing here
-// needs to know per-source field names.
-export function scheduleMsrUbrIndividualsImport({ sourceType, filters = {} } = {}) {
+export function scheduleMsrUbrIndividualsImport(filters = {}) {
   const clientMutationId = generateClientMutationId();
-  const input = { clientMutationId, sourceType, filters };
+  const input = buildIndividualsImportInput(filters);
+  input.clientMutationId = clientMutationId;
 
   return graphqlWithVariables(
     SCHEDULE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION,
@@ -85,11 +84,16 @@ const SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION = `
   }
 `;
 
-// Unfiltered (no filters) schedules a full country-wide import; anything the
-// selected source's filter_schema produced scopes the job.
-export function scheduleMsrUbrLocationsImport({ sourceType, filters = {} } = {}) {
+// Unfiltered (no location) schedules a full country-wide import; a location
+// filter scopes the job to just that district/ta/gvh/village.
+export function scheduleMsrUbrLocationsImport(filters = {}) {
   const clientMutationId = generateClientMutationId();
-  const input = { clientMutationId, sourceType, filters };
+  const location = filters.location || filters;
+  const input = {
+    ...getLocationFilterParams(location),
+    clientMutationId,
+  };
+  if (filters.sourceType) input.sourceType = filters.sourceType;
 
   return graphqlWithVariables(
     SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION,
@@ -133,8 +137,8 @@ export function fetchRecentMsrEtlJobs(params) {
 
 const MSR_ETL_SOURCE_TYPES_QUERY = `{
   msrEtlSourceTypes {
-    individualSourceTypes { value label filterSchema }
-    locationSourceTypes { value label filterSchema }
+    individualSourceTypes { value label }
+    locationSourceTypes { value label }
   }
 }`;
 

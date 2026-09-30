@@ -16,13 +16,13 @@ import { injectIntl } from "react-intl";
 import { makeStyles } from "@material-ui/styles";
 
 import { MSR_ETL_MODULE_NAME, MSR_ETL_JOB_TYPE } from "../../constants";
-import DynamicFiltersPanel from "../../components/DynamicFiltersPanel";
+import HouseholdFiltersPanel from "../../components/HouseholdFiltersPanel";
 import {
   scheduleMsrUbrIndividualsImport,
   clearScheduleUbrIndividualsImport,
   fetchActiveMsrEtlJob,
 } from "../../actions";
-import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
+import { normalizeLocationSelection } from "../../util/location";
 import { translateMsrEtlError } from "../../util/errors";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals`;
@@ -76,11 +76,11 @@ function IndividualsImportTab({ intl, rights }) {
   });
 
   const blockedByActiveJob = isImportTracked && !isTrackedJobTerminal;
-
-  const individualSourceTypes = useSelector((state) => state.msrEtl.individualSourceTypes);
-  const schema = individualSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
+  const normalizedLocation = normalizeLocationSelection(edited.location);
   const mandatoryFieldsEmpty =
-    !edited.sourceType || !schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
+    !normalizedLocation.district ||
+    !edited.sourceType ||
+    (normalizedLocation.village && !normalizedLocation.gvh);
 
   const persistFilters = (data) => {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -88,7 +88,7 @@ function IndividualsImportTab({ intl, rights }) {
 
   const onPullData = (data) => {
     persistFilters(data);
-    dispatch(scheduleMsrUbrIndividualsImport({ sourceType: data.sourceType, filters: data.filters }));
+    dispatch(scheduleMsrUbrIndividualsImport(data));
   };
 
   const onClear = () => {
@@ -104,8 +104,7 @@ function IndividualsImportTab({ intl, rights }) {
         enableSaveButton={false}
         edited={edited}
         onEditedChanged={setEdited}
-        HeadPanel={locationsExist ? DynamicFiltersPanel : undefined}
-        kind="individual"
+        HeadPanel={locationsExist ? HouseholdFiltersPanel : undefined}
         actions={[]}
         rights={rights}
       />
