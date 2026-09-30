@@ -13,6 +13,8 @@
   "filters.viewSyncLog": "View sync log",
   "filters.clear": "Clear",
   "filters.sourceType": "Data Source",
+  "filters.yes": "Yes",
+  "filters.no": "No",
 
   "errors.gatewayTimeout": "This is taking longer than expected. The import continues in the background - check the progress panel for updates.",
 

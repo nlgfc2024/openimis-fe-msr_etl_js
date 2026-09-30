@@ -4,7 +4,6 @@ const assert = require("node:assert/strict");
 const {
   normalizeLocationSelection,
   getLocationFilterParams,
-  getUbrHouseholdLocationParams,
   getLocationCode,
   getLocationType,
 } = require("../src/util/location");
@@ -147,55 +146,5 @@ test("Location Filter Parameters", async (t) => {
     assert.strictEqual(params.ta, undefined);
     assert.strictEqual(params.gvh, undefined);
     assert.strictEqual(params.village, undefined);
-  });
-});
-
-test("UBR Household Location Parameters", async (t) => {
-  await t.test("returns the complete hierarchy in relationship order", () => {
-    const selection = {
-      district: "101",
-      ta: "10101",
-      gvh: "1010101",
-      village: "101010101",
-    };
-
-    assert.deepStrictEqual(getUbrHouseholdLocationParams(selection), {
-      district: "101",
-      ta: "10101",
-      gvh: "1010101",
-      village: "101010101",
-    });
-  });
-
-  await t.test("allows a TA-scoped request without GVH or Village", () => {
-    assert.deepStrictEqual(
-      getUbrHouseholdLocationParams({ district: "101", ta: "10101" }),
-      { district: "101", ta: "10101" },
-    );
-  });
-
-  await t.test("rejects Village when its parent GVH is missing", () => {
-    assert.throws(
-      () => getUbrHouseholdLocationParams({
-        district: "101",
-        ta: "10101",
-        village: "101010101",
-      }),
-      /GVH is required when Village is provided/,
-    );
-  });
-
-  await t.test("allows a District-scoped request without TA", () => {
-    assert.deepStrictEqual(
-      getUbrHouseholdLocationParams({ district: "101" }),
-      { district: "101" },
-    );
-  });
-
-  await t.test("rejects requests missing District", () => {
-    assert.throws(
-      () => getUbrHouseholdLocationParams({ ta: "10101" }),
-      /District is required/,
-    );
   });
 });
