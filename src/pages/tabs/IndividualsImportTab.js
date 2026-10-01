@@ -25,7 +25,8 @@ import {
 import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
 import { translateMsrEtlError } from "../../util/errors";
 
-const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals`;
+const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals_v2`;
+const LEGACY_STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals`;
 
 const useStyles = makeStyles((theme) => ({
   actions: {
@@ -37,6 +38,7 @@ const useStyles = makeStyles((theme) => ({
 
 function loadSavedFilters() {
   try {
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
