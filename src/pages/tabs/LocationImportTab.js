@@ -22,7 +22,8 @@ import { scheduleMsrUbrLocationsImport, clearScheduleUbrLocationsImport, fetchAc
 import { translateMsrEtlError } from "../../util/errors";
 import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
 
-const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_location`;
+const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_location_v2`;
+const LEGACY_STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_location`;
 
 const useStyles = makeStyles((theme) => ({
   actions: {
@@ -35,6 +36,7 @@ const useStyles = makeStyles((theme) => ({
 
 function loadSavedFilters() {
   try {
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
