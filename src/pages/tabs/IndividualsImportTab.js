@@ -15,7 +15,7 @@ import {
 import { injectIntl } from "react-intl";
 import { makeStyles } from "@material-ui/styles";
 
-import { MSR_ETL_MODULE_NAME, MSR_ETL_JOB_TYPE } from "../../constants";
+import { IMPORTED_RECORDS_ROUTE, MSR_ETL_MODULE_NAME, MSR_ETL_JOB_TYPE } from "../../constants";
 import DynamicFiltersPanel from "../../components/DynamicFiltersPanel";
 import {
   scheduleMsrUbrIndividualsImport,
@@ -24,6 +24,9 @@ import {
 } from "../../actions";
 import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
 import { translateMsrEtlError } from "../../util/errors";
+import { msrEtlMetricLabels } from "../../util/jobMetrics";
+import ImportResultAlert from "../../components/ImportResultAlert";
+import ImportProgressCard from "../../components/ImportProgressCard";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals_v2`;
 const LEGACY_STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals`;
@@ -96,7 +99,8 @@ function IndividualsImportTab({ intl, rights }) {
   const onClear = () => {
     dispatch(clearScheduleUbrIndividualsImport());
     localStorage.removeItem(STORAGE_KEY);
-    setEdited({});
+    // Keep the data source (locked when only one is configured); Clear resets the filters
+    setEdited({ sourceType: edited.sourceType });
   };
 
   return (
@@ -141,6 +145,24 @@ function IndividualsImportTab({ intl, rights }) {
           <PublishedComponent
             pubRef="core.AsyncJobProgress"
             clientMutationId={clientMutationId}
+            metricLabels={msrEtlMetricLabels(formatMessage)}
+            progressUnit={formatMessage("jobProgress.individuals")}
+            renderRunning={(job, progress) => (
+              <ImportProgressCard
+                job={job}
+                {...progress}
+                kind="individuals"
+                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}
+              />
+            )}
+            renderResult={(job) => (
+              <ImportResultAlert
+                job={job}
+                kind="individuals"
+                route={IMPORTED_RECORDS_ROUTE.individuals}
+                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}
+              />
+            )}
             actions={
               <Button
                 size="small"
