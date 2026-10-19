@@ -5,6 +5,7 @@ import { injectIntl } from "react-intl";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 import { MSR_ETL_MODULE_NAME } from "../constants";
 import { normalizeLocationSelection } from "../util/location";
+import { gridWidth } from "../util/dynamicFilters";
 import DynamicFilterField from "./DynamicFilterField";
 import SourceTypeSelector from "./SourceTypeSelector";
 
@@ -59,7 +60,13 @@ function DynamicFiltersPanel({ edited, onEditedChanged, readOnly, classes, kind 
         <SourceTypeSelector kind={kind} value={edited?.sourceType} onChange={onSourceTypeChange} readOnly={readOnly} />
       </Grid>
       {schema.map((field) => (
-        <Grid item xs={12} md={6} className={classes.item} key={field.name}>
+        <Grid
+          item
+          xs={12}
+          md={field.type === "location" ? 12 : gridWidth(field.cols, 2)}
+          className={classes.item}
+          key={field.name}
+        >
           <DynamicFilterField
             module={MSR_ETL_MODULE_NAME}
             field={field}
