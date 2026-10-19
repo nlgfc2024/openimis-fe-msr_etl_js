@@ -16,10 +16,13 @@ import {
 import { injectIntl } from "react-intl";
 import { makeStyles } from "@material-ui/styles";
 
-import { MSR_ETL_MODULE_NAME, MSR_ETL_JOB_TYPE, RIGHT_MSR_ETL_EXPORT } from "../../constants";
+import { IMPORTED_RECORDS_ROUTE, MSR_ETL_MODULE_NAME, MSR_ETL_JOB_TYPE, RIGHT_MSR_ETL_EXPORT } from "../../constants";
 import DynamicFiltersPanel from "../../components/DynamicFiltersPanel";
 import { scheduleMsrUbrLocationsImport, clearScheduleUbrLocationsImport, fetchActiveMsrEtlJob } from "../../actions";
 import { translateMsrEtlError } from "../../util/errors";
+import { msrEtlMetricLabels } from "../../util/jobMetrics";
+import ImportResultAlert from "../../components/ImportResultAlert";
+import ImportProgressCard from "../../components/ImportProgressCard";
 import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_location_v2`;
@@ -108,7 +111,8 @@ function LocationImportTab({ intl, rights }) {
   const onClear = () => {
     dispatch(clearScheduleUbrLocationsImport());
     localStorage.removeItem(STORAGE_KEY);
-    setEdited({});
+    // Keep the data source (locked when only one is configured); Clear resets the filters
+    setEdited({ sourceType: edited.sourceType });
   };
 
   return (
@@ -168,6 +172,24 @@ function LocationImportTab({ intl, rights }) {
           <PublishedComponent
             pubRef="core.AsyncJobProgress"
             clientMutationId={scheduledUbrLocationsImportClientMutationId}
+            metricLabels={msrEtlMetricLabels(formatMessage)}
+            progressUnit={formatMessage("jobProgress.locations")}
+            renderRunning={(job, progress) => (
+              <ImportProgressCard
+                job={job}
+                {...progress}
+                kind="locations"
+                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+              />
+            )}
+            renderResult={(job) => (
+              <ImportResultAlert
+                job={job}
+                kind="locations"
+                route={IMPORTED_RECORDS_ROUTE.locations}
+                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+              />
+            )}
             actions={
               <Button
                 size="small"

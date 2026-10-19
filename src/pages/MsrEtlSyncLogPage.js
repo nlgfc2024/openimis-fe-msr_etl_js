@@ -34,6 +34,7 @@ import { injectIntl } from 'react-intl';
 import { fetchMsrEtlSyncUnits, clearMsrEtlSyncUnits, fetchMsrUbrLocationOptions } from '../actions';
 import { buildUbrLocationNameMap, getUbrLocationName } from '../util/location';
 import { MSR_ETL_MODULE_NAME } from '../constants';
+import { msrEtlMetricLabels } from '../util/jobMetrics';
 
 const FETCH_LIMIT = 300;
 
@@ -167,7 +168,11 @@ function MsrEtlSyncLogPage({ classes }) {
         </Grid>
 
         <div className={classes.content}>
-          <PublishedComponent pubRef="core.AsyncJobProgress" clientMutationId={clientMutationId} />
+          <PublishedComponent
+            pubRef="core.AsyncJobProgress"
+            clientMutationId={clientMutationId}
+            metricLabels={msrEtlMetricLabels(formatMessage)}
+          />
 
           <div className={classes.summary}>
             {Object.entries(groups).map(([unitType, counts]) => (
