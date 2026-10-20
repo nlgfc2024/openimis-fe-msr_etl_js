@@ -1,14 +1,16 @@
 import React from "react";
 import { injectIntl } from "react-intl";
-import { Autocomplete, NumberInput, PublishedComponent, TextInput, formatMessage } from "@openimis/fe-core";
+import { Autocomplete, NumberInput, TextInput, formatMessage } from "@openimis/fe-core";
 
+import LocationLevelsField from "./LocationLevelsField";
 import { findSelectedOption, findSelectedOptions, translateLabel } from "../util/dynamicFilters";
 
 const KNOWN_TYPES = ["text", "number", "boolean", "select", "multiselect", "location"];
 
 /**
  * Renders one filter input from a filter_schema field definition:
- * {name, label, type, required?, options?, min?, max?, maxLevel?}.
+ * {name, label, type, required?, options?, min?, max?, maxLevel?, cols?}.
+ * cols: fields of this size per row (location: level pickers per row).
  * Cleared values are always null.
  */
 function DynamicFilterField({ intl, module, field, value, onChange, readOnly }) {
@@ -26,15 +28,13 @@ function DynamicFilterField({ intl, module, field, value, onChange, readOnly }) 
   switch (type) {
     case "location":
       return (
-        <PublishedComponent
-          pubRef="location.LocationCascader"
+        <LocationLevelsField
           value={value}
           onChange={onChange}
-          withLabel
-          label={label}
           readOnly={readOnly}
           required={!!required}
           maxLevel={field.maxLevel}
+          cols={field.cols}
         />
       );
 

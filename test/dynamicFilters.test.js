@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { schemaRequiredFieldsSatisfied } = require("../src/util/dynamicFilters");
+const { schemaRequiredFieldsSatisfied, gridWidth } = require("../src/util/dynamicFilters");
 
 const LOCATION_FIELD = { name: "location", label: "Location", type: "location", required: true };
 const GENDER_FIELD = { name: "gender", label: "Gender", type: "select", required: true };
@@ -101,5 +101,23 @@ test("translateLabel", async (t) => {
 
   await t.test("falls back to the raw label", () => {
     assert.strictEqual(translateLabel(intl, "msr_etl", "Min Age"), "Min Age");
+  });
+});
+
+test("gridWidth", async (t) => {
+  await t.test("fits cols items per row", () => {
+    assert.strictEqual(gridWidth(2), 6);
+    assert.strictEqual(gridWidth(3), 4);
+    assert.strictEqual(gridWidth(4), 3);
+  });
+
+  await t.test("uses the fallback when cols is unset", () => {
+    assert.strictEqual(gridWidth(undefined, 2), 6);
+  });
+
+  await t.test("rounds down cols that do not divide 12 and clamps out-of-range values", () => {
+    assert.strictEqual(gridWidth(5), 2);
+    assert.strictEqual(gridWidth(0, 1), 12);
+    assert.strictEqual(gridWidth(20), 1);
   });
 });

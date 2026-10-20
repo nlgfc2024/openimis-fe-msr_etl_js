@@ -40,9 +40,20 @@ function translateLabel(intl, module, label) {
   return intl?.messages?.[key] ? intl.formatMessage({ id: key }) : label;
 }
 
-export { schemaRequiredFieldsSatisfied, findSelectedOption, findSelectedOptions, translateLabel };
+function gridWidth(cols, fallback) {
+  const perRow = Math.min(Math.max(cols || fallback, 1), 12);
+  return Math.max(1, Math.floor(12 / perRow));
+}
+
+export { schemaRequiredFieldsSatisfied, findSelectedOption, findSelectedOptions, translateLabel, gridWidth };
 
 // CommonJS compatibility for Node.js tests
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { schemaRequiredFieldsSatisfied, findSelectedOption, findSelectedOptions, translateLabel };
+  module.exports = {
+    schemaRequiredFieldsSatisfied,
+    findSelectedOption,
+    findSelectedOptions,
+    translateLabel,
+    gridWidth,
+  };
 }
