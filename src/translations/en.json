@@ -58,6 +58,7 @@
   "household.filter.householdHeadGender": "Household Head Gender",
   "household.filter.exclusionPrograms": "Exclusion Programs",
   "location": "Location",
+  "form.preparing": "Preparing the form...",
   "locationLevel.district": "District",
   "locationLevel.ta": "TA",
   "locationLevel.gvh": "GVH",
