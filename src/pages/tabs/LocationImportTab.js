@@ -8,7 +8,6 @@ import {
   useTranslations,
   useAsyncJob,
   useGraphqlQuery,
-  Form,
   ProgressOrError,
   PublishedComponent,
   Link,
@@ -24,6 +23,7 @@ import { msrEtlMetricLabels } from "../../util/jobMetrics";
 import ImportResultAlert from "../../components/ImportResultAlert";
 import ImportProgressCard from "../../components/ImportProgressCard";
 import FormLoader from "../../components/FormLoader";
+import FlatForm from "../../components/FlatForm";
 import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_location_v2`;
@@ -118,10 +118,51 @@ function LocationImportTab({ intl, rights }) {
 
   return (
     <div>
+      {isImportTracked ? (
+        <Box>
+          <PublishedComponent
+            pubRef="core.AsyncJobProgress"
+            clientMutationId={scheduledUbrLocationsImportClientMutationId}
+            metricLabels={msrEtlMetricLabels(formatMessage)}
+            progressUnit={formatMessage("jobProgress.locations")}
+            renderRunning={(job, progress) => (
+              <ImportProgressCard
+                job={job}
+                {...progress}
+                kind="locations"
+                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+              />
+            )}
+            renderResult={(job) => (
+              <ImportResultAlert
+                job={job}
+                kind="locations"
+                route={IMPORTED_RECORDS_ROUTE.locations}
+                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+              />
+            )}
+            actions={
+              <Button
+                size="small"
+                variant="outlined"
+                component={Link}
+                to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+              >
+                {formatMessage("etlServices.viewSyncLog")}
+              </Button>
+            }
+          />
+        </Box>
+      ) : (
+        <ProgressOrError
+          progress={schedulingUbrLocationsImport}
+          error={translateMsrEtlError(errorScheduleUbrLocationsImport, formatMessage)}
+        />
+      )}
       {locationsExist === null ? (
         <FormLoader />
       ) : (
-        <Form
+        <FlatForm
           module={MSR_ETL_MODULE_NAME}
           enableSaveButton={false}
           edited={edited}
@@ -171,48 +212,6 @@ function LocationImportTab({ intl, rights }) {
           </Button>
         )}
       </Box>
-
-      {isImportTracked ? (
-        <Box mt={2}>
-          <PublishedComponent
-            pubRef="core.AsyncJobProgress"
-            clientMutationId={scheduledUbrLocationsImportClientMutationId}
-            metricLabels={msrEtlMetricLabels(formatMessage)}
-            progressUnit={formatMessage("jobProgress.locations")}
-            renderRunning={(job, progress) => (
-              <ImportProgressCard
-                job={job}
-                {...progress}
-                kind="locations"
-                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
-              />
-            )}
-            renderResult={(job) => (
-              <ImportResultAlert
-                job={job}
-                kind="locations"
-                route={IMPORTED_RECORDS_ROUTE.locations}
-                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
-              />
-            )}
-            actions={
-              <Button
-                size="small"
-                variant="outlined"
-                component={Link}
-                to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
-              >
-                {formatMessage("etlServices.viewSyncLog")}
-              </Button>
-            }
-          />
-        </Box>
-      ) : (
-        <ProgressOrError
-          progress={schedulingUbrLocationsImport}
-          error={translateMsrEtlError(errorScheduleUbrLocationsImport, formatMessage)}
-        />
-      )}
     </div>
   );
 }
