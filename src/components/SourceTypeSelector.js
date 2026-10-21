@@ -28,6 +28,8 @@ function SourceTypeSelector({ intl, kind, value, onChange, readOnly }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceTypes]);
 
+  if (isLocked) return null;
+
   const options = buildSourceTypeOptions(sourceTypes);
 
   return (
@@ -40,7 +42,7 @@ function SourceTypeSelector({ intl, kind, value, onChange, readOnly }) {
       onInputChange={() => {}}
       getOptionLabel={(option) => option.label}
       getOptionSelected={(option, v) => option.value === v?.value}
-      readOnly={readOnly || isLocked}
+      readOnly={readOnly}
       required
     />
   );
