@@ -2,12 +2,14 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { Grid } from "@material-ui/core";
 import { injectIntl } from "react-intl";
+import { ProgressOrError } from "@openimis/fe-core";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 import { MSR_ETL_MODULE_NAME } from "../constants";
 import { normalizeLocationSelection } from "../util/location";
 import { gridWidth } from "../util/dynamicFilters";
 import DynamicFilterField from "./DynamicFilterField";
 import SourceTypeSelector from "./SourceTypeSelector";
+import FormLoader from "./FormLoader";
 
 const styles = (theme) => ({
   item: theme.paper.item,
@@ -25,6 +27,9 @@ function DynamicFiltersPanel({ edited, onEditedChanged, readOnly, classes, kind 
   const sourceTypes = useSelector((state) =>
     kind === "location" ? state.msrEtl.locationSourceTypes : state.msrEtl.individualSourceTypes,
   );
+  const fetched = useSelector((state) => state.msrEtl.fetchedMsrEtlSourceTypes);
+  const error = useSelector((state) => state.msrEtl.errorMsrEtlSourceTypes);
+  const ready = fetched && (sourceTypes.length !== 1 || !!edited?.sourceType);
   const schema = sourceTypes.find((sourceType) => sourceType.value === edited?.sourceType)?.filterSchema || [];
 
   const onSourceTypeChange = (value) => {
@@ -54,28 +59,47 @@ function DynamicFiltersPanel({ edited, onEditedChanged, readOnly, classes, kind 
     });
   };
 
+  const sourceTypeSelector = (
+    <SourceTypeSelector kind={kind} value={edited?.sourceType} onChange={onSourceTypeChange} readOnly={readOnly} />
+  );
+
   return (
     <Grid container className={classes.item}>
-      <Grid item xs={12} md={6} className={classes.item}>
-        <SourceTypeSelector kind={kind} value={edited?.sourceType} onChange={onSourceTypeChange} readOnly={readOnly} />
-      </Grid>
-      {schema.map((field) => (
-        <Grid
-          item
-          xs={12}
-          md={field.type === "location" ? 12 : gridWidth(field.cols, 2)}
-          className={classes.item}
-          key={field.name}
-        >
-          <DynamicFilterField
-            module={MSR_ETL_MODULE_NAME}
-            field={field}
-            value={field.type === "location" ? edited?.location : edited?.filters?.[field.name]}
-            onChange={onFieldChange(field)}
-            readOnly={readOnly}
-          />
+      {sourceTypes.length > 1 ? (
+        <Grid item xs={12} md={6} className={classes.item}>
+          {sourceTypeSelector}
         </Grid>
-      ))}
+      ) : (
+        sourceTypeSelector
+      )}
+      {error && (
+        <Grid item xs={12}>
+          <ProgressOrError error={error} />
+        </Grid>
+      )}
+      {!error && !ready && (
+        <Grid item xs={12}>
+          <FormLoader />
+        </Grid>
+      )}
+      {ready &&
+        schema.map((field) => (
+          <Grid
+            item
+            xs={12}
+            md={field.type === "location" ? 12 : gridWidth(field.cols, 2)}
+            className={classes.item}
+            key={field.name}
+          >
+            <DynamicFilterField
+              module={MSR_ETL_MODULE_NAME}
+              field={field}
+              value={field.type === "location" ? edited?.location : edited?.filters?.[field.name]}
+              onChange={onFieldChange(field)}
+              readOnly={readOnly}
+            />
+          </Grid>
+        ))}
     </Grid>
   );
 }
