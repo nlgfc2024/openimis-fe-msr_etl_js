@@ -1,8 +1,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Grid } from "@material-ui/core";
+import { Grid, Typography } from "@material-ui/core";
 import { injectIntl } from "react-intl";
-import { ProgressOrError } from "@openimis/fe-core";
+import { ProgressOrError, formatMessage } from "@openimis/fe-core";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 import { MSR_ETL_MODULE_NAME } from "../constants";
 import { normalizeLocationSelection } from "../util/location";
@@ -23,7 +23,7 @@ const styles = (theme) => ({
  * Adding a new source, or changing an existing one's fields, is a config
  * change only - this panel never needs code changes for it.
  */
-function DynamicFiltersPanel({ edited, onEditedChanged, readOnly, classes, kind }) {
+function DynamicFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes, kind }) {
   const sourceTypes = useSelector((state) =>
     kind === "location" ? state.msrEtl.locationSourceTypes : state.msrEtl.individualSourceTypes,
   );
@@ -80,6 +80,13 @@ function DynamicFiltersPanel({ edited, onEditedChanged, readOnly, classes, kind 
       {!error && !ready && (
         <Grid item xs={12}>
           <FormLoader />
+        </Grid>
+      )}
+      {ready && sourceTypes.length === 0 && (
+        <Grid item xs={12} className={classes.item}>
+          <Typography variant="body2" color="textSecondary">
+            {formatMessage(intl, MSR_ETL_MODULE_NAME, "filters.noSourceConfigured")}
+          </Typography>
         </Grid>
       )}
       {ready &&
