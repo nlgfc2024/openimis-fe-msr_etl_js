@@ -23,6 +23,7 @@ import { translateMsrEtlError } from "../../util/errors";
 import { msrEtlMetricLabels } from "../../util/jobMetrics";
 import ImportResultAlert from "../../components/ImportResultAlert";
 import ImportProgressCard from "../../components/ImportProgressCard";
+import FormLoader from "../../components/FormLoader";
 import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_location_v2`;
@@ -117,16 +118,20 @@ function LocationImportTab({ intl, rights }) {
 
   return (
     <div>
-      <Form
-        module={MSR_ETL_MODULE_NAME}
-        enableSaveButton={false}
-        edited={edited}
-        onEditedChanged={setEdited}
-        HeadPanel={locationsExist ? DynamicFiltersPanel : undefined}
-        kind="location"
-        actions={[]}
-        rights={rights}
-      />
+      {locationsExist === null ? (
+        <FormLoader />
+      ) : (
+        <Form
+          module={MSR_ETL_MODULE_NAME}
+          enableSaveButton={false}
+          edited={edited}
+          onEditedChanged={setEdited}
+          HeadPanel={locationsExist ? DynamicFiltersPanel : undefined}
+          kind="location"
+          actions={[]}
+          rights={rights}
+        />
+      )}
       {locationsExist === false && (
         <Box m={2}>
           <Typography variant="body2" color="textSecondary">
