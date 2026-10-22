@@ -7,7 +7,6 @@ import {
   useTranslations,
   useAsyncJob,
   useGraphqlQuery,
-  Form,
   ProgressOrError,
   PublishedComponent,
   Link,
@@ -28,6 +27,7 @@ import { msrEtlMetricLabels } from "../../util/jobMetrics";
 import ImportResultAlert from "../../components/ImportResultAlert";
 import ImportProgressCard from "../../components/ImportProgressCard";
 import FormLoader from "../../components/FormLoader";
+import FlatForm from "../../components/FlatForm";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals_v2`;
 const LEGACY_STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals`;
@@ -106,47 +106,8 @@ function IndividualsImportTab({ intl, rights }) {
 
   return (
     <div>
-      {locationsExist === null ? (
-        <FormLoader />
-      ) : (
-        <Form
-          module={MSR_ETL_MODULE_NAME}
-          enableSaveButton={false}
-          edited={edited}
-          onEditedChanged={setEdited}
-          HeadPanel={locationsExist ? DynamicFiltersPanel : undefined}
-          kind="individual"
-          actions={[]}
-          rights={rights}
-        />
-      )}
-      {locationsExist === false && (
-        <Box m={2}>
-          <Typography variant="body2" color="textSecondary">
-            {formatMessage("etlServices.individualsNeedLocations")}
-          </Typography>
-        </Box>
-      )}
-      <Box className={classes.actions}>
-        {locationsExist && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => onPullData(edited)}
-            disabled={scheduling || mandatoryFieldsEmpty || blockedByActiveJob}
-          >
-            {formatMessage("filters.pullData")}
-          </Button>
-        )}
-        {locationsExist && (
-          <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
-            {formatMessage("filters.clear")}
-          </Button>
-        )}
-      </Box>
-
       {isImportTracked ? (
-        <Box mt={2}>
+        <Box>
           <PublishedComponent
             pubRef="core.AsyncJobProgress"
             clientMutationId={clientMutationId}
@@ -183,6 +144,44 @@ function IndividualsImportTab({ intl, rights }) {
       ) : (
         <ProgressOrError progress={scheduling} error={translateMsrEtlError(rawError, formatMessage)} />
       )}
+      {locationsExist === null ? (
+        <FormLoader />
+      ) : (
+        <FlatForm
+          module={MSR_ETL_MODULE_NAME}
+          enableSaveButton={false}
+          edited={edited}
+          onEditedChanged={setEdited}
+          HeadPanel={locationsExist ? DynamicFiltersPanel : undefined}
+          kind="individual"
+          actions={[]}
+          rights={rights}
+        />
+      )}
+      {locationsExist === false && (
+        <Box m={2}>
+          <Typography variant="body2" color="textSecondary">
+            {formatMessage("etlServices.individualsNeedLocations")}
+          </Typography>
+        </Box>
+      )}
+      <Box className={classes.actions}>
+        {locationsExist && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => onPullData(edited)}
+            disabled={scheduling || mandatoryFieldsEmpty || blockedByActiveJob}
+          >
+            {formatMessage("filters.pullData")}
+          </Button>
+        )}
+        {locationsExist && (
+          <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
+            {formatMessage("filters.clear")}
+          </Button>
+        )}
+      </Box>
     </div>
   );
 }
