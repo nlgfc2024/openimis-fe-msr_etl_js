@@ -12,3 +12,10 @@ export const IMPORTED_RECORDS_ROUTE = {
   individuals: "/individuals",
   locations: "/location/locations",
 };
+
+export const MSR_ETL_TAB = {
+  LOCATION: 0,
+  INDIVIDUALS: 1,
+  LOGS: 2,
+};
+export const MSR_ETL_TAB_SLUGS = ["location", "individuals", "logs"];
