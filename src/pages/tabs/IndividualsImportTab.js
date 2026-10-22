@@ -7,6 +7,7 @@ import {
   useTranslations,
   useAsyncJob,
   useGraphqlQuery,
+  Form,
   ProgressOrError,
   PublishedComponent,
   Link,
@@ -27,7 +28,6 @@ import { msrEtlMetricLabels } from "../../util/jobMetrics";
 import ImportResultAlert from "../../components/ImportResultAlert";
 import ImportProgressCard from "../../components/ImportProgressCard";
 import FormLoader from "../../components/FormLoader";
-import FlatForm from "../../components/FlatForm";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals_v2`;
 const LEGACY_STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals`;
@@ -148,7 +148,8 @@ function IndividualsImportTab({ intl, rights }) {
       {locationsExist === null ? (
         <FormLoader />
       ) : (
-        <FlatForm
+        <Form
+          flat
           module={MSR_ETL_MODULE_NAME}
           enableSaveButton={false}
           edited={edited}

@@ -8,6 +8,7 @@ import {
   useTranslations,
   useAsyncJob,
   useGraphqlQuery,
+  Form,
   ProgressOrError,
   PublishedComponent,
   Link,
@@ -23,7 +24,6 @@ import { msrEtlMetricLabels } from "../../util/jobMetrics";
 import ImportResultAlert from "../../components/ImportResultAlert";
 import ImportProgressCard from "../../components/ImportProgressCard";
 import FormLoader from "../../components/FormLoader";
-import FlatForm from "../../components/FlatForm";
 import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_location_v2`;
@@ -163,7 +163,8 @@ function LocationImportTab({ intl, rights }) {
       {locationsExist === null ? (
         <FormLoader />
       ) : (
-        <FlatForm
+        <Form
+          flat
           module={MSR_ETL_MODULE_NAME}
           enableSaveButton={false}
           edited={edited}
