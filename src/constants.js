@@ -12,3 +12,17 @@ export const IMPORTED_RECORDS_ROUTE = {
   individuals: "/individuals",
   locations: "/location/locations",
 };
+
+export const MSR_ETL_TAB = {
+  LOCATION: 0,
+  INDIVIDUALS: 1,
+  LOGS: 2,
+};
+export const MSR_ETL_TAB_SLUGS = ["location", "individuals", "logs"];
+
+export const LOCATION_LEVELS = [
+  { pubRef: "location.MwDistrictPicker", label: "locationLevel.district" },
+  { pubRef: "location.MwTAPicker", label: "locationLevel.ta" },
+  { pubRef: "location.MwGVHPicker", label: "locationLevel.gvh" },
+  { pubRef: "location.MwVillagePicker", label: "locationLevel.village" },
+];

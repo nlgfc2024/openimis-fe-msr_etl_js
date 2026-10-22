@@ -98,8 +98,11 @@ function LocationImportTab({ intl, rights }) {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
+  useEffect(() => {
+    persistFilters(edited);
+  }, [edited]);
+
   const onPullData = (data) => {
-    persistFilters(data);
     dispatch(clearScheduleUbrLocationsImport());
     dispatch(scheduleMsrUbrLocationsImport({ sourceType: data.sourceType, filters: data.filters }));
   };
@@ -111,8 +114,6 @@ function LocationImportTab({ intl, rights }) {
 
   const onClear = () => {
     dispatch(clearScheduleUbrLocationsImport());
-    localStorage.removeItem(STORAGE_KEY);
-    // Keep the data source (locked when only one is configured); Clear resets the filters
     setEdited({ sourceType: edited.sourceType });
   };
 

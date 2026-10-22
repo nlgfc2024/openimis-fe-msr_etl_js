@@ -17,6 +17,7 @@ const DEFAULT_CONFIG = {
   reducers: [{ key: MSR_ETL_MODULE_NAME, reducer }],
   "core.Router": [
     { path: ROUTE_MSR_ETL_LANDING, component: MsrEtlLandingPage },
+    { path: `${ROUTE_MSR_ETL_LANDING}/:tab`, component: MsrEtlLandingPage },
     { path: `${ROUTE_MSR_ETL_SYNC_LOG}/:client_mutation_id`, component: MsrEtlSyncLogPage },
   ],
   "socialProtection.MainMenu": [

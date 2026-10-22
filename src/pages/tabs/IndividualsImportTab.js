@@ -92,15 +92,16 @@ function IndividualsImportTab({ intl, rights }) {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
+  useEffect(() => {
+    persistFilters(edited);
+  }, [edited]);
+
   const onPullData = (data) => {
-    persistFilters(data);
     dispatch(scheduleMsrUbrIndividualsImport({ sourceType: data.sourceType, filters: data.filters }));
   };
 
   const onClear = () => {
     dispatch(clearScheduleUbrIndividualsImport());
-    localStorage.removeItem(STORAGE_KEY);
-    // Keep the data source (locked when only one is configured); Clear resets the filters
     setEdited({ sourceType: edited.sourceType });
   };
 

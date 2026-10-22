@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { connect } from "react-redux";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 import { Paper, Grid, Tab } from "@material-ui/core";
-import { Helmet, useModulesManager, useTranslations, withModulesManager } from "@openimis/fe-core";
+import {
+  Helmet,
+  useHistory,
+  useModulesManager,
+  useParams,
+  useTranslations,
+  withModulesManager,
+} from "@openimis/fe-core";
 import { injectIntl } from "react-intl";
 
-import { MSR_ETL_MODULE_NAME, RIGHT_MSR_ETL_SEARCH } from "../constants";
+import { MSR_ETL_MODULE_NAME, MSR_ETL_TAB, MSR_ETL_TAB_SLUGS, RIGHT_MSR_ETL_SEARCH } from "../constants";
 import LocationImportTab from "./tabs/LocationImportTab";
 import IndividualsImportTab from "./tabs/IndividualsImportTab";
 import MsrEtlLogsTab from "./tabs/MsrEtlLogsTab";
@@ -29,16 +36,12 @@ const styles = (theme) => ({
   },
 });
 
-const TAB = {
-  LOCATION: 0,
-  INDIVIDUALS: 1,
-  LOGS: 2,
-};
-
 function MsrEtlLandingPage({ classes, rights }) {
   const modulesManager = useModulesManager();
   const { formatMessage } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
-  const [activeTab, setActiveTab] = useState(TAB.LOCATION);
+  const history = useHistory();
+  const { tab } = useParams();
+  const activeTab = Math.max(MSR_ETL_TAB_SLUGS.indexOf(tab), MSR_ETL_TAB.LOCATION);
 
   if (!rights.includes(RIGHT_MSR_ETL_SEARCH)) {
     return null;
@@ -46,7 +49,8 @@ function MsrEtlLandingPage({ classes, rights }) {
 
   const isSelected = (tab) => tab === activeTab;
   const tabStyle = (tab) => (isSelected(tab) ? classes.selectedTab : classes.unselectedTab);
-  const handleChange = (_, tab) => setActiveTab(tab);
+  const handleChange = (_, value) =>
+    history.replace(`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.landing`)}/${MSR_ETL_TAB_SLUGS[value]}`);
 
   return (
     <div className={classes.page}>
@@ -55,30 +59,30 @@ function MsrEtlLandingPage({ classes, rights }) {
         <Grid container className={`${classes.tableTitle} ${classes.tabs}`}>
           <Tab
             onChange={handleChange}
-            className={tabStyle(TAB.LOCATION)}
-            selected={isSelected(TAB.LOCATION)}
-            value={TAB.LOCATION}
+            className={tabStyle(MSR_ETL_TAB.LOCATION)}
+            selected={isSelected(MSR_ETL_TAB.LOCATION)}
+            value={MSR_ETL_TAB.LOCATION}
             label={formatMessage("landing.tab.location")}
           />
           <Tab
             onChange={handleChange}
-            className={tabStyle(TAB.INDIVIDUALS)}
-            selected={isSelected(TAB.INDIVIDUALS)}
-            value={TAB.INDIVIDUALS}
+            className={tabStyle(MSR_ETL_TAB.INDIVIDUALS)}
+            selected={isSelected(MSR_ETL_TAB.INDIVIDUALS)}
+            value={MSR_ETL_TAB.INDIVIDUALS}
             label={formatMessage("landing.tab.individuals")}
           />
           <Tab
             onChange={handleChange}
-            className={tabStyle(TAB.LOGS)}
-            selected={isSelected(TAB.LOGS)}
-            value={TAB.LOGS}
+            className={tabStyle(MSR_ETL_TAB.LOGS)}
+            selected={isSelected(MSR_ETL_TAB.LOGS)}
+            value={MSR_ETL_TAB.LOGS}
             label={formatMessage("landing.tab.logs")}
           />
         </Grid>
         <div className={classes.tabContent}>
-          {activeTab === TAB.LOCATION && <LocationImportTab rights={rights} />}
-          {activeTab === TAB.INDIVIDUALS && <IndividualsImportTab rights={rights} />}
-          {activeTab === TAB.LOGS && <MsrEtlLogsTab rights={rights} />}
+          {activeTab === MSR_ETL_TAB.LOCATION && <LocationImportTab rights={rights} />}
+          {activeTab === MSR_ETL_TAB.INDIVIDUALS && <IndividualsImportTab rights={rights} />}
+          {activeTab === MSR_ETL_TAB.LOGS && <MsrEtlLogsTab rights={rights} />}
         </div>
       </Paper>
     </div>
