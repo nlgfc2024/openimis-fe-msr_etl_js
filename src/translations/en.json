@@ -12,7 +12,7 @@
   "filters.pullData": "Pull Data",
   "filters.viewSyncLog": "View sync log",
   "filters.clear": "Clear",
-  "filters.sourceType": "Data Source",
+  "filters.sourceType": "Programme",
   "filters.noSourceConfigured": "No data source is configured for this import. An administrator needs to add one under sources in the msr_etl module configuration.",
   "filters.yes": "Yes",
   "filters.no": "No",
