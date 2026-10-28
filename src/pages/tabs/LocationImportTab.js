@@ -91,6 +91,8 @@ function LocationImportTab({ intl, rights }) {
   }, [isTrackedJobTerminal]);
 
   const locationSourceTypes = useSelector((state) => state.msrEtl.locationSourceTypes);
+  // Shown in progress and result messages ("Importing ... from <source>")
+  const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.label;
   const schema = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
   const canPullData = !!edited.sourceType && schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
 
@@ -128,6 +130,7 @@ function LocationImportTab({ intl, rights }) {
             progressUnit={formatMessage("jobProgress.locations")}
             renderRunning={(job, progress) => (
               <ImportProgressCard
+                source={sourceLabel}
                 job={job}
                 {...progress}
                 kind="locations"
@@ -136,6 +139,7 @@ function LocationImportTab({ intl, rights }) {
             )}
             renderResult={(job) => (
               <ImportResultAlert
+                source={sourceLabel}
                 job={job}
                 kind="locations"
                 route={IMPORTED_RECORDS_ROUTE.locations}

@@ -84,6 +84,8 @@ function IndividualsImportTab({ intl, rights }) {
   const blockedByActiveJob = isImportTracked && !isTrackedJobTerminal;
 
   const individualSourceTypes = useSelector((state) => state.msrEtl.individualSourceTypes);
+  // Shown in progress and result messages ("Importing ... from <source>")
+  const sourceLabel = individualSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.label;
   const schema = individualSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
   const mandatoryFieldsEmpty =
     !edited.sourceType || !schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
@@ -116,6 +118,7 @@ function IndividualsImportTab({ intl, rights }) {
             progressUnit={formatMessage("jobProgress.individuals")}
             renderRunning={(job, progress) => (
               <ImportProgressCard
+                source={sourceLabel}
                 job={job}
                 {...progress}
                 kind="individuals"
@@ -124,6 +127,7 @@ function IndividualsImportTab({ intl, rights }) {
             )}
             renderResult={(job) => (
               <ImportResultAlert
+                source={sourceLabel}
                 job={job}
                 kind="individuals"
                 route={IMPORTED_RECORDS_ROUTE.individuals}

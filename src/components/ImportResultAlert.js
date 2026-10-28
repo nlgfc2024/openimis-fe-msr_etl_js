@@ -5,7 +5,7 @@ import { useModulesManager, useTranslations, Link } from "@openimis/fe-core";
 import { MSR_ETL_MODULE_NAME } from "../constants";
 import ImportStatusAlert from "./ImportStatusAlert";
 
-const ImportResultAlert = ({ job, kind, route, syncLogRoute }) => {
+const ImportResultAlert = ({ job, kind, route, syncLogRoute, source }) => {
   const modulesManager = useModulesManager();
   const { formatMessage, formatMessageWithValues } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
   const metrics = job.metrics ?? {};
@@ -16,6 +16,7 @@ const ImportResultAlert = ({ job, kind, route, syncLogRoute }) => {
     failed: metrics.errors ?? 0,
     downloadFailed: metrics.download_errors ?? 0,
     noun: formatMessage(`jobProgress.${kind}`),
+    source: source || formatMessage("importProgress.unknownSource"),
   };
 
   const actions = (
@@ -44,7 +45,7 @@ const ImportResultAlert = ({ job, kind, route, syncLogRoute }) => {
     }
     if (values.skipped > 0) sentences.push(formatMessageWithValues("importResult.skipped", values));
     if (values.failed > 0) sentences.push(formatMessageWithValues("importResult.failedCount", values));
-    if (values.downloadFailed > 0) sentences.push(formatMessage("importResult.downloadFailed"));
+    if (values.downloadFailed > 0) sentences.push(formatMessageWithValues("importResult.downloadFailed", values));
     return sentences.join(" ");
   };
 
