@@ -27,6 +27,7 @@ import { translateMsrEtlError } from "../../util/errors";
 import { msrEtlMetricLabels } from "../../util/jobMetrics";
 import ImportResultAlert from "../../components/ImportResultAlert";
 import ImportProgressCard from "../../components/ImportProgressCard";
+import { renderInAlertSlot } from "../../util/alertSlot";
 import FormLoader from "../../components/FormLoader";
 
 const STORAGE_KEY = `${MSR_ETL_MODULE_NAME}_filters_individuals_v2`;
@@ -50,7 +51,7 @@ function loadSavedFilters() {
   }
 }
 
-function IndividualsImportTab({ intl, rights }) {
+function IndividualsImportTab({ intl, rights, alertSlot }) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const modulesManager = useModulesManager();
@@ -109,45 +110,48 @@ function IndividualsImportTab({ intl, rights }) {
 
   return (
     <div>
-      {isImportTracked ? (
-        <Box>
-          <PublishedComponent
-            pubRef="core.AsyncJobProgress"
-            clientMutationId={clientMutationId}
-            metricLabels={msrEtlMetricLabels(formatMessage)}
-            progressUnit={formatMessage("jobProgress.individuals")}
-            renderRunning={(job, progress) => (
-              <ImportProgressCard
-                source={sourceLabel}
-                job={job}
-                {...progress}
-                kind="individuals"
-                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}
-              />
-            )}
-            renderResult={(job) => (
-              <ImportResultAlert
-                source={sourceLabel}
-                job={job}
-                kind="individuals"
-                route={IMPORTED_RECORDS_ROUTE.individuals}
-                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}
-              />
-            )}
-            actions={
-              <Button
-                size="small"
-                variant="outlined"
-                component={Link}
-                to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}
-              >
-                {formatMessage("filters.viewSyncLog")}
-              </Button>
-            }
-          />
-        </Box>
-      ) : (
-        <ProgressOrError progress={scheduling} error={translateMsrEtlError(rawError, formatMessage)} />
+      {renderInAlertSlot(
+        alertSlot,
+        isImportTracked ? (
+          <Box>
+            <PublishedComponent
+              pubRef="core.AsyncJobProgress"
+              clientMutationId={clientMutationId}
+              metricLabels={msrEtlMetricLabels(formatMessage)}
+              progressUnit={formatMessage("jobProgress.individuals")}
+              renderRunning={(job, progress) => (
+                <ImportProgressCard
+                  source={sourceLabel}
+                  job={job}
+                  {...progress}
+                  kind="individuals"
+                  syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}
+                />
+              )}
+              renderResult={(job) => (
+                <ImportResultAlert
+                  source={sourceLabel}
+                  job={job}
+                  kind="individuals"
+                  route={IMPORTED_RECORDS_ROUTE.individuals}
+                  syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}
+                />
+              )}
+              actions={
+                <Button
+                  size="small"
+                  variant="outlined"
+                  component={Link}
+                  to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${clientMutationId}`}
+                >
+                  {formatMessage("filters.viewSyncLog")}
+                </Button>
+              }
+            />
+          </Box>
+        ) : (
+          <ProgressOrError progress={scheduling} error={translateMsrEtlError(rawError, formatMessage)} />
+        ),
       )}
       {locationsExist === null ? (
         <FormLoader />
