@@ -11,7 +11,7 @@ const locationChain = (location) => {
   return chain;
 };
 
-const LocationLevelsField = ({ value, onChange, maxLevel: maxLevelProp, cols, required, readOnly }) => {
+const LocationLevelsField = ({ value, onChange, maxLevel: maxLevelProp, cols, required, readOnly, itemClassName }) => {
   const modulesManager = useModulesManager();
   const { formatMessage } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
   const maxLevel = Math.min(
@@ -27,9 +27,9 @@ const LocationLevelsField = ({ value, onChange, maxLevel: maxLevelProp, cols, re
   };
 
   return (
-    <Grid container spacing={2}>
+    <>
       {LOCATION_LEVELS.slice(0, maxLevel).map(({ pubRef, label }, level) => (
-        <Grid item xs={12} md={width} key={pubRef}>
+        <Grid item xs={12} md={width} className={itemClassName} key={pubRef}>
           <PublishedComponent
             key={chain[level - 1]?.uuid ?? "root"}
             pubRef={pubRef}
@@ -43,7 +43,7 @@ const LocationLevelsField = ({ value, onChange, maxLevel: maxLevelProp, cols, re
           />
         </Grid>
       ))}
-    </Grid>
+    </>
   );
 };
 

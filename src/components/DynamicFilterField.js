@@ -14,7 +14,7 @@ const KNOWN_TYPES = ["text", "number", "boolean", "select", "multiselect", "loca
  * cols: fields of this size per row (location: level pickers per row).
  * Cleared values are always null.
  */
-function DynamicFilterField({ intl, module, field, value, onChange, readOnly, sourceType }) {
+function DynamicFilterField({ intl, module, field, value, onChange, readOnly, sourceType, itemClassName }) {
   const { type = "text", required, options = [] } = field;
   const label = translateLabel(intl, module, field.label);
   const common = { module, label, readOnly, required: !!required };
@@ -30,6 +30,7 @@ function DynamicFilterField({ intl, module, field, value, onChange, readOnly, so
     case "location":
       return (
         <LocationLevelsField
+          itemClassName={itemClassName}
           value={value}
           onChange={onChange}
           readOnly={readOnly}
