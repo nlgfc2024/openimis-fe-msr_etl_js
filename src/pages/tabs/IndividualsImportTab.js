@@ -85,8 +85,10 @@ function IndividualsImportTab({ intl, rights, alertSlot }) {
   const blockedByActiveJob = isImportTracked && !isTrackedJobTerminal;
 
   const individualSourceTypes = useSelector((state) => state.msrEtl.individualSourceTypes);
-  // Messages name the data source ("downloaded from Public Works Program (PWP)"), not the programme
-  const sourceLabel = individualSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.sourceName;
+  // Messages name the tracked job's data source ("downloaded from Public Works Program (PWP)"),
+  // not the programme, and not whichever one is picked now
+  const jobSourceType = useSelector((state) => state.msrEtl.scheduledUbrIndividualsImportSourceType);
+  const sourceLabel = individualSourceTypes.find((sourceType) => sourceType.value === jobSourceType)?.sourceName;
   const schema = individualSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
   const mandatoryFieldsEmpty =
     !edited.sourceType || !schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);

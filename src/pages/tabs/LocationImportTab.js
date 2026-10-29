@@ -92,7 +92,10 @@ function LocationImportTab({ intl, rights, alertSlot }) {
   }, [isTrackedJobTerminal]);
 
   const locationSourceTypes = useSelector((state) => state.msrEtl.locationSourceTypes);
-  const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.sourceName;
+  // Messages name the tracked job's data source ("downloaded from Public Works Program (PWP)"),
+  // not the programme, and not whichever one is picked now
+  const jobSourceType = useSelector((state) => state.msrEtl.scheduledUbrLocationsImportSourceType);
+  const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === jobSourceType)?.sourceName;
   const schema = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
   const canPullData = !!edited.sourceType && schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
 

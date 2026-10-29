@@ -3,6 +3,9 @@ export const MSR_ETL_MODULE_NAME = "msrEtl";
 export const RIGHT_MSR_ETL_SEARCH = 953001;
 export const RIGHT_MSR_ETL_EXPORT = 953002;
 
+// The backend's source when a job names none (e.g. an Initial Pull)
+export const DEFAULT_SOURCE_TYPE = "ubr";
+
 export const MSR_ETL_JOB_TYPE = {
   UBR_INDIVIDUALS_IMPORT: "ubr_individuals_import",
   UBR_LOCATIONS_IMPORT: "ubr_locations_import",
