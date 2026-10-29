@@ -3,9 +3,10 @@ import { injectIntl } from "react-intl";
 import { Autocomplete, NumberInput, TextInput, formatMessage } from "@openimis/fe-core";
 
 import LocationLevelsField from "./LocationLevelsField";
+import FormNumberFileField from "./FormNumberFileField";
 import { findSelectedOption, findSelectedOptions, translateLabel } from "../util/dynamicFilters";
 
-const KNOWN_TYPES = ["text", "number", "boolean", "select", "multiselect", "location"];
+const KNOWN_TYPES = ["text", "number", "boolean", "select", "multiselect", "location", "file"];
 
 /**
  * Renders one filter input from a filter_schema field definition:
@@ -13,7 +14,7 @@ const KNOWN_TYPES = ["text", "number", "boolean", "select", "multiselect", "loca
  * cols: fields of this size per row (location: level pickers per row).
  * Cleared values are always null.
  */
-function DynamicFilterField({ intl, module, field, value, onChange, readOnly }) {
+function DynamicFilterField({ intl, module, field, value, onChange, readOnly, sourceType, itemClassName }) {
   const { type = "text", required, options = [] } = field;
   const label = translateLabel(intl, module, field.label);
   const common = { module, label, readOnly, required: !!required };
@@ -29,12 +30,25 @@ function DynamicFilterField({ intl, module, field, value, onChange, readOnly }) 
     case "location":
       return (
         <LocationLevelsField
+          itemClassName={itemClassName}
           value={value}
           onChange={onChange}
           readOnly={readOnly}
           required={!!required}
           maxLevel={field.maxLevel}
           cols={field.cols}
+        />
+      );
+
+    case "file":
+      return (
+        <FormNumberFileField
+          label={label}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          required={!!required}
+          sourceType={sourceType}
         />
       );
 
