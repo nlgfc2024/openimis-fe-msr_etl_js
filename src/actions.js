@@ -22,7 +22,7 @@ const ACTIVE_JOB_STATUSES_GQL = "[RECEIVED, QUEUED, RUNNING]";
 export function fetchActiveMsrEtlJob(jobType) {
   const query = `{
     asyncJobs(module: "msr_etl", jobType: "${jobType}", status_In: ${ACTIVE_JOB_STATUSES_GQL}, first: 1) {
-      edges { node { clientMutationId } }
+      edges { node { clientMutationId params } }
     }
   }`;
   return graphql(query, ACTION_TYPE.FETCH_ACTIVE_MSR_ETL_JOB, { jobType });
@@ -50,7 +50,7 @@ export function scheduleMsrUbrIndividualsImport({ sourceType, filters = {} } = {
     SCHEDULE_MSR_UBR_INDIVIDUALS_IMPORT_MUTATION,
     { input },
     ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT,
-    { clientMutationId },
+    { clientMutationId, sourceType },
   );
 }
 
@@ -95,7 +95,7 @@ export function scheduleMsrUbrLocationsImport({ sourceType, filters = {} } = {})
     SCHEDULE_MSR_UBR_LOCATIONS_IMPORT_MUTATION,
     { input },
     ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT,
-    { clientMutationId },
+    { clientMutationId, sourceType },
   );
 }
 
