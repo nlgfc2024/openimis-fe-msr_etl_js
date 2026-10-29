@@ -104,6 +104,7 @@ function DynamicFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes,
               value={field.type === "location" ? edited?.location : edited?.filters?.[field.name]}
               onChange={onFieldChange(field)}
               readOnly={readOnly}
+              sourceType={edited?.sourceType}
             />
           </Grid>
         ))}
