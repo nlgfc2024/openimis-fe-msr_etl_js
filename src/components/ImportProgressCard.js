@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
   barFill: { backgroundColor: theme.palette.success.main },
 }));
 
-const ImportProgressCard = ({ job, percent, cancel, cancelling, kind, syncLogRoute }) => {
+const ImportProgressCard = ({ job, percent, cancel, cancelling, kind, syncLogRoute, source }) => {
   const classes = useStyles();
   const modulesManager = useModulesManager();
   const { formatMessage, formatMessageWithValues } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
@@ -24,6 +24,7 @@ const ImportProgressCard = ({ job, percent, cancel, cancelling, kind, syncLogRou
   const importing = percent !== null;
   const values = {
     noun: formatMessage(`jobProgress.${kind}`),
+    source: source || formatMessage("importProgress.unknownSource"),
     downloaded: metrics.staged ?? 0,
     imported: metrics.synced ?? 0,
     total: job.total ?? 0,

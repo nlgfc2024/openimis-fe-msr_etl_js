@@ -2,7 +2,7 @@
 /* eslint-disable default-param-last */
 import { formatServerError, formatGraphQLError, parseData, pageInfo } from "@openimis/fe-core";
 import { REQUEST, SUCCESS, ERROR, CLEAR } from "./util/action-type";
-import { MSR_ETL_JOB_TYPE } from "./constants";
+import { DEFAULT_SOURCE_TYPE, MSR_ETL_JOB_TYPE } from "./constants";
 
 export const ACTION_TYPE = {
   // Schedule UBR individuals import (background job)
@@ -33,11 +33,31 @@ const JOB_TYPE_TO_CLIENT_MUTATION_ID_FIELD = {
   [MSR_ETL_JOB_TYPE.UBR_LOCATIONS_IMPORT]: "scheduledUbrLocationsImportClientMutationId",
 };
 
+const JOB_TYPE_TO_SOURCE_TYPE_FIELD = {
+  [MSR_ETL_JOB_TYPE.UBR_INDIVIDUALS_IMPORT]: "scheduledUbrIndividualsImportSourceType",
+  [MSR_ETL_JOB_TYPE.UBR_LOCATIONS_IMPORT]: "scheduledUbrLocationsImportSourceType",
+};
+
+// The source a job ran on, from its params (a JSON string over GraphQL)
+function jobSourceType(params) {
+  let parsed = params;
+  if (typeof parsed === "string") {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch (e) {
+      parsed = {};
+    }
+  }
+  return parsed?.source_type || DEFAULT_SOURCE_TYPE;
+}
+
 const INITIAL_STATE = {
   // clientMutationId is set on dispatch, before the response returns
   schedulingUbrIndividualsImport: false,
   errorScheduleUbrIndividualsImport: null,
   scheduledUbrIndividualsImportClientMutationId: null,
+  // The tracked job's own source, so its messages don't follow the picker
+  scheduledUbrIndividualsImportSourceType: null,
 
   // District/TA/GVH cascading dropdown options
   fetchingUbrLocationOptions: false,
@@ -48,6 +68,7 @@ const INITIAL_STATE = {
   schedulingUbrLocationsImport: false,
   errorScheduleUbrLocationsImport: null,
   scheduledUbrLocationsImportClientMutationId: null,
+  scheduledUbrLocationsImportSourceType: null,
 
   // Sync-log page
   fetchingMsrEtlSyncUnits: false,
@@ -107,6 +128,7 @@ function reducer(state = INITIAL_STATE, action) {
         schedulingUbrIndividualsImport: true,
         errorScheduleUbrIndividualsImport: null,
         scheduledUbrIndividualsImportClientMutationId: action.meta?.clientMutationId ?? null,
+        scheduledUbrIndividualsImportSourceType: action.meta?.sourceType || DEFAULT_SOURCE_TYPE,
       };
 
     case SUCCESS(ACTION_TYPE.SCHEDULE_UBR_INDIVIDUALS_IMPORT):
@@ -129,6 +151,7 @@ function reducer(state = INITIAL_STATE, action) {
         schedulingUbrIndividualsImport: false,
         errorScheduleUbrIndividualsImport: null,
         scheduledUbrIndividualsImportClientMutationId: null,
+        scheduledUbrIndividualsImportSourceType: null,
       };
 
     // -------------------------
@@ -168,6 +191,7 @@ function reducer(state = INITIAL_STATE, action) {
         schedulingUbrLocationsImport: true,
         errorScheduleUbrLocationsImport: null,
         scheduledUbrLocationsImportClientMutationId: action.meta?.clientMutationId ?? null,
+        scheduledUbrLocationsImportSourceType: action.meta?.sourceType || DEFAULT_SOURCE_TYPE,
       };
 
     case SUCCESS(ACTION_TYPE.SCHEDULE_UBR_LOCATIONS_IMPORT):
@@ -190,6 +214,7 @@ function reducer(state = INITIAL_STATE, action) {
         schedulingUbrLocationsImport: false,
         errorScheduleUbrLocationsImport: null,
         scheduledUbrLocationsImportClientMutationId: null,
+        scheduledUbrLocationsImportSourceType: null,
       };
 
     // -------------------------
@@ -198,9 +223,13 @@ function reducer(state = INITIAL_STATE, action) {
     case SUCCESS(ACTION_TYPE.FETCH_ACTIVE_MSR_ETL_JOB): {
       const field = JOB_TYPE_TO_CLIENT_MUTATION_ID_FIELD[action.meta?.jobType];
       const activeJob = action.payload.data?.asyncJobs?.edges?.[0]?.node;
-      if (!field || !activeJob?.clientMutationId) return state;
       // never overwrite a job already tracked from this page (e.g. just scheduled)
-      return { ...state, [field]: state[field] || activeJob.clientMutationId };
+      if (!field || !activeJob?.clientMutationId || state[field]) return state;
+      return {
+        ...state,
+        [field]: activeJob.clientMutationId,
+        [JOB_TYPE_TO_SOURCE_TYPE_FIELD[action.meta.jobType]]: jobSourceType(activeJob.params),
+      };
     }
 
     // -------------------------

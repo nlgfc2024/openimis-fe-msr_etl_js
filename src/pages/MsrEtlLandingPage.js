@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { connect, useSelector } from "react-redux";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 import { Paper, Grid, Tab } from "@material-ui/core";
 import {
@@ -38,10 +38,21 @@ const styles = (theme) => ({
 
 function MsrEtlLandingPage({ classes, rights }) {
   const modulesManager = useModulesManager();
-  const { formatMessage } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
+  const { formatMessage, formatMessageWithValues } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
   const history = useHistory();
   const { tab } = useParams();
   const activeTab = Math.max(MSR_ETL_TAB_SLUGS.indexOf(tab), MSR_ETL_TAB.LOCATION);
+  // With several sources for a tab users pick a programme, so the title can only name a single source
+  const onlySourceLabel = (sourceTypes) => (sourceTypes.length === 1 ? sourceTypes[0].label : undefined);
+  const locationSource = useSelector((state) => onlySourceLabel(state.msrEtl.locationSourceTypes));
+  const individualSource = useSelector((state) => onlySourceLabel(state.msrEtl.individualSourceTypes));
+  const titleSource = {
+    [MSR_ETL_TAB.LOCATION]: locationSource && ["landing.title.location", locationSource],
+    [MSR_ETL_TAB.INDIVIDUALS]: individualSource && ["landing.title.individuals", individualSource],
+  }[activeTab];
+  const pageTitle = titleSource
+    ? formatMessageWithValues(titleSource[0], { source: titleSource[1] })
+    : formatMessage("landing.pageTitle");
 
   if (!rights.includes(RIGHT_MSR_ETL_SEARCH)) {
     return null;
@@ -54,7 +65,7 @@ function MsrEtlLandingPage({ classes, rights }) {
 
   return (
     <div className={classes.page}>
-      <Helmet title={formatMessage("landing.pageTitle")} />
+      <Helmet title={pageTitle} />
       <Paper className={classes.paper}>
         <Grid container className={`${classes.tableTitle} ${classes.tabs}`}>
           <Tab
