@@ -85,8 +85,8 @@ function IndividualsImportTab({ intl, rights, alertSlot }) {
   const blockedByActiveJob = isImportTracked && !isTrackedJobTerminal;
 
   const individualSourceTypes = useSelector((state) => state.msrEtl.individualSourceTypes);
-  // Shown in progress and result messages ("Importing ... from <source>")
-  const sourceLabel = individualSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.label;
+  // Messages name the data source ("downloaded from Public Works Program (PWP)"), not the programme
+  const sourceLabel = individualSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.sourceName;
   const schema = individualSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
   const mandatoryFieldsEmpty =
     !edited.sourceType || !schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);

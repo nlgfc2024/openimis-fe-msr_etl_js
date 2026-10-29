@@ -47,8 +47,7 @@ function MsrEtlLandingPage({ classes, rights }) {
   const { tab } = useParams();
   const activeTab = Math.max(MSR_ETL_TAB_SLUGS.indexOf(tab), MSR_ETL_TAB.LOCATION);
   const [alertSlot, setAlertSlot] = useState(null);
-  // With several sources for a tab users pick a programme, so the title can only name a single source
-  const onlySourceLabel = (sourceTypes) => (sourceTypes.length === 1 ? sourceTypes[0].label : undefined);
+  const onlySourceLabel = (sourceTypes) => (sourceTypes.length === 1 ? sourceTypes[0].sourceName : undefined);
   const locationSource = useSelector((state) => onlySourceLabel(state.msrEtl.locationSourceTypes));
   const individualSource = useSelector((state) => onlySourceLabel(state.msrEtl.individualSourceTypes));
   const titleSource = {

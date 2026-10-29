@@ -92,8 +92,7 @@ function LocationImportTab({ intl, rights, alertSlot }) {
   }, [isTrackedJobTerminal]);
 
   const locationSourceTypes = useSelector((state) => state.msrEtl.locationSourceTypes);
-  // Shown in progress and result messages ("Importing ... from <source>")
-  const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.label;
+  const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.sourceName;
   const schema = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
   const canPullData = !!edited.sourceType && schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
 
