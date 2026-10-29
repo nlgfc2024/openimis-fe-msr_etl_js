@@ -1,8 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, Button, CircularProgress, Typography } from "@material-ui/core";
 import { apiHeaders, baseApiUrl, useModulesManager, useTranslations } from "@openimis/fe-core";
 
 import { MSR_ETL_MODULE_NAME } from "../constants";
+import { createUploadTracker } from "../util/uploadTracker";
 
 const ACCEPTED_FILES = ".xlsx,.xls,.csv";
 
@@ -14,11 +15,38 @@ const FormNumberFileField = ({ label, value, onChange, readOnly, required, sourc
   const [uploading, setUploading] = useState(false);
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState(null);
+  const tracker = useRef(null);
+  if (!tracker.current) tracker.current = createUploadTracker();
+  // The latest onChange: one captured at upload start would write back the form as it was then
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const written = useRef({ value, sourceType });
+
+  const write = (next) => {
+    written.current = { value: next, sourceType };
+    onChangeRef.current(next);
+  };
+
+  // A programme change or Clear resets the value from outside: drop any pending upload with it
+  useEffect(() => {
+    if (value === written.current.value && sourceType === written.current.sourceType) return;
+    written.current = { value, sourceType };
+    tracker.current.cancel();
+    setUploading(false);
+    setSummary(null);
+    setError(null);
+  }, [value, sourceType]);
+
+  useEffect(() => () => tracker.current.cancel(), []);
 
   const upload = async (file) => {
     if (!file) return;
+    const request = tracker.current.start();
     setUploading(true);
+    setSummary(null);
     setError(null);
+    // Drop the previous file's upload_id, so Pull Data can't import it while this one uploads
+    write(null);
     const body = new FormData();
     body.append("file", file);
     body.append("source_type", sourceType);
@@ -29,19 +57,20 @@ const FormNumberFileField = ({ label, value, onChange, readOnly, required, sourc
         body,
         headers: { "X-CSRFToken": apiHeaders()["X-CSRFToken"] },
         credentials: "same-origin",
+        signal: request.signal,
       });
       const result = await response.json().catch(() => ({}));
+      if (!request.isCurrent()) return;
       if (!response.ok || !result.success) {
         throw new Error(result.error || formatMessage("formNumberFile.uploadFailed"));
       }
       setSummary({ ...result, fileName: file.name });
-      onChange(result.upload_id);
+      write(result.upload_id);
     } catch (e) {
-      setSummary(null);
-      onChange(null);
+      if (!request.isCurrent()) return;
       setError(e.message);
     } finally {
-      setUploading(false);
+      if (request.isCurrent()) setUploading(false);
       if (input.current) input.current.value = "";
     }
   };
