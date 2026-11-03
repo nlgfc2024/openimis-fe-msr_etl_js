@@ -14,6 +14,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: lighten(theme.palette.success.main, 0.75),
   },
   barFill: { backgroundColor: theme.palette.success.main },
+  cancel: { color: theme.palette.error.main, borderColor: theme.palette.error.main },
 }));
 
 const ImportProgressCard = ({ job, percent, cancel, cancelling, kind, syncLogRoute, source }) => {
@@ -45,7 +46,7 @@ const ImportProgressCard = ({ job, percent, cancel, cancelling, kind, syncLogRou
       )}
       actions={
         <>
-          <Button color="inherit" variant="outlined" size="small" onClick={cancel} disabled={cancelling}>
+          <Button className={classes.cancel} variant="outlined" size="small" onClick={cancel} disabled={cancelling}>
             {formatMessage("importProgress.cancel")}
           </Button>
           {syncLogRoute && (

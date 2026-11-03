@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 import { Paper, Grid, Tab } from "@material-ui/core";
@@ -20,6 +20,10 @@ import MsrEtlLogsTab from "./tabs/MsrEtlLogsTab";
 const styles = (theme) => ({
   page: theme.page,
   paper: theme.paper.paper,
+  alertSlot: {
+    marginLeft: theme.paper.paper.margin - theme.spacing(1),
+    marginRight: theme.paper.paper.margin - theme.spacing(1),
+  },
   tableTitle: theme.table.title,
   tabs: {
     display: "flex",
@@ -42,8 +46,8 @@ function MsrEtlLandingPage({ classes, rights }) {
   const history = useHistory();
   const { tab } = useParams();
   const activeTab = Math.max(MSR_ETL_TAB_SLUGS.indexOf(tab), MSR_ETL_TAB.LOCATION);
-  // With several sources for a tab users pick a programme, so the title can only name a single source
-  const onlySourceLabel = (sourceTypes) => (sourceTypes.length === 1 ? sourceTypes[0].label : undefined);
+  const [alertSlot, setAlertSlot] = useState(null);
+  const onlySourceLabel = (sourceTypes) => (sourceTypes.length === 1 ? sourceTypes[0].sourceName : undefined);
   const locationSource = useSelector((state) => onlySourceLabel(state.msrEtl.locationSourceTypes));
   const individualSource = useSelector((state) => onlySourceLabel(state.msrEtl.individualSourceTypes));
   const titleSource = {
@@ -65,6 +69,7 @@ function MsrEtlLandingPage({ classes, rights }) {
 
   return (
     <div className={classes.page}>
+      <div ref={setAlertSlot} className={classes.alertSlot} />
       <Helmet title={pageTitle} />
       <Paper className={classes.paper}>
         <Grid container className={`${classes.tableTitle} ${classes.tabs}`}>
@@ -91,8 +96,8 @@ function MsrEtlLandingPage({ classes, rights }) {
           />
         </Grid>
         <div className={classes.tabContent}>
-          {activeTab === MSR_ETL_TAB.LOCATION && <LocationImportTab rights={rights} />}
-          {activeTab === MSR_ETL_TAB.INDIVIDUALS && <IndividualsImportTab rights={rights} />}
+          {activeTab === MSR_ETL_TAB.LOCATION && <LocationImportTab rights={rights} alertSlot={alertSlot} />}
+          {activeTab === MSR_ETL_TAB.INDIVIDUALS && <IndividualsImportTab rights={rights} alertSlot={alertSlot} />}
           {activeTab === MSR_ETL_TAB.LOGS && <MsrEtlLogsTab rights={rights} />}
         </div>
       </Paper>

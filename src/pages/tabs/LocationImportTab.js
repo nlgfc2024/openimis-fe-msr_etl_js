@@ -23,6 +23,7 @@ import { translateMsrEtlError } from "../../util/errors";
 import { msrEtlMetricLabels } from "../../util/jobMetrics";
 import ImportResultAlert from "../../components/ImportResultAlert";
 import ImportProgressCard from "../../components/ImportProgressCard";
+import { renderInAlertSlot } from "../../util/alertSlot";
 import FormLoader from "../../components/FormLoader";
 import { schemaRequiredFieldsSatisfied } from "../../util/dynamicFilters";
 
@@ -48,7 +49,7 @@ function loadSavedFilters() {
   }
 }
 
-function LocationImportTab({ intl, rights }) {
+function LocationImportTab({ intl, rights, alertSlot }) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const modulesManager = useModulesManager();
@@ -91,10 +92,10 @@ function LocationImportTab({ intl, rights }) {
   }, [isTrackedJobTerminal]);
 
   const locationSourceTypes = useSelector((state) => state.msrEtl.locationSourceTypes);
-  // Shown in progress and result messages ("Importing ... from <source>")
-  // Messages name the tracked job's source, which may not be the one picked now
+  // Messages name the tracked job's data source ("downloaded from Public Works Program (PWP)"),
+  // not the programme, and not whichever one is picked now
   const jobSourceType = useSelector((state) => state.msrEtl.scheduledUbrLocationsImportSourceType);
-  const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === jobSourceType)?.label;
+  const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === jobSourceType)?.sourceName;
   const schema = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
   const canPullData = !!edited.sourceType && schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
 
@@ -123,48 +124,51 @@ function LocationImportTab({ intl, rights }) {
 
   return (
     <div>
-      {isImportTracked ? (
-        <Box>
-          <PublishedComponent
-            pubRef="core.AsyncJobProgress"
-            clientMutationId={scheduledUbrLocationsImportClientMutationId}
-            metricLabels={msrEtlMetricLabels(formatMessage)}
-            progressUnit={formatMessage("jobProgress.locations")}
-            renderRunning={(job, progress) => (
-              <ImportProgressCard
-                source={sourceLabel}
-                job={job}
-                {...progress}
-                kind="locations"
-                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
-              />
-            )}
-            renderResult={(job) => (
-              <ImportResultAlert
-                source={sourceLabel}
-                job={job}
-                kind="locations"
-                route={IMPORTED_RECORDS_ROUTE.locations}
-                syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
-              />
-            )}
-            actions={
-              <Button
-                size="small"
-                variant="outlined"
-                component={Link}
-                to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
-              >
-                {formatMessage("etlServices.viewSyncLog")}
-              </Button>
-            }
+      {renderInAlertSlot(
+        alertSlot,
+        isImportTracked ? (
+          <Box>
+            <PublishedComponent
+              pubRef="core.AsyncJobProgress"
+              clientMutationId={scheduledUbrLocationsImportClientMutationId}
+              metricLabels={msrEtlMetricLabels(formatMessage)}
+              progressUnit={formatMessage("jobProgress.locations")}
+              renderRunning={(job, progress) => (
+                <ImportProgressCard
+                  source={sourceLabel}
+                  job={job}
+                  {...progress}
+                  kind="locations"
+                  syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+                />
+              )}
+              renderResult={(job) => (
+                <ImportResultAlert
+                  source={sourceLabel}
+                  job={job}
+                  kind="locations"
+                  route={IMPORTED_RECORDS_ROUTE.locations}
+                  syncLogRoute={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+                />
+              )}
+              actions={
+                <Button
+                  size="small"
+                  variant="outlined"
+                  component={Link}
+                  to={`/${modulesManager.getRef(`${MSR_ETL_MODULE_NAME}.route.syncLog`)}/${scheduledUbrLocationsImportClientMutationId}`}
+                >
+                  {formatMessage("etlServices.viewSyncLog")}
+                </Button>
+              }
+            />
+          </Box>
+        ) : (
+          <ProgressOrError
+            progress={schedulingUbrLocationsImport}
+            error={translateMsrEtlError(errorScheduleUbrLocationsImport, formatMessage)}
           />
-        </Box>
-      ) : (
-        <ProgressOrError
-          progress={schedulingUbrLocationsImport}
-          error={translateMsrEtlError(errorScheduleUbrLocationsImport, formatMessage)}
-        />
+        ),
       )}
       {locationsExist === null ? (
         <FormLoader />

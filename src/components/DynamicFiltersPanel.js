@@ -90,23 +90,28 @@ function DynamicFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes,
         </Grid>
       )}
       {ready &&
-        schema.map((field) => (
-          <Grid
-            item
-            xs={12}
-            md={field.type === "location" ? 12 : gridWidth(field.cols, 2)}
-            className={classes.item}
-            key={field.name}
-          >
+        schema.map((field) => {
+          const input = (
             <DynamicFilterField
+              key={field.name}
               module={MSR_ETL_MODULE_NAME}
               field={field}
               value={field.type === "location" ? edited?.location : edited?.filters?.[field.name]}
               onChange={onFieldChange(field)}
               readOnly={readOnly}
+              sourceType={edited?.sourceType}
+              itemClassName={classes.item}
             />
-          </Grid>
-        ))}
+          );
+          // A location field brings its own grid items (one per level), so it flows next to the programme picker
+          return field.type === "location" ? (
+            input
+          ) : (
+            <Grid item xs={12} md={gridWidth(field.cols, 2)} className={classes.item} key={field.name}>
+              {input}
+            </Grid>
+          );
+        })}
     </Grid>
   );
 }
