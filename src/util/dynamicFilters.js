@@ -11,13 +11,20 @@ import { normalizeLocationSelection } from "./location";
  */
 function schemaRequiredFieldsSatisfied(schema, filters, locationValue) {
   return (schema || []).every((field) => {
-    if (!field.required) return true;
-
     if (field.type === "location") {
-      return !!normalizeLocationSelection(locationValue).district;
+      return !field.required || !!normalizeLocationSelection(locationValue).district;
     }
 
     const value = filters?.[field.name];
+    if (value === undefined || value === null || value === "") return !field.required;
+    if (field.type === "number") {
+      const number = Number(value);
+      return typeof value !== "boolean" && Number.isFinite(number)
+        && (!field.integer || Number.isInteger(number))
+        && (field.min === undefined || number >= field.min)
+        && (field.max === undefined || number <= field.max);
+    }
+    if (!field.required) return true;
     if (Array.isArray(value)) return value.length > 0;
     return value !== undefined && value !== null && value !== "";
   });

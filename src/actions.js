@@ -134,7 +134,7 @@ export function fetchRecentMsrEtlJobs(params) {
 const MSR_ETL_SOURCE_TYPES_QUERY = `{
   msrEtlSourceTypes {
     individualSourceTypes { value label sourceName filterSchema }
-    locationSourceTypes { value label sourceName filterSchema }
+    locationSourceTypes { value label sourceName filterSchema supportsInitialPull }
   }
 }`;
 

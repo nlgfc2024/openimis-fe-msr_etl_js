@@ -109,6 +109,7 @@ function DynamicFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes,
           ) : (
             <Grid item xs={12} md={gridWidth(field.cols, 2)} className={classes.item} key={field.name}>
               {input}
+              {field.helpText && <Typography variant="caption" color="textSecondary">{field.helpText}</Typography>}
             </Grid>
           );
         })}

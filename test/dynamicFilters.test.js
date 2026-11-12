@@ -8,6 +8,15 @@ const GENDER_FIELD = { name: "gender", label: "Gender", type: "select", required
 const AGE_FIELD = { name: "minAge", label: "Min Age", type: "number", required: false };
 const CLASSIFICATIONS_FIELD = { name: "classifications", label: "Classifications", type: "multiselect", required: true };
 
+test("MSR district filter requires a positive integer ID", () => {
+  const schema = [{ name: "msr_district_id", type: "number", required: true, min: 1, integer: true }];
+  for (const value of [null, "", 0, -1, 1.5, "abc", true]) {
+    assert.equal(schemaRequiredFieldsSatisfied(schema, { msr_district_id: value }), false);
+  }
+  assert.equal(schemaRequiredFieldsSatisfied(schema, { msr_district_id: 13 }), true);
+  assert.equal(schemaRequiredFieldsSatisfied(schema, { msr_district_id: "13" }), true);
+});
+
 test("schemaRequiredFieldsSatisfied", async (t) => {
   await t.test("true for an empty schema", () => {
     assert.strictEqual(schemaRequiredFieldsSatisfied([], {}, undefined), true);

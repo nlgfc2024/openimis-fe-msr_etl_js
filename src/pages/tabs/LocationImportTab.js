@@ -96,8 +96,9 @@ function LocationImportTab({ intl, rights, alertSlot }) {
   // not the programme, and not whichever one is picked now
   const jobSourceType = useSelector((state) => state.msrEtl.scheduledUbrLocationsImportSourceType);
   const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === jobSourceType)?.sourceName;
-  const schema = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
-  const canPullData = !!edited.sourceType && schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
+  const selectedSource = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType);
+  const schema = selectedSource?.filterSchema;
+  const canPullData = !!selectedSource && schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
 
   const persistFilters = (data) => {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -179,13 +180,13 @@ function LocationImportTab({ intl, rights, alertSlot }) {
           enableSaveButton={false}
           edited={edited}
           onEditedChanged={setEdited}
-          HeadPanel={locationsExist ? DynamicFiltersPanel : undefined}
+          HeadPanel={DynamicFiltersPanel}
           kind="location"
           actions={[]}
           rights={rights}
         />
       )}
-      {locationsExist === false && (
+      {locationsExist === false && selectedSource?.supportsInitialPull !== false && (
         <Box m={2}>
           <Typography variant="body2" color="textSecondary">
             {formatMessage("etlServices.noLocations")}
@@ -193,7 +194,7 @@ function LocationImportTab({ intl, rights, alertSlot }) {
         </Box>
       )}
       <Box className={classes.actions}>
-        {locationsExist && (
+        {(
           <Button
             variant="contained"
             color="primary"
@@ -203,7 +204,7 @@ function LocationImportTab({ intl, rights, alertSlot }) {
             {formatMessage("filters.pullData")}
           </Button>
         )}
-        {rights.includes(RIGHT_MSR_ETL_EXPORT) && (
+        {rights.includes(RIGHT_MSR_ETL_EXPORT) && selectedSource?.supportsInitialPull !== false && (
           <Tooltip title={formatMessage("etlServices.initialPull.tooltip")}>
             <span>
               <Button
@@ -218,7 +219,7 @@ function LocationImportTab({ intl, rights, alertSlot }) {
             </span>
           </Tooltip>
         )}
-        {locationsExist && (
+        {(
           <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
             {formatMessage("filters.clear")}
           </Button>
