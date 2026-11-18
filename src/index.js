@@ -8,6 +8,7 @@ import reducer from "./reducer";
 import MsrEtlLandingPage from "./pages/MsrEtlLandingPage";
 import MsrEtlSyncLogPage from "./pages/MsrEtlSyncLogPage";
 import { MSR_ETL_MODULE_NAME, RIGHT_MSR_ETL_SEARCH } from "./constants";
+import { KoboApplicationTabLabel, KoboApplicationTabPanel } from "./components/KoboApplicationTab";
 
 const ROUTE_MSR_ETL_LANDING = "msr-etl";
 const ROUTE_MSR_ETL_SYNC_LOG = "msr-etl/sync-log";
@@ -29,6 +30,9 @@ const DEFAULT_CONFIG = {
       id: `${MSR_ETL_MODULE_NAME}.configs`,
     },
   ],
+  // The Kobo application of an individual, on the Individual page
+  "individual.TabPanel.label": [KoboApplicationTabLabel],
+  "individual.TabPanel.panel": [KoboApplicationTabPanel],
   refs: [
     { key: `${MSR_ETL_MODULE_NAME}.route.landing`, ref: ROUTE_MSR_ETL_LANDING },
     { key: `${MSR_ETL_MODULE_NAME}.route.syncLog`, ref: ROUTE_MSR_ETL_SYNC_LOG },
