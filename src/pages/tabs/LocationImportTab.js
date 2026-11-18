@@ -16,9 +16,20 @@ import {
 import { injectIntl } from "react-intl";
 import { makeStyles } from "@material-ui/styles";
 
-import { IMPORTED_RECORDS_ROUTE, MSR_ETL_MODULE_NAME, MSR_ETL_JOB_TYPE, RIGHT_MSR_ETL_EXPORT } from "../../constants";
+import {
+  DEFAULT_SOURCE_TYPE,
+  IMPORTED_RECORDS_ROUTE,
+  MSR_ETL_MODULE_NAME,
+  MSR_ETL_JOB_TYPE,
+  RIGHT_MSR_ETL_EXPORT,
+} from "../../constants";
 import DynamicFiltersPanel from "../../components/DynamicFiltersPanel";
-import { scheduleMsrUbrLocationsImport, clearScheduleUbrLocationsImport, fetchActiveMsrEtlJob } from "../../actions";
+import {
+  scheduleMsrUbrLocationsImport,
+  clearScheduleUbrLocationsImport,
+  fetchActiveMsrEtlJob,
+  fetchMsrEtlSourceTypes,
+} from "../../actions";
 import { translateMsrEtlError } from "../../util/errors";
 import { msrEtlMetricLabels } from "../../util/jobMetrics";
 import ImportResultAlert from "../../components/ImportResultAlert";
@@ -92,12 +103,29 @@ function LocationImportTab({ intl, rights, alertSlot }) {
   }, [isTrackedJobTerminal]);
 
   const locationSourceTypes = useSelector((state) => state.msrEtl.locationSourceTypes);
+  const sourceTypesFetched = useSelector((state) => state.msrEtl.fetchedMsrEtlSourceTypes);
+  // A failed fetch counts as done, so the tab never waits on it forever
+  const sourceTypesSettled = useSelector(
+    (state) => state.msrEtl.fetchedMsrEtlSourceTypes || !!state.msrEtl.errorMsrEtlSourceTypes,
+  );
+  // The filters panel fetches these too, but it is hidden until we know an upload source exists
+  useEffect(() => {
+    if (!sourceTypesFetched) dispatch(fetchMsrEtlSourceTypes());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Messages name the tracked job's data source ("downloaded from Public Works Program (PWP)"),
   // not the programme, and not whichever one is picked now
   const jobSourceType = useSelector((state) => state.msrEtl.scheduledUbrLocationsImportSourceType);
   const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === jobSourceType)?.sourceName;
   const schema = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
   const canPullData = !!edited.sourceType && schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
+  // A source without a location filter (e.g. an uploaded location list) can run before any location exists
+  const uploadSourceAvailable = locationSourceTypes.some(
+    (sourceType) => !(sourceType.filterSchema || []).some((field) => field.type === "location"),
+  );
+  const showFilters = locationsExist || uploadSourceAvailable;
+  // The initial pull is the full MSR country import, so only where the MSR source is offered
+  const msrSourceAvailable = locationSourceTypes.some((sourceType) => sourceType.value === DEFAULT_SOURCE_TYPE);
 
   const persistFilters = (data) => {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -170,7 +198,7 @@ function LocationImportTab({ intl, rights, alertSlot }) {
           />
         ),
       )}
-      {locationsExist === null ? (
+      {locationsExist === null || (locationsExist === false && !sourceTypesSettled) ? (
         <FormLoader />
       ) : (
         <Form
@@ -179,13 +207,13 @@ function LocationImportTab({ intl, rights, alertSlot }) {
           enableSaveButton={false}
           edited={edited}
           onEditedChanged={setEdited}
-          HeadPanel={locationsExist ? DynamicFiltersPanel : undefined}
+          HeadPanel={showFilters ? DynamicFiltersPanel : undefined}
           kind="location"
           actions={[]}
           rights={rights}
         />
       )}
-      {locationsExist === false && (
+      {locationsExist === false && sourceTypesSettled && !uploadSourceAvailable && (
         <Box m={2}>
           <Typography variant="body2" color="textSecondary">
             {formatMessage("etlServices.noLocations")}
@@ -193,7 +221,7 @@ function LocationImportTab({ intl, rights, alertSlot }) {
         </Box>
       )}
       <Box className={classes.actions}>
-        {locationsExist && (
+        {showFilters && (
           <Button
             variant="contained"
             color="primary"
@@ -203,7 +231,7 @@ function LocationImportTab({ intl, rights, alertSlot }) {
             {formatMessage("filters.pullData")}
           </Button>
         )}
-        {rights.includes(RIGHT_MSR_ETL_EXPORT) && (
+        {rights.includes(RIGHT_MSR_ETL_EXPORT) && msrSourceAvailable && (
           <Tooltip title={formatMessage("etlServices.initialPull.tooltip")}>
             <span>
               <Button
@@ -218,7 +246,7 @@ function LocationImportTab({ intl, rights, alertSlot }) {
             </span>
           </Tooltip>
         )}
-        {locationsExist && (
+        {showFilters && (
           <Button variant="outlined" onClick={onClear} disabled={blockedByActiveJob}>
             {formatMessage("filters.clear")}
           </Button>
