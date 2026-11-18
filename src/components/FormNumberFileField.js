@@ -95,12 +95,23 @@ const FormNumberFileField = ({ label, value, onChange, readOnly, required, sourc
         {uploading && <CircularProgress size={18} />}
         {!uploading && summary && (
           <Typography variant="body2">
-            {formatMessageWithValues("formNumberFile.summary", {
-              fileName: summary.fileName,
-              households: summary.households,
-              duplicates: summary.duplicates,
-              rejected: summary.rejected,
-            })}
+            {/* A location list reports records; a form-number file reports households */}
+            {summary.records !== undefined
+              ? formatMessageWithValues("formNumberFile.locationSummary", {
+                  fileName: summary.fileName,
+                  records: summary.records,
+                  generated: summary.generated_codes ?? 0,
+                  replaced: summary.code_changes_count ?? 0,
+                  renamed: summary.renamed_count ?? 0,
+                  moved: summary.moved_count ?? 0,
+                  rejected: summary.rejected,
+                })
+              : formatMessageWithValues("formNumberFile.summary", {
+                  fileName: summary.fileName,
+                  households: summary.households,
+                  duplicates: summary.duplicates,
+                  rejected: summary.rejected,
+                })}
           </Typography>
         )}
         {!uploading && !summary && value && (
