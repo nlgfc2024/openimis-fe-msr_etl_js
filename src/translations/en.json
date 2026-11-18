@@ -18,6 +18,7 @@
   "formNumberFile.uploaded": "File uploaded",
   "formNumberFile.uploadFailed": "The file could not be uploaded",
   "formNumberFile.summary": "{fileName}: {households} households to import ({duplicates} repeated, {rejected} rejected)",
+  "formNumberFile.locationSummary": "{fileName}: {records} locations to import ({generated} new temporary codes, {replaced} temporary codes replaced, {renamed} renamed, {moved} moved, {rejected} rows rejected)",
   "formNumberFile.rejectedExample": "Rejected, e.g. row {row}: \"{value}\" ({reason})",
   "filters.noSourceConfigured": "No data source is configured for this import. An administrator needs to add one under sources in the msr_etl module configuration.",
   "filters.yes": "Yes",
