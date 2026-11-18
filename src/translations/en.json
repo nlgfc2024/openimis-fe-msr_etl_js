@@ -101,5 +101,18 @@
   "importProgress.downloading": "Downloaded {downloaded} so far.",
   "importProgress.importing": "Imported {imported} of {total}.",
   "importProgress.reassurance": "This can take a few minutes. You do not need to do anything, and you can leave this page open.",
-  "importProgress.cancel": "Cancel"
+  "importProgress.cancel": "Cancel",
+
+  "koboApplication.tab": "Application",
+  "koboApplication.submitted": "Application submitted {date} (form version {version})",
+  "koboApplication.loading": "Loading the application...",
+  "koboApplication.error": "The application could not be loaded",
+  "koboApplication.none": "No application was found for this individual",
+  "koboApplication.noForm": "The form this application was filled in on is not stored, so its answers can't be shown",
+  "koboApplication.status.RECEIVED": "Received",
+  "koboApplication.status.IMPORTED": "Imported",
+  "koboApplication.status.UPDATED": "Updated the record",
+  "koboApplication.status.HELD": "Held for review",
+  "koboApplication.status.NO_NATIONAL_ID": "No national ID",
+  "koboApplication.status.INVALID": "Not imported"
 }
