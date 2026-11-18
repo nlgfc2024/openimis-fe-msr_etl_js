@@ -119,13 +119,15 @@ function LocationImportTab({ intl, rights, alertSlot }) {
   const sourceLabel = locationSourceTypes.find((sourceType) => sourceType.value === jobSourceType)?.sourceName;
   const schema = locationSourceTypes.find((sourceType) => sourceType.value === edited.sourceType)?.filterSchema;
   const canPullData = !!edited.sourceType && schemaRequiredFieldsSatisfied(schema, edited.filters, edited.location);
-  // A source without a location filter (e.g. an uploaded location list) can run before any location exists
-  const uploadSourceAvailable = locationSourceTypes.some(
-    (sourceType) => !(sourceType.filterSchema || []).some((field) => field.type === "location"),
+  // A source that imports an uploaded file (e.g. a location list) can run before any location exists
+  const uploadSourceAvailable = locationSourceTypes.some((sourceType) =>
+    (sourceType.filterSchema || []).some((field) => field.type === "file"),
   );
   const showFilters = locationsExist || uploadSourceAvailable;
-  // The initial pull is the full MSR country import, so only where the MSR source is offered
-  const msrSourceAvailable = locationSourceTypes.some((sourceType) => sourceType.value === DEFAULT_SOURCE_TYPE);
+  // The initial pull imports the default (MSR) source, so only where it is offered; if the list failed to
+  // load, keep it, as before, so a new MSR instance can still start its first import
+  const msrSourceAvailable =
+    !sourceTypesFetched || locationSourceTypes.some((sourceType) => sourceType.value === DEFAULT_SOURCE_TYPE);
 
   const persistFilters = (data) => {
     if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
