@@ -31,14 +31,16 @@ function KoboApplicationTabLabel({ onChange, tabStyle, isSelected, individual })
 function Application({ application, formatMessage, formatMessageWithValues }) {
   return (
     <Box mb={3}>
-      <Box display="flex" alignItems="center" style={{ gap: 12 }} mb={1}>
+      <Box display="flex" alignItems="center" mb={1}>
         <Typography variant="h6">
           {formatMessageWithValues("koboApplication.submitted", {
             date: application.submittedAt ? new Date(application.submittedAt).toLocaleString() : "-",
             version: application.formVersion || "-",
           })}
         </Typography>
-        <Chip size="small" label={formatMessage(`koboApplication.status.${application.status}`)} />
+        <Box ml={1.5}>
+          <Chip size="small" label={formatMessage(`koboApplication.status.${application.status}`)} />
+        </Box>
       </Box>
       {application.reason && (
         <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -48,22 +50,25 @@ function Application({ application, formatMessage, formatMessageWithValues }) {
       {!application.sections?.length && (
         <Typography variant="body2">{formatMessage("koboApplication.noForm")}</Typography>
       )}
-      {(application.sections || []).map((section) => (
-        <Box key={section.label} mt={2}>
+      {(application.sections || []).map((section, index) => (
+        // Ungrouped questions share a blank label, so the position keeps keys unique
+        <Box key={`${index}-${section.label}`} mt={2}>
           {section.label && <Typography variant="subtitle1">{section.label}</Typography>}
           <Divider />
-          <Grid container spacing={1} style={{ marginTop: 4 }}>
-            {section.fields.map((field) => (
-              <Grid item xs={12} md={6} key={field.name}>
-                <Typography variant="caption" color="textSecondary">
-                  {field.label}
-                </Typography>
-                <Typography variant="body2" style={{ whiteSpace: "pre-wrap" }}>
-                  {field.value}
-                </Typography>
-              </Grid>
-            ))}
-          </Grid>
+          <Box mt={0.5}>
+            <Grid container spacing={1}>
+              {section.fields.map((field) => (
+                <Grid item xs={12} md={6} key={field.name}>
+                  <Typography variant="caption" color="textSecondary">
+                    {field.label}
+                  </Typography>
+                  <Typography variant="body2" style={{ whiteSpace: "pre-wrap" }}>
+                    {field.value}
+                  </Typography>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         </Box>
       ))}
     </Box>
