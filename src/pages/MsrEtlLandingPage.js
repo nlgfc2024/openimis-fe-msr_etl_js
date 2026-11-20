@@ -12,10 +12,17 @@ import {
 } from "@openimis/fe-core";
 import { injectIntl } from "react-intl";
 
-import { MSR_ETL_MODULE_NAME, MSR_ETL_TAB, MSR_ETL_TAB_SLUGS, RIGHT_MSR_ETL_SEARCH } from "../constants";
+import {
+  MSR_ETL_MODULE_NAME,
+  MSR_ETL_TAB,
+  MSR_ETL_TAB_SLUGS,
+  RIGHT_KOBO_SUBMISSION_REVIEW,
+  RIGHT_MSR_ETL_SEARCH,
+} from "../constants";
 import LocationImportTab from "./tabs/LocationImportTab";
 import IndividualsImportTab from "./tabs/IndividualsImportTab";
 import MsrEtlLogsTab from "./tabs/MsrEtlLogsTab";
+import KoboSubmissionsTab from "./tabs/KoboSubmissionsTab";
 
 const styles = (theme) => ({
   page: theme.page,
@@ -62,6 +69,8 @@ function MsrEtlLandingPage({ classes, rights }) {
     return null;
   }
 
+  // Only reviewers see Kobo submissions: they hold personal data
+  const canReviewKobo = rights.includes(RIGHT_KOBO_SUBMISSION_REVIEW);
   const isSelected = (tab) => tab === activeTab;
   const tabStyle = (tab) => (isSelected(tab) ? classes.selectedTab : classes.unselectedTab);
   const handleChange = (_, value) =>
@@ -94,11 +103,21 @@ function MsrEtlLandingPage({ classes, rights }) {
             value={MSR_ETL_TAB.LOGS}
             label={formatMessage("landing.tab.logs")}
           />
+          {canReviewKobo && (
+            <Tab
+              onChange={handleChange}
+              className={tabStyle(MSR_ETL_TAB.KOBO)}
+              selected={isSelected(MSR_ETL_TAB.KOBO)}
+              value={MSR_ETL_TAB.KOBO}
+              label={formatMessage("landing.tab.kobo")}
+            />
+          )}
         </Grid>
         <div className={classes.tabContent}>
           {activeTab === MSR_ETL_TAB.LOCATION && <LocationImportTab rights={rights} alertSlot={alertSlot} />}
           {activeTab === MSR_ETL_TAB.INDIVIDUALS && <IndividualsImportTab rights={rights} alertSlot={alertSlot} />}
           {activeTab === MSR_ETL_TAB.LOGS && <MsrEtlLogsTab rights={rights} />}
+          {activeTab === MSR_ETL_TAB.KOBO && canReviewKobo && <KoboSubmissionsTab />}
         </div>
       </Paper>
     </div>
