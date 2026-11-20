@@ -2,7 +2,7 @@ export const MSR_ETL_MODULE_NAME = "msrEtl";
 
 export const RIGHT_MSR_ETL_SEARCH = 953001;
 export const RIGHT_MSR_ETL_EXPORT = 953002;
-// Reviewing Kobo submissions (msr_etl kobo_submission_perms)
+// Reviewing Kobo submissions: the default of fe-msr_etl koboSubmissionReviewRight (backend kobo_submission_perms)
 export const RIGHT_KOBO_SUBMISSION_REVIEW = 953004;
 
 // The backend's source when a job names none (e.g. an Initial Pull)
