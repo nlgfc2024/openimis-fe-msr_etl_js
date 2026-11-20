@@ -70,7 +70,9 @@ function MsrEtlLandingPage({ classes, rights }) {
   }
 
   // Only reviewers see Kobo submissions: they hold personal data
-  const canReviewKobo = rights.includes(RIGHT_KOBO_SUBMISSION_REVIEW);
+  // The same right as the backend's kobo_submission_perms, set per instance like it
+  const reviewRight = modulesManager.getConf("fe-msr_etl", "koboSubmissionReviewRight", RIGHT_KOBO_SUBMISSION_REVIEW);
+  const canReviewKobo = rights.includes(Number(reviewRight));
   const isSelected = (tab) => tab === activeTab;
   const tabStyle = (tab) => (isSelected(tab) ? classes.selectedTab : classes.unselectedTab);
   const handleChange = (_, value) =>
