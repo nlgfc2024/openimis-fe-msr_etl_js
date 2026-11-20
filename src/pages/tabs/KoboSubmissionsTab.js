@@ -16,6 +16,7 @@ import {
 } from "@material-ui/core";
 import KeyboardArrowDown from "@material-ui/icons/KeyboardArrowDown";
 import KeyboardArrowUp from "@material-ui/icons/KeyboardArrowUp";
+import { makeStyles } from "@material-ui/core/styles";
 import { Link, useGraphqlQuery, useModulesManager, useTranslations } from "@openimis/fe-core";
 
 import { MSR_ETL_MODULE_NAME } from "../../constants";
@@ -23,6 +24,12 @@ import { MSR_ETL_MODULE_NAME } from "../../constants";
 const SUBMISSION_STATUSES = ["HELD", "IMPORTED", "UPDATED", "NO_NATIONAL_ID", "INVALID", "RECEIVED"];
 const DOCUMENT_STATUSES = ["STORED", "PENDING", "FAILED"];
 const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
+const useStyles = makeStyles((theme) => ({
+  detailsCell: { paddingTop: 0, paddingBottom: 0 },
+  statusFilter: { flex: "1 1 15%", minWidth: "12em", marginRight: theme.spacing(2) },
+  searchFilter: { flex: "1 1 30%", minWidth: "16em" },
+}));
+
 const STATUS_COLOR = { HELD: "secondary", INVALID: "secondary", NO_NATIONAL_ID: "secondary" };
 
 const SUBMISSIONS_QUERY = `query MsrEtlKoboSubmissions($status: String, $search: String, $first: Int, $offset: Int) {
@@ -76,6 +83,7 @@ function Comparison({ submission, formatMessage, modulesManager }) {
 }
 
 function SubmissionRow({ submission, formatMessage, formatDateTimeFromISO, modulesManager }) {
+  const classes = useStyles();
   const [open, setOpen] = useState(false);
   const canCompare = !!submission.comparison?.length;
   return (
@@ -112,7 +120,7 @@ function SubmissionRow({ submission, formatMessage, formatDateTimeFromISO, modul
       </TableRow>
       {canCompare && (
         <TableRow>
-          <TableCell colSpan={8} style={{ paddingTop: 0, paddingBottom: 0 }}>
+          <TableCell colSpan={8} className={classes.detailsCell}>
             <Collapse in={open} unmountOnExit>
               <Comparison submission={submission} formatMessage={formatMessage} modulesManager={modulesManager} />
             </Collapse>
@@ -124,6 +132,7 @@ function SubmissionRow({ submission, formatMessage, formatDateTimeFromISO, modul
 }
 
 function KoboSubmissionsTab() {
+  const classes = useStyles();
   const modulesManager = useModulesManager();
   const { formatMessage, formatMessageWithValues, formatDateTimeFromISO } = useTranslations(
     MSR_ETL_MODULE_NAME,
@@ -185,7 +194,7 @@ function KoboSubmissionsTab() {
         ))}
       </Box>
       <Box display="flex" flexWrap="wrap" mb={2}>
-        <Box mr={2} minWidth={200}>
+        <Box className={classes.statusFilter}>
           <TextField
             select
             fullWidth
@@ -201,7 +210,7 @@ function KoboSubmissionsTab() {
             ))}
           </TextField>
         </Box>
-        <Box minWidth={300}>
+        <Box className={classes.searchFilter}>
           <TextField
             fullWidth
             label={formatMessage("koboSubmissions.filter.search")}
