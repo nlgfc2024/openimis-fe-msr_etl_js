@@ -14,10 +14,17 @@ import {
   Tabs,
   Typography,
 } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import { baseApiUrl, useModulesManager, useTranslations } from "@openimis/fe-core";
 
 import { MSR_ETL_MODULE_NAME } from "../constants";
 import { previewKind } from "../util/kobo";
+
+const useStyles = makeStyles((theme) => ({
+  cell: { border: `1px solid ${theme.palette.divider}` },
+  frame: { width: "100%", height: "100%", border: 0 },
+  image: { maxWidth: "100%", maxHeight: "100%" },
+}));
 
 // Loads a document with the user's session and keeps it as a local object URL, so it is shown in the page
 function useDocumentFile(document, enabled) {
@@ -87,6 +94,7 @@ async function downloadDocument(document) {
 }
 
 function SheetTable({ sheet, formatMessage }) {
+  const classes = useStyles();
   if (!sheet.rows.length)
     return <Typography variant="body2">{formatMessage("applicantDocuments.viewer.emptySheet")}</Typography>;
   return (
@@ -96,7 +104,7 @@ function SheetTable({ sheet, formatMessage }) {
           {sheet.rows.map((row, rowIndex) => (
             <TableRow key={rowIndex}>
               {row.map((value, columnIndex) => (
-                <TableCell key={columnIndex} style={{ border: "1px solid rgba(224, 224, 224, 1)" }}>
+                <TableCell key={columnIndex} className={classes.cell}>
                   {value}
                 </TableCell>
               ))}
@@ -116,6 +124,7 @@ function SheetTable({ sheet, formatMessage }) {
 }
 
 function ApplicantDocumentViewer({ documents, index, onIndexChange, onClose }) {
+  const classes = useStyles();
   const modulesManager = useModulesManager();
   const { formatMessage, formatMessageWithValues } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
   const [sheetIndex, setSheetIndex] = useState(0);
@@ -180,10 +189,10 @@ function ApplicantDocumentViewer({ documents, index, onIndexChange, onClose }) {
             </Typography>
           )}
           {file.url && kind === "pdf" && (
-            <iframe title={document.filename} src={file.url} style={{ width: "100%", height: "100%", border: 0 }} />
+            <iframe title={document.filename} src={file.url} className={classes.frame} />
           )}
           {file.url && kind === "image" && (
-            <img src={file.url} alt={document.label} style={{ maxWidth: "100%", maxHeight: "100%" }} />
+            <img src={file.url} alt={document.label} className={classes.image} />
           )}
           {!!sheets.length && <SheetTable sheet={sheets[sheetIndex] || sheets[0]} formatMessage={formatMessage} />}
           {table.sheets && !sheets.length && (

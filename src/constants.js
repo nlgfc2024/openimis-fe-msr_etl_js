@@ -2,6 +2,8 @@ export const MSR_ETL_MODULE_NAME = "msrEtl";
 
 export const RIGHT_MSR_ETL_SEARCH = 953001;
 export const RIGHT_MSR_ETL_EXPORT = 953002;
+// Reviewing Kobo submissions: the default of fe-msr_etl koboSubmissionReviewRight (backend kobo_submission_perms)
+export const RIGHT_KOBO_SUBMISSION_REVIEW = 953004;
 
 // The backend's source when a job names none (e.g. an Initial Pull)
 export const DEFAULT_SOURCE_TYPE = "ubr";
@@ -20,8 +22,9 @@ export const MSR_ETL_TAB = {
   LOCATION: 0,
   INDIVIDUALS: 1,
   LOGS: 2,
+  KOBO: 3,
 };
-export const MSR_ETL_TAB_SLUGS = ["location", "individuals", "logs"];
+export const MSR_ETL_TAB_SLUGS = ["location", "individuals", "logs", "kobo"];
 
 export const LOCATION_LEVELS = [
   { pubRef: "location.MwDistrictPicker", label: "locationLevel.district" },
