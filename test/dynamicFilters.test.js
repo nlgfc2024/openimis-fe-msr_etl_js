@@ -1,7 +1,16 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { schemaRequiredFieldsSatisfied, gridWidth } = require("../src/util/dynamicFilters");
+const { schemaRequiredFieldsSatisfied, gridWidth, filtersForSchema } = require("../src/util/dynamicFilters");
+
+test("schema changes discard old numeric geo filters and preserve household location filters", () => {
+  assert.deepEqual(filtersForSchema([{ name: "district_uuid", type: "district" }], {
+    msr_district_id: 13, district_uuid: "reviewed-district",
+  }), { district_uuid: "reviewed-district" });
+  assert.deepEqual(filtersForSchema([{ name: "location", type: "location" }, { name: "gender" }], {
+    district: "213", ta: "21305", gvh: "2130501", village: "village", gender: "Female", obsolete: true,
+  }), { district: "213", ta: "21305", gvh: "2130501", village: "village", gender: "Female" });
+});
 
 const LOCATION_FIELD = { name: "location", label: "Location", type: "location", required: true };
 const GENDER_FIELD = { name: "gender", label: "Gender", type: "select", required: true };

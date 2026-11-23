@@ -6,7 +6,7 @@ import { ProgressOrError, formatMessage } from "@openimis/fe-core";
 import { withTheme, withStyles } from "@material-ui/core/styles";
 import { MSR_ETL_MODULE_NAME } from "../constants";
 import { normalizeLocationSelection } from "../util/location";
-import { gridWidth } from "../util/dynamicFilters";
+import { gridWidth, filtersForSchema } from "../util/dynamicFilters";
 import DynamicFilterField from "./DynamicFilterField";
 import SourceTypeSelector from "./SourceTypeSelector";
 import FormLoader from "./FormLoader";
@@ -33,17 +33,22 @@ function DynamicFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes,
   const schema = sourceTypes.find((sourceType) => sourceType.value === edited?.sourceType)?.filterSchema || [];
 
   const onSourceTypeChange = (value) => {
-    onEditedChanged({ ...(edited || {}), sourceType: value, filters: {}, location: undefined });
+    onEditedChanged({ ...(edited || {}), sourceType: value, filters: {}, location: undefined, district: undefined });
   };
 
   const onFieldChange = (field) => (value) => {
+    if (field.type === "district") {
+      onEditedChanged({ ...(edited || {}), district: value,
+        filters: { ...filtersForSchema(schema, edited?.filters), [field.name]: value?.uuid || null } });
+      return;
+    }
     if (field.type === "location") {
       const normalized = normalizeLocationSelection(value);
       onEditedChanged({
         ...(edited || {}),
         location: value,
         filters: {
-          ...(edited?.filters || {}),
+          ...filtersForSchema(schema, edited?.filters),
           district: normalized.district,
           ta: normalized.ta,
           gvh: normalized.gvh,
@@ -55,7 +60,7 @@ function DynamicFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes,
 
     onEditedChanged({
       ...(edited || {}),
-      filters: { ...(edited?.filters || {}), [field.name]: value },
+      filters: { ...filtersForSchema(schema, edited?.filters), [field.name]: value },
     });
   };
 
@@ -96,7 +101,7 @@ function DynamicFiltersPanel({ intl, edited, onEditedChanged, readOnly, classes,
               key={field.name}
               module={MSR_ETL_MODULE_NAME}
               field={field}
-              value={field.type === "location" ? edited?.location : edited?.filters?.[field.name]}
+              value={field.type === "location" ? edited?.location : field.type === "district" ? edited?.district : edited?.filters?.[field.name]}
               onChange={onFieldChange(field)}
               readOnly={readOnly}
               sourceType={edited?.sourceType}

@@ -1,6 +1,6 @@
 {
   "name": "@openimis/fe-msr_etl",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "AGPL-3.0-only",
   "description": "openIMIS Frontend MSR ETL module - Manage Filters for pulling data from the MSR server",
   "repository": "nlgfc24/openimis-fe-msr_etl_js",

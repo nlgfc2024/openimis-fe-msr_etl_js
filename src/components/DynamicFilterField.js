@@ -1,12 +1,12 @@
 import React from "react";
 import { injectIntl } from "react-intl";
-import { Autocomplete, NumberInput, TextInput, formatMessage } from "@openimis/fe-core";
+import { Autocomplete, NumberInput, TextInput, PublishedComponent, formatMessage } from "@openimis/fe-core";
 
 import LocationLevelsField from "./LocationLevelsField";
 import FormNumberFileField from "./FormNumberFileField";
 import { findSelectedOption, findSelectedOptions, translateLabel } from "../util/dynamicFilters";
 
-const KNOWN_TYPES = ["text", "number", "boolean", "select", "multiselect", "location", "file"];
+const KNOWN_TYPES = ["text", "number", "boolean", "select", "multiselect", "location", "district", "file"];
 
 /**
  * Renders one filter input from a filter_schema field definition:
@@ -27,6 +27,9 @@ function DynamicFilterField({ intl, module, field, value, onChange, readOnly, so
   };
 
   switch (type) {
+    case "district":
+      return <PublishedComponent pubRef="location.MwDistrictPicker" {...common} value={value || null} onChange={onChange} />;
+
     case "location":
       return (
         <LocationLevelsField
