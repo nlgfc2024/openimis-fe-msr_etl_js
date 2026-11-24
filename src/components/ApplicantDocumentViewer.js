@@ -123,7 +123,7 @@ function SheetTable({ sheet, formatMessage }) {
   );
 }
 
-function ApplicantDocumentViewer({ documents, index, onIndexChange, onClose }) {
+function ApplicantDocumentViewer({ documents, index, onIndexChange, onClose, actions }) {
   const classes = useStyles();
   const modulesManager = useModulesManager();
   const { formatMessage, formatMessageWithValues } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
@@ -211,6 +211,7 @@ function ApplicantDocumentViewer({ documents, index, onIndexChange, onClose }) {
           {formatMessage("applicantDocuments.viewer.next")}
         </Button>
         <Box flexGrow={1} />
+        {actions?.(document)}
         <Button disabled={!!kind && !file.url} onClick={download}>
           {formatMessage("applicantDocuments.viewer.download")}
         </Button>

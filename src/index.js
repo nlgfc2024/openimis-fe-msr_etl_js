@@ -8,8 +8,12 @@ import reducer from "./reducer";
 import MsrEtlLandingPage from "./pages/MsrEtlLandingPage";
 import MsrEtlSyncLogPage from "./pages/MsrEtlSyncLogPage";
 import { MSR_ETL_MODULE_NAME, RIGHT_MSR_ETL_SEARCH } from "./constants";
-import { KoboApplicationTabLabel, KoboApplicationTabPanel } from "./components/KoboApplicationTab";
-import { ApplicantDocumentsTabLabel, ApplicantDocumentsTabPanel } from "./components/ApplicantDocumentsTab";
+import { KoboApplications, KoboApplicationTabLabel, KoboApplicationTabPanel } from "./components/KoboApplicationTab";
+import {
+  ApplicantDocuments,
+  ApplicantDocumentsTabLabel,
+  ApplicantDocumentsTabPanel,
+} from "./components/ApplicantDocumentsTab";
 
 const ROUTE_MSR_ETL_LANDING = "msr-etl";
 const ROUTE_MSR_ETL_SYNC_LOG = "msr-etl/sync-log";
@@ -37,6 +41,9 @@ const DEFAULT_CONFIG = {
   refs: [
     { key: `${MSR_ETL_MODULE_NAME}.route.landing`, ref: ROUTE_MSR_ETL_LANDING },
     { key: `${MSR_ETL_MODULE_NAME}.route.syncLog`, ref: ROUTE_MSR_ETL_SYNC_LOG },
+    // An individual's application and documents, for other modules' pages (e.g. appraisal): props individualId
+    { key: `${MSR_ETL_MODULE_NAME}.KoboApplications`, ref: KoboApplications },
+    { key: `${MSR_ETL_MODULE_NAME}.ApplicantDocuments`, ref: ApplicantDocuments },
   ],
 };
 
