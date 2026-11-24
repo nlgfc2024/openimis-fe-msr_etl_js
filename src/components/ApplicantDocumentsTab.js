@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Tab, Box, Button, Typography, Table, TableBody, TableCell, TableHead, TableRow } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import { PublishedComponent, useGraphqlQuery, useModulesManager, useTranslations } from "@openimis/fe-core";
 
 import { MSR_ETL_MODULE_NAME } from "../constants";
@@ -29,8 +30,24 @@ function ApplicantDocumentsTabLabel({ onChange, tabStyle, isSelected, individual
   );
 }
 
-/** An individual's documents with the viewer; also published as the msrEtl.ApplicantDocuments ref. */
-function ApplicantDocuments({ individualId, skip = false }) {
+const useStyles = makeStyles((theme) => ({
+  filename: { whiteSpace: "nowrap" },
+  actions: { whiteSpace: "nowrap", "& > *:not(:first-child)": { marginLeft: theme.spacing(1) } },
+}));
+
+/** An individual's documents with the viewer; also published as the msrEtl.ApplicantDocuments ref. Other modules
+ * extend it with columns [{key, header, render(document)}], rowActions(document, open), viewerActions(document) and
+ * rowHighlighted(document); compact shows size and status under the file name. */
+function ApplicantDocuments({
+  individualId,
+  skip = false,
+  compact = false,
+  columns = [],
+  rowActions,
+  viewerActions,
+  rowHighlighted,
+}) {
+  const classes = useStyles();
   const modulesManager = useModulesManager();
   const { formatMessage } = useTranslations(MSR_ETL_MODULE_NAME, modulesManager);
   const [viewing, setViewing] = useState(null);
@@ -59,24 +76,44 @@ function ApplicantDocuments({ individualId, skip = false }) {
             <TableRow>
               <TableCell>{formatMessage("applicantDocuments.document")}</TableCell>
               <TableCell>{formatMessage("applicantDocuments.file")}</TableCell>
-              <TableCell>{formatMessage("applicantDocuments.size")}</TableCell>
-              <TableCell>{formatMessage("applicantDocuments.status")}</TableCell>
+              {!compact && <TableCell>{formatMessage("applicantDocuments.size")}</TableCell>}
+              {!compact && <TableCell>{formatMessage("applicantDocuments.status")}</TableCell>}
+              {columns.map((column) => (
+                <TableCell key={column.key}>{column.header}</TableCell>
+              ))}
               <TableCell />
             </TableRow>
           </TableHead>
           <TableBody>
             {documents.map((document) => (
-              <TableRow key={document.id}>
+              <TableRow key={document.id} selected={!!rowHighlighted?.(document)}>
                 <TableCell>{document.label}</TableCell>
-                <TableCell>{document.filename}</TableCell>
-                <TableCell>{formatFileSize(document.size)}</TableCell>
-                <TableCell>{formatMessage(`applicantDocuments.status.${document.status}`)}</TableCell>
-                <TableCell>
+                {compact ? (
+                  <TableCell>
+                    <Typography variant="body2" className={classes.filename}>
+                      {document.filename}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {`${formatFileSize(document.size)} · ${formatMessage(`applicantDocuments.status.${document.status}`)}`}
+                    </Typography>
+                  </TableCell>
+                ) : (
+                  <>
+                    <TableCell>{document.filename}</TableCell>
+                    <TableCell>{formatFileSize(document.size)}</TableCell>
+                    <TableCell>{formatMessage(`applicantDocuments.status.${document.status}`)}</TableCell>
+                  </>
+                )}
+                {columns.map((column) => (
+                  <TableCell key={column.key}>{column.render(document)}</TableCell>
+                ))}
+                <TableCell align="right" className={classes.actions}>
                   {openable.includes(document) && (
                     <Button size="small" color="primary" onClick={() => setViewing(openable.indexOf(document))}>
                       {formatMessage("applicantDocuments.view")}
                     </Button>
                   )}
+                  {rowActions?.(document, openable.includes(document) ? () => setViewing(openable.indexOf(document)) : null)}
                 </TableCell>
               </TableRow>
             ))}
@@ -88,6 +125,7 @@ function ApplicantDocuments({ individualId, skip = false }) {
         index={viewing}
         onIndexChange={setViewing}
         onClose={() => setViewing(null)}
+        actions={viewerActions}
       />
     </>
   );
